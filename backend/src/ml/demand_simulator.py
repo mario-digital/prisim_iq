@@ -58,7 +58,79 @@ class DemandSimulator:
         with open(self._config_path) as f:
             config = yaml.safe_load(f)
             logger.debug(f"Loaded config: {config}")
+            self._validate_config(config)
             return config
+
+    def _validate_config(self, config: dict) -> None:
+        """Validate configuration values and warn about potential issues.
+
+        Args:
+            config: Configuration dictionary to validate.
+
+        Raises:
+            ValueError: If elasticity values are positive (invalid).
+        """
+        # Valid keys for validation
+        valid_locations = {"Urban", "Suburban", "Rural"}
+        valid_periods = {"Peak", "Standard"}
+        valid_vehicles = {"Premium", "Economy"}
+        valid_times = {"Morning", "Afternoon", "Evening", "Night"}
+        valid_loyalty = {"Bronze", "Silver", "Gold", "Platinum"}
+
+        # Validate elasticity values and keys
+        elasticity = config.get("elasticity", {})
+        for key, value in elasticity.items():
+            # Check elasticity is negative (law of demand)
+            if value >= 0:
+                raise ValueError(
+                    f"Elasticity value for '{key}' must be negative (got {value}). "
+                    "Positive elasticity violates the law of demand."
+                )
+
+            # Validate key format: {Location}_{Period}_{Vehicle}
+            parts = key.split("_")
+            if len(parts) != 3:
+                logger.warning(
+                    f"Elasticity key '{key}' does not match expected format "
+                    "'{{Location}}_{{Period}}_{{Vehicle}}'"
+                )
+                continue
+
+            location, period, vehicle = parts
+            if location not in valid_locations:
+                logger.warning(
+                    f"Unknown location '{location}' in elasticity key '{key}'. "
+                    f"Expected one of: {valid_locations}"
+                )
+            if period not in valid_periods:
+                logger.warning(
+                    f"Unknown period '{period}' in elasticity key '{key}'. "
+                    f"Expected one of: {valid_periods}"
+                )
+            if vehicle not in valid_vehicles:
+                logger.warning(
+                    f"Unknown vehicle type '{vehicle}' in elasticity key '{key}'. "
+                    f"Expected one of: {valid_vehicles}"
+                )
+
+        # Validate modifier keys
+        modifiers = config.get("modifiers", {})
+
+        time_mods = modifiers.get("time", {})
+        for time_key in time_mods:
+            if time_key not in valid_times:
+                logger.warning(
+                    f"Unknown time modifier key '{time_key}'. "
+                    f"Expected one of: {valid_times}"
+                )
+
+        loyalty_mods = modifiers.get("loyalty", {})
+        for loyalty_key in loyalty_mods:
+            if loyalty_key not in valid_loyalty:
+                logger.warning(
+                    f"Unknown loyalty modifier key '{loyalty_key}'. "
+                    f"Expected one of: {valid_loyalty}"
+                )
 
     def _get_default_config(self) -> dict:
         """Return default elasticity configuration.
