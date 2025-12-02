@@ -1,0 +1,81 @@
+{
+  "linear_regression": {
+    "metrics": {
+      "r2": 0.5764460300388691,
+      "mae": 0.09878746358370492,
+      "rmse": 0.1368842770879808
+    },
+    "best_params": null,
+    "feature_importance": null,
+    "coefficients": {
+      "number_of_riders": 8.245637374686211e-05,
+      "number_of_drivers": -0.00017624830084613438,
+      "location_category": 0.05303093065519058,
+      "customer_loyalty_status": 0.00785572818196746,
+      "number_of_past_rides": 2.973056135942903e-07,
+      "average_ratings": -0.005828509760896543,
+      "time_of_booking": -0.02034060578824671,
+      "vehicle_type": 0.00033070627707339195,
+      "expected_ride_duration": 5.045568630870988e-05,
+      "historical_cost_of_ride": 0.0008158984583144055,
+      "supply_demand_ratio": 0.1735184456953545,
+      "segment": -0.010197286382408414,
+      "price": -0.0006289104219996006,
+      "intercept": 0.2467789602483343
+    }
+  },
+  "decision_tree": {
+    "metrics": {
+      "r2": 0.8986099344039185,
+      "mae": 0.04631390601325112,
+      "rmse": 0.06697255851591497
+    },
+    "best_params": {
+      "max_depth": 10
+    },
+    "feature_importance": {
+      "number_of_riders": 0.0010931059718579576,
+      "number_of_drivers": 0.004243851316365764,
+      "location_category": 0.01364293565166086,
+      "customer_loyalty_status": 0.0003020777809923875,
+      "number_of_past_rides": 0.0013126884296632993,
+      "average_ratings": 0.001591631895432276,
+      "time_of_booking": 0.028690062322962732,
+      "vehicle_type": 0.0051640505621081455,
+      "expected_ride_duration": 0.0016194692810184927,
+      "historical_cost_of_ride": 0.3983958109242959,
+      "supply_demand_ratio": 0.02270758848012102,
+      "segment": 0.011738685593806112,
+      "price": 0.5094980417897151
+    },
+    "coefficients": null
+  },
+  "xgboost": {
+    "metrics": {
+      "r2": 0.9859162922765351,
+      "mae": 0.012951493671802879,
+      "rmse": 0.024960753428571396
+    },
+    "best_params": {
+      "learning_rate": 0.1,
+      "max_depth": 7,
+      "n_estimators": 200
+    },
+    "feature_importance": {
+      "number_of_riders": 0.0014977218816056848,
+      "number_of_drivers": 0.009914528578519821,
+      "location_category": 0.07566744089126587,
+      "customer_loyalty_status": 0.009326590225100517,
+      "number_of_past_rides": 0.0024662406649440527,
+      "average_ratings": 0.00347633077763021,
+      "time_of_booking": 0.08860407024621964,
+      "vehicle_type": 0.027558153495192528,
+      "expected_ride_duration": 0.03334159776568413,
+      "historical_cost_of_ride": 0.40566566586494446,
+      "supply_demand_ratio": 0.050996843725442886,
+      "segment": 0.07074416428804398,
+      "price": 0.2207406759262085
+    },
+    "coefficients": null
+  }
+}

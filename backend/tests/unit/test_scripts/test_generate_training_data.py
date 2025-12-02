@@ -7,10 +7,11 @@ Tests cover:
 - Utility functions (load_training_data, load_test_data)
 """
 
+# Import from script (need to add to path)
+import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -26,8 +27,6 @@ from src.ml.training_data import (
 )
 from src.schemas.market import MarketContext
 
-# Import from script (need to add to path)
-import sys
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "scripts"))
 
 from generate_training_data import (
@@ -245,7 +244,6 @@ class TestReproducibility:
         segmenter.classify.return_value = mock_result
 
         result1 = generate_training_data(mock_dataset, simulator, segmenter, seed=42)
-        result2 = generate_training_data(mock_dataset, simulator, segmenter, seed=123)
 
         # Results should be deterministic (each run with same seed is same)
         result1_repeat = generate_training_data(
