@@ -1,7 +1,7 @@
 [test]
 preload = ["./tests/setup.ts"]
 
-# Use tsconfig.json for path resolution
-[test.moduleResolution]
+# Path alias resolution (works across all Bun versions)
+[resolve]
 paths = { "@/*" = ["./src/*"] }
 
