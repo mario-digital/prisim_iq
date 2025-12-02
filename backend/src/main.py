@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 
 from src.api.middleware import LoggingMiddleware, TimingMiddleware
-from src.api.routers import data, health
+from src.api.routers import data, health, pricing
 from src.config import get_settings
 from src.schemas.data import ErrorResponse
 
@@ -60,6 +60,7 @@ def create_app() -> FastAPI:
     # Include routers
     app.include_router(health.router)
     app.include_router(data.router, prefix="/api/v1")
+    app.include_router(pricing.router, prefix="/api/v1")
 
     return app
 
