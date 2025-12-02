@@ -10,8 +10,11 @@ mock.module('next/navigation', () => ({
   redirect: () => {},
 }));
 
-const layoutStoreModule = '../../../src/stores/layoutStore';
-const apiModule = '../../../src/lib/api';
+const resolveModule = (relativePath: string) =>
+  new URL(relativePath, import.meta.url).href;
+
+const layoutStoreModule = resolveModule('../../../src/stores/layoutStore.ts');
+const apiModule = resolveModule('../../../src/lib/api.ts');
 
 describe('Layout Store', () => {
   beforeEach(() => {
