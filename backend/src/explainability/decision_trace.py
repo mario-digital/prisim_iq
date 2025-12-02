@@ -12,7 +12,8 @@ import uuid
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Literal, TypeVar
+from collections.abc import Callable
+from typing import Any, Literal, TypeVar
 
 from loguru import logger
 from pydantic import BaseModel, Field
