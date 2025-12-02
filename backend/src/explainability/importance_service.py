@@ -114,10 +114,7 @@ def _normalize_importance(
     if total == 0:
         # Edge case: all values are 0
         n_features = len(raw_importance)
-        return {
-            k: (1.0 / n_features, "positive")
-            for k in raw_importance
-        }
+        return dict.fromkeys(raw_importance, (1.0 / n_features, "positive"))
 
     # Normalize and track direction
     result = {}
@@ -285,10 +282,9 @@ class FeatureImportanceService:
             if raw_coef:
                 # Use raw coefficients to determine direction
                 for name in raw_importance:
-                    if name in raw_coef:
+                    if name in raw_coef and raw_coef[name] < 0:
                         # Keep magnitude from normalized, sign from raw
-                        if raw_coef[name] < 0:
-                            raw_importance[name] = -raw_importance[name]
+                        raw_importance[name] = -raw_importance[name]
 
         contributions = self._build_contributions(raw_importance)
         summary = _generate_top_3_summary(contributions)

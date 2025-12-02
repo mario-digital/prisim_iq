@@ -3,7 +3,6 @@
 import numpy as np
 import pytest
 from sklearn.linear_model import LinearRegression
-from sklearn.tree import DecisionTreeRegressor
 from xgboost import XGBRegressor
 
 from src.explainability.importance_service import (
@@ -13,7 +12,7 @@ from src.explainability.importance_service import (
     _rank_contributions,
     get_feature_importance,
 )
-from src.schemas.explainability import FeatureContribution, FeatureImportanceResult
+from src.schemas.explainability import FeatureImportanceResult
 
 
 @pytest.fixture
