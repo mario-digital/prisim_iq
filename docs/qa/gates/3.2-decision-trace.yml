@@ -1,0 +1,44 @@
+schema: 1
+story: '3.2'
+story_title: 'Decision Trace Generation'
+gate: PASS
+status_reason: 'All 5 acceptance criteria met with comprehensive test coverage (41 tests). Minor deprecated API usage does not block release.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-12-02T10:30:00Z'
+
+top_issues: []
+
+waiver:
+  active: false
+
+quality_score: 95
+
+evidence:
+  tests_reviewed: 41
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Safe serialization, controlled file paths, no sensitive data exposure'
+  performance:
+    status: PASS
+    notes: 'Tracing overhead <1ms per step, no blocking I/O'
+  reliability:
+    status: PASS
+    notes: 'Error handling at each step with trace capture'
+  maintainability:
+    status: CONCERNS
+    notes: 'datetime.utcnow() deprecated in Python 3.12+; inline import in helper'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Migrate datetime.utcnow() to datetime.now(UTC)'
+      refs: ['src/explainability/decision_trace.py', 'src/services/traced_pricing.py']
+    - action: 'Move inline import math to module level'
+      refs: ['src/services/traced_pricing.py:63']
+
