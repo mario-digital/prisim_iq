@@ -1,0 +1,119 @@
+{
+  "dataset_name": "Dynamic Pricing Dataset",
+  "version": "1.0.0",
+  "generated_at": "2025-12-02T13:11:04.830571+00:00",
+  "source": {
+    "origin": "Kaggle Dynamic Pricing Dataset (synthetic)",
+    "collection_date": "2024",
+    "preprocessing_steps": [
+      "Loaded from Excel format (dynamic_pricing.xlsx)",
+      "Computed supply_demand_ratio as Number_of_Drivers / Number_of_Riders",
+      "Verified no missing values across all columns",
+      "Validated data types and value ranges",
+      "Generated segment labels using K-Means clustering"
+    ]
+  },
+  "features": [
+    {
+      "name": "Number_of_Riders",
+      "dtype": "int64",
+      "description": "Number of customers requesting rides in the area",
+      "range_or_values": "20.00 - 100.00",
+      "distribution": "continuous"
+    },
+    {
+      "name": "Number_of_Drivers",
+      "dtype": "int64",
+      "description": "Number of available drivers in the area",
+      "range_or_values": "5.00 - 89.00",
+      "distribution": "continuous"
+    },
+    {
+      "name": "Location_Category",
+      "dtype": "object",
+      "description": "Type of geographic location",
+      "range_or_values": "Urban, Rural, Suburban",
+      "distribution": "categorical"
+    },
+    {
+      "name": "Customer_Loyalty_Status",
+      "dtype": "object",
+      "description": "Customer loyalty tier based on ride history",
+      "range_or_values": "Silver, Regular, Gold",
+      "distribution": "categorical"
+    },
+    {
+      "name": "Number_of_Past_Rides",
+      "dtype": "int64",
+      "description": "Total historical rides by the customer",
+      "range_or_values": "0.00 - 100.00",
+      "distribution": "continuous"
+    },
+    {
+      "name": "Average_Ratings",
+      "dtype": "float64",
+      "description": "Customer's average rating from drivers",
+      "range_or_values": "3.50 - 5.00",
+      "distribution": "continuous"
+    },
+    {
+      "name": "Time_of_Booking",
+      "dtype": "object",
+      "description": "Time period when ride was booked",
+      "range_or_values": "Night, Afternoon, Morning, Evening",
+      "distribution": "categorical"
+    },
+    {
+      "name": "Vehicle_Type",
+      "dtype": "object",
+      "description": "Type of vehicle requested",
+      "range_or_values": "Premium, Economy",
+      "distribution": "categorical"
+    },
+    {
+      "name": "Expected_Ride_Duration",
+      "dtype": "int64",
+      "description": "Estimated trip duration in minutes",
+      "range_or_values": "10.00 - 180.00",
+      "distribution": "continuous"
+    },
+    {
+      "name": "Historical_Cost_of_Ride",
+      "dtype": "float64",
+      "description": "Historical average cost for similar rides",
+      "range_or_values": "25.99 - 836.12",
+      "distribution": "continuous"
+    },
+    {
+      "name": "supply_demand_ratio",
+      "dtype": "float64",
+      "description": "Ratio of available drivers to requesting riders",
+      "range_or_values": "0.06 - 0.90",
+      "distribution": "continuous"
+    }
+  ],
+  "statistics": {
+    "row_count": 1000,
+    "column_count": 11,
+    "missing_values": 0,
+    "numeric_features": 7,
+    "categorical_features": 4
+  },
+  "known_biases": [
+    "Synthetic data may not reflect real-world demand patterns",
+    "Premium vehicles overrepresented (52% vs 48% Economy)",
+    "Geographic categories are simplified (Urban/Suburban/Rural only)",
+    "Time of booking is bucketed, losing granular temporal patterns",
+    "Customer loyalty distribution is relatively balanced, may not match reality",
+    "No seasonal or weather-related features included"
+  ],
+  "limitations": [
+    "Sample size of 1,000 rows limits statistical power for rare scenarios",
+    "No external validation against real ride-sharing data",
+    "Synthetic nature means patterns may not generalize to production",
+    "Missing features: weather, events, competitor pricing, traffic conditions",
+    "No longitudinal data - cannot capture customer behavior over time",
+    "Geographic scope is abstract, not tied to real locations"
+  ],
+  "intended_use": "Training and evaluation of demand prediction models for PrismIQ dynamic pricing demonstration. This dataset is intended for educational and prototyping purposes. Production systems should validate against real-world data before deployment."
+}
