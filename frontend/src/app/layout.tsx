@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { TabNavigation } from '@/components/layout';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -13,11 +14,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
+        <TabNavigation />
         {children}
       </body>
     </html>
   );
 }
-
