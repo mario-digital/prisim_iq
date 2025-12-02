@@ -1,3 +1,7 @@
 [test]
 preload = ["./tests/setup.ts"]
 
+# Use tsconfig.json for path resolution
+[test.moduleResolution]
+paths = { "@/*" = ["./src/*"] }
+
