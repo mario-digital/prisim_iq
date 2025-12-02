@@ -53,8 +53,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev,ml]"
 
-      - name: Generate training data and train models
+      - name: Train segmenter, generate data, and train ML models
         run: |
+          echo "Training segmenter model..."
+          python -c "
+          from src.ml.preprocessor import load_dataset
+          from src.ml.segmenter import Segmenter, DEFAULT_MODEL_PATH
+          df = load_dataset()
+          segmenter = Segmenter(n_clusters=6, random_state=42)
+          segmenter.fit(df)
+          segmenter.save(DEFAULT_MODEL_PATH)
+          print(f'Segmenter saved to {DEFAULT_MODEL_PATH}')
+          "
           echo "Generating training data..."
           python scripts/generate_training_data.py --seed 42
           echo "Training ML models..."
