@@ -2,6 +2,7 @@
 
 import type { FC, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
+import { ChatPanel } from '@/components/chat';
 
 interface CenterPanelProps {
   children?: ReactNode;
@@ -16,12 +17,7 @@ export const CenterPanel: FC<CenterPanelProps> = ({ children, className }) => {
         className
       )}
     >
-      {children || (
-        <div className="flex-1 flex items-center justify-center p-4 text-sm text-muted-foreground">
-          Center panel content will be implemented in Story 4.3
-        </div>
-      )}
+      {children || <ChatPanel />}
     </main>
   );
 };
-
