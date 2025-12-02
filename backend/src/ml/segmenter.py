@@ -266,7 +266,7 @@ class Segmenter:
 
         return np.array([features])
 
-    def _generate_segment_labels(self, data: pd.DataFrame, X_scaled: np.ndarray) -> None:
+    def _generate_segment_labels(self, data: pd.DataFrame, _X_scaled: np.ndarray) -> None:
         """Generate descriptive labels for each cluster based on centroids.
 
         Labels follow pattern: {Location}_{TimeProfile}_{VehicleType}
@@ -419,7 +419,7 @@ def _find_elbow(k_values: list[int], inertias: list[float]) -> int:
     max_dist = 0
     elbow_idx = 0
 
-    for i, (k, inertia) in enumerate(zip(k_norm, inertia_norm)):
+    for i, (k, inertia) in enumerate(zip(k_norm, inertia_norm, strict=True)):
         point_vec = np.array([k - k_norm[0], inertia - inertia_norm[0]])
         proj_len = np.dot(point_vec, line_unit)
         proj = proj_len * line_unit

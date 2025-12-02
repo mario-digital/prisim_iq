@@ -52,10 +52,16 @@ def fitted_segmenter(sample_dataframe: pd.DataFrame) -> Segmenter:
 def sample_context() -> MarketContext:
     """Create a sample market context for classification."""
     return MarketContext(
-        supply_demand_ratio=0.8,
-        time_of_booking="Morning",
+        number_of_riders=50,
+        number_of_drivers=40,
         location_category="Urban",
+        customer_loyalty_status="Gold",
+        number_of_past_rides=20,
+        average_ratings=4.5,
+        time_of_booking="Morning",
         vehicle_type="Premium",
+        expected_ride_duration=30,
+        historical_cost_of_ride=35.0,
     )
 
 
@@ -167,16 +173,28 @@ class TestSegmenterClassify:
     def test_classify_different_contexts(self, fitted_segmenter: Segmenter) -> None:
         """Test different contexts may get different segments."""
         context1 = MarketContext(
-            supply_demand_ratio=0.3,
-            time_of_booking="Morning",
+            number_of_riders=100,
+            number_of_drivers=30,  # Low supply = 0.3 ratio
             location_category="Urban",
+            customer_loyalty_status="Gold",
+            number_of_past_rides=50,
+            average_ratings=4.8,
+            time_of_booking="Morning",
             vehicle_type="Premium",
+            expected_ride_duration=25,
+            historical_cost_of_ride=45.0,
         )
         context2 = MarketContext(
-            supply_demand_ratio=2.0,
-            time_of_booking="Night",
+            number_of_riders=10,
+            number_of_drivers=20,  # High supply = 2.0 ratio
             location_category="Rural",
+            customer_loyalty_status="Bronze",
+            number_of_past_rides=5,
+            average_ratings=3.5,
+            time_of_booking="Night",
             vehicle_type="Economy",
+            expected_ride_duration=15,
+            historical_cost_of_ride=15.0,
         )
 
         result1 = fitted_segmenter.classify(context1)
@@ -275,7 +293,7 @@ class TestSegmentDistribution:
         """Test segment info in distribution."""
         distribution = fitted_segmenter.get_segment_distribution()
 
-        for segment_name, info in distribution["segments"].items():
+        for _segment_name, info in distribution["segments"].items():
             assert "cluster_id" in info
             assert "avg_supply_demand_ratio" in info
             assert "sample_count" in info
