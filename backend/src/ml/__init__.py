@@ -7,6 +7,7 @@ from src.ml.preprocessor import (
     get_feature_distributions,
     load_dataset,
 )
+from src.ml.segmenter import Segmenter, analyze_optimal_k
 
 __all__ = [
     "load_dataset",
@@ -14,5 +15,7 @@ __all__ = [
     "get_descriptive_stats",
     "get_feature_distributions",
     "get_eda_summary",
+    "Segmenter",
+    "analyze_optimal_k",
 ]
 
