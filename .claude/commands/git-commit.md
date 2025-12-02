@@ -1,5 +1,22 @@
 # Git Commit Message Convention
 
+# 🚨🚨🚨 CRITICAL RULE #0 🚨🚨🚨
+## **ALL PRs MUST TARGET `dev` BRANCH - NEVER `main`**
+
+When creating Pull Requests, **ALWAYS** use `--base dev`:
+
+```bash
+# ✅ CORRECT - Always target dev
+gh pr create --base dev --title "feat(story-1): add feature" --body "Description"
+
+# ❌ WRONG - Never target main directly
+gh pr create --title "feat(story-1): add feature" --body "Description"
+```
+
+**Why?** The `main` branch is for production releases only. All development work flows through `dev` first.
+
+---
+
 # 🚨🚨🚨 CRITICAL RULE #1 🚨🚨🚨
 ## **TYPE MUST BE LOWERCASE - NO CAPITAL LETTERS**
 
@@ -228,3 +245,92 @@ Docs(main): Adds a line to the README
 - Wrong verb form (should be imperative "add" not "adds")
 
 ✅ **CORRECT:** `docs(main): add a line to the README`
+
+---
+
+## 🔀 Pull Request Creation
+
+# 🚨 ALWAYS TARGET `dev` BRANCH 🚨
+
+When creating PRs, **ALWAYS** include `--base dev`:
+
+### PR Creation Template
+```bash
+gh pr create \
+  --base dev \
+  --title "<type>(<scope>): <description>" \
+  --body "## Summary
+<What this PR does>
+
+## Changes
+- <Change 1>
+- <Change 2>
+
+## Testing
+- <How to test>"
+```
+
+### Examples
+
+**Feature PR:**
+```bash
+gh pr create --base dev \
+  --title "feat(story-1.2): implement data loading" \
+  --body "## Summary
+Implements Story 1.2: Data Loading & EDA
+
+## Changes
+- Add pandas data loader
+- Create EDA notebook
+- Add data validation
+
+## Testing
+- Run: pytest tests/unit/test_data.py"
+```
+
+**Bug Fix PR:**
+```bash
+gh pr create --base dev \
+  --title "fix(BUG-123): resolve login timeout" \
+  --body "## Summary
+Fixes timeout issue on login page
+
+## Changes
+- Increased timeout from 5s to 30s
+- Added retry logic
+
+## Testing
+- Manual: Try logging in with slow connection"
+```
+
+### ❌ Common PR Mistakes
+
+```bash
+# ❌ WRONG - Missing --base dev (will default to main!)
+gh pr create --title "feat(story-1): add feature"
+
+# ❌ WRONG - Targeting main directly
+gh pr create --base main --title "feat(story-1): add feature"
+
+# ✅ CORRECT - Always use --base dev
+gh pr create --base dev --title "feat(story-1): add feature"
+```
+
+### Complete Workflow
+```bash
+# 1. Stage changes
+git add -A
+
+# 2. Commit with conventional format
+git commit -m "feat(story-1.1): implement feature" \
+  -m "- Detail 1" \
+  -m "- Detail 2"
+
+# 3. Push to your branch
+git push origin <your-branch>
+
+# 4. Create PR targeting dev (NEVER main)
+gh pr create --base dev \
+  --title "feat(story-1.1): implement feature" \
+  --body "Description of changes"
+```
