@@ -107,11 +107,7 @@ class FeatureImportanceCalculator:
 
         # Normalize to sum to 1.0
         total = float(np.sum(abs_coef))
-        if total > 0:
-            normalized = abs_coef / total
-        else:
-            # Edge case: all coefficients are 0
-            normalized = np.zeros_like(abs_coef)
+        normalized = abs_coef / total if total > 0 else np.zeros_like(abs_coef)
 
         importance_dict = dict(
             zip(self.feature_names, normalized.tolist(), strict=False)
