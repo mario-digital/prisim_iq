@@ -2,12 +2,12 @@ schema: 1
 story: '4.1'
 story_title: 'Next.js Project Setup & Layout Shell'
 gate: PASS
-status_reason: 'All 7 acceptance criteria met. All identified issues resolved: ARCH-001 (store sync), MNT-001 (dynamic year). DOC-001 N/A - .env.local already exists.'
+status_reason: 'All 7 ACs met. Code quality improvements applied: accessibility, extensibility, hydration safety.'
 reviewer: 'Quinn (Test Architect)'
-updated: '2024-12-02T14:00:00Z'
+updated: '2024-12-02T17:00:00Z'
 
 quality_score: 100
-expires: '2024-12-16T12:00:00Z'
+expires: '2024-12-16T17:00:00Z'
 
 top_issues: []
 
@@ -27,13 +27,13 @@ nfr_validation:
     notes: 'No security concerns - UI foundation only'
   performance:
     status: PASS
-    notes: 'CSS transitions used, proper React patterns'
+    notes: 'CSS transitions, proper React patterns'
   reliability:
     status: PASS
-    notes: 'Error boundary implemented with retry functionality'
+    notes: 'Error boundary with retry functionality'
   maintainability:
     status: PASS
-    notes: 'TabNavigation now syncs with Zustand store'
+    notes: 'Extensible tab navigation, ReactNode title support, proper ARIA'
 
 recommendations:
   immediate: []
@@ -41,9 +41,18 @@ recommendations:
 
 resolved_issues:
   - id: 'ARCH-001'
-    resolution: 'Fixed - TabNavigation now syncs with Zustand store via useEffect'
+    resolution: 'Fixed - TabNavigation syncs with Zustand store via useEffect'
   - id: 'DOC-001'
-    resolution: 'N/A - .env.local already exists in project, no template needed'
+    resolution: 'Fixed - Created .env.local.example'
   - id: 'MNT-001'
-    resolution: 'Fixed - Footer now uses new Date().getFullYear()'
-
+    resolution: 'Fixed - Footer uses new Date().getFullYear()'
+  - id: 'TEST-001'
+    resolution: 'Fixed by QA - Created missing frontend/src/lib/api.ts'
+  - id: 'A11Y-001'
+    resolution: 'Fixed - Added dir="ltr" to html element'
+  - id: 'A11Y-002'
+    resolution: 'Fixed - Added ARIA attributes to loading skeletons'
+  - id: 'EXT-001'
+    resolution: 'Fixed - TabNavigation warns on unmatched routes for extensibility'
+  - id: 'FUTURE-001'
+    resolution: 'Fixed - Panel title now supports ReactNode for i18n'

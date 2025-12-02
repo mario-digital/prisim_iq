@@ -14,8 +14,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-background font-sans antialiased">
+    // suppressHydrationWarning on html: prevents mismatch warnings from browser extensions
+    // that modify the DOM (e.g., dark mode, translation, accessibility tools)
+    <html lang="en" dir="ltr" suppressHydrationWarning>
+      <body className="min-h-screen bg-background font-sans antialiased" suppressHydrationWarning>
         <TabNavigation />
         {children}
       </body>

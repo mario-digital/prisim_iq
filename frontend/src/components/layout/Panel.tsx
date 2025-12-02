@@ -11,7 +11,8 @@ interface PanelProps {
   onToggle: () => void;
   side: 'left' | 'right';
   className?: string;
-  title?: string;
+  /** Panel title - supports string or ReactNode for i18n/icons */
+  title?: ReactNode;
 }
 
 export const Panel: FC<PanelProps> = ({
