@@ -390,3 +390,54 @@ class TestElasticityKeys:
         key = simulator._get_elasticity_key(context)
         assert key == "Suburban_Standard_Economy"
 
+
+class TestConfigValidation:
+    """Tests for configuration validation."""
+
+    def test_positive_elasticity_raises_error(self, simulator: DemandSimulator) -> None:
+        """Test that positive elasticity values raise ValueError."""
+        invalid_config = {
+            "elasticity": {"Urban_Peak_Premium": 0.5},  # Positive = invalid
+            "modifiers": {"time": {}, "loyalty": {}},
+        }
+        with pytest.raises(ValueError, match="must be negative"):
+            simulator._validate_config(invalid_config)
+
+    def test_zero_elasticity_raises_error(self, simulator: DemandSimulator) -> None:
+        """Test that zero elasticity value raises ValueError."""
+        invalid_config = {
+            "elasticity": {"Urban_Peak_Premium": 0.0},  # Zero = invalid
+            "modifiers": {"time": {}, "loyalty": {}},
+        }
+        with pytest.raises(ValueError, match="must be negative"):
+            simulator._validate_config(invalid_config)
+
+    def test_negative_elasticity_passes(self, simulator: DemandSimulator) -> None:
+        """Test that negative elasticity values pass validation."""
+        valid_config = {
+            "elasticity": {"Urban_Peak_Premium": -0.5},
+            "modifiers": {"time": {}, "loyalty": {}},
+        }
+        # Should not raise
+        simulator._validate_config(valid_config)
+
+    def test_invalid_config_keys_still_work(
+        self, simulator: DemandSimulator
+    ) -> None:
+        """Test that invalid keys log warnings but don't crash.
+
+        Note: loguru warnings are logged to stderr but not captured by pytest.
+        This test verifies validation runs without errors, warnings are visible
+        in test output during --capture=no runs.
+        """
+        # These should all log warnings but not raise exceptions
+        configs_with_warnings = [
+            {"elasticity": {"InvalidKey": -0.5}, "modifiers": {"time": {}, "loyalty": {}}},
+            {"elasticity": {"Mars_Peak_Premium": -0.5}, "modifiers": {"time": {}, "loyalty": {}}},
+            {"elasticity": {}, "modifiers": {"time": {"Midnight": 0.5}, "loyalty": {}}},
+            {"elasticity": {}, "modifiers": {"time": {}, "loyalty": {"Diamond": 1.2}}},
+        ]
+        for config in configs_with_warnings:
+            # Should not raise, just log warnings
+            simulator._validate_config(config)
+
