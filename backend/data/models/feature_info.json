@@ -1,0 +1,25 @@
+{
+  "feature_names": [
+    "number_of_riders",
+    "number_of_drivers",
+    "location_category",
+    "customer_loyalty_status",
+    "number_of_past_rides",
+    "average_ratings",
+    "time_of_booking",
+    "vehicle_type",
+    "expected_ride_duration",
+    "historical_cost_of_ride",
+    "supply_demand_ratio",
+    "segment",
+    "price"
+  ],
+  "categorical_columns": [
+    "location_category",
+    "customer_loyalty_status",
+    "time_of_booking",
+    "vehicle_type",
+    "segment"
+  ],
+  "target_column": "demand"
+}
