@@ -9,6 +9,7 @@ from src.ml.preprocessor import (
     get_feature_distributions,
     load_dataset,
 )
+from src.ml.price_optimizer import PriceOptimizer, get_price_optimizer
 from src.ml.segmenter import Segmenter, analyze_optimal_k
 from src.ml.training import ModelTrainer, train_models
 
@@ -26,5 +27,7 @@ __all__ = [
     "train_models",
     "ModelManager",
     "get_model_manager",
+    "PriceOptimizer",
+    "get_price_optimizer",
 ]
 
