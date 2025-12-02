@@ -1,0 +1,61 @@
+# Elasticity Configuration for Demand Simulator
+# ==================================================
+# This file defines price elasticity parameters and demand modifiers
+# used by the behavioral demand simulator for ML training data generation.
+#
+# Elasticity values are negative (law of demand):
+# - More negative = more elastic (higher price sensitivity)
+# - Less negative = less elastic (lower price sensitivity)
+#
+# Key naming: {location}_{period}_{vehicle_type}
+# - Location: Urban, Suburban, Rural
+# - Period: Peak (Evening/Morning), Standard (Afternoon/Night)
+# - Vehicle Type: Premium, Economy
+
+# Price elasticity by segment
+# Premium customers are generally less price-sensitive than Economy
+elasticity:
+  # Urban segments (highest density, most options)
+  Urban_Peak_Premium: -0.7      # Premium users during peak - least elastic
+  Urban_Peak_Economy: -1.0      # Economy users during peak
+  Urban_Standard_Premium: -0.8  # Premium users off-peak
+  Urban_Standard_Economy: -1.2  # Economy users off-peak
+  
+  # Suburban segments (moderate density)
+  Suburban_Peak_Premium: -0.9
+  Suburban_Peak_Economy: -1.1
+  Suburban_Standard_Premium: -1.0
+  Suburban_Standard_Economy: -1.3
+  
+  # Rural segments (low density, fewer alternatives)
+  Rural_Peak_Premium: -1.0
+  Rural_Peak_Economy: -1.2
+  Rural_Standard_Premium: -1.1
+  Rural_Standard_Economy: -1.5  # Most elastic - price sensitive with few options
+
+# Demand modifiers (multiplicative factors applied to base demand)
+modifiers:
+  # Time of day effects on demand
+  # Higher values = higher demand
+  time:
+    Morning: 0.9      # Morning commute - moderate demand
+    Afternoon: 0.85   # Midday lull - lower demand
+    Evening: 1.1      # Peak demand - commute + social
+    Night: 0.7        # Late night - lowest demand
+  
+  # Loyalty tier effects on purchase probability
+  # Higher tiers = more likely to convert (higher loyalty = trust)
+  loyalty:
+    Bronze: 1.0       # Baseline
+    Silver: 1.05      # 5% more likely
+    Gold: 1.1         # 10% more likely
+    Platinum: 1.15    # 15% more likely
+
+# Reference price sensitivity (anchoring effect)
+# How much price deviation from historical cost affects demand
+# Higher value = stronger anchoring effect
+reference_price_sensitivity: 0.3
+
+# Base demand (starting probability before modifiers)
+base_demand: 0.5
+
