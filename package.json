@@ -1,0 +1,21 @@
+{
+  "name": "prismiq",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "./scripts/dev.sh",
+    "dev:backend": "cd backend && source .venv/bin/activate && uvicorn src.main:app --reload",
+    "dev:frontend": "cd frontend && bun run dev",
+    "setup": "./scripts/setup.sh",
+    "test": "bun run test:backend && bun run test:frontend",
+    "test:backend": "cd backend && source .venv/bin/activate && pytest -v",
+    "test:frontend": "cd frontend && bun test",
+    "lint": "bun run lint:frontend",
+    "lint:frontend": "cd frontend && bun run lint"
+  },
+  "workspaces": [
+    "frontend",
+    "packages/*"
+  ]
+}
+
