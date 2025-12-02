@@ -2,7 +2,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Loading() {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div
+      className="min-h-screen flex flex-col bg-background"
+      role="status"
+      aria-busy="true"
+      aria-label="Loading page content"
+    >
       {/* Header skeleton */}
       <div className="h-14 border-b border-border bg-card px-4 flex items-center">
         <Skeleton className="h-8 w-32" />

@@ -35,19 +35,37 @@ const tabs: Tab[] = [
   },
 ];
 
+/**
+ * Determine active tab from pathname.
+ * Uses explicit matching to support extensibility.
+ * Defaults to 'workspace' with dev warning for unmatched routes.
+ */
+function getActiveTabFromPath(pathname: string): ActiveTab {
+  // Find matching tab by checking if pathname starts with tab href
+  const matchedTab = tabs.find((tab) => pathname.startsWith(tab.href));
+
+  if (matchedTab) {
+    return matchedTab.id;
+  }
+
+  // Warn in development if route doesn't match any tab (except root redirect)
+  if (process.env.NODE_ENV === 'development' && pathname !== '/') {
+    console.warn(
+      `[TabNavigation] No tab matches pathname "${pathname}". Defaulting to "workspace". ` +
+        `Add a new tab entry if this route should be highlighted.`
+    );
+  }
+
+  return 'workspace';
+}
+
 export const TabNavigation: FC = () => {
   const pathname = usePathname();
   const setActiveTab = useLayoutStore((state) => state.setActiveTab);
 
-  const getActiveTab = (): ActiveTab => {
-    if (pathname.startsWith('/executive')) return 'executive';
-    if (pathname.startsWith('/evidence')) return 'evidence';
-    return 'workspace';
-  };
+  const activeTab = getActiveTabFromPath(pathname);
 
-  const activeTab = getActiveTab();
-
-  // Sync URL pathname with Zustand store (fixes ARCH-001)
+  // Sync URL pathname with Zustand store
   useEffect(() => {
     setActiveTab(activeTab);
   }, [activeTab, setActiveTab]);
