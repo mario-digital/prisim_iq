@@ -154,8 +154,20 @@ class RulesEngine:
             elif condition.operator == "not_equals":
                 return field_value != condition.value
             elif condition.operator == "in":
+                if not isinstance(condition.value, (list, set, tuple)):
+                    logger.error(
+                        f"Rule '{rule_id}': 'in' operator requires list/set/tuple, "
+                        f"got {type(condition.value).__name__}"
+                    )
+                    return False
                 return field_value in condition.value
             elif condition.operator == "not_in":
+                if not isinstance(condition.value, (list, set, tuple)):
+                    logger.error(
+                        f"Rule '{rule_id}': 'not_in' operator requires list/set/tuple, "
+                        f"got {type(condition.value).__name__}"
+                    )
+                    return False
                 return field_value not in condition.value
 
         return False
@@ -235,6 +247,13 @@ class RulesEngine:
                     f"Available tiers: {list(action.values.keys())}. Defaulting to 0% discount."
                 )
             discount_rate = action.values.get(loyalty_tier, 0.0)
+            # Guard against negative discount rates (which would increase price)
+            if discount_rate < 0:
+                logger.warning(
+                    f"Negative discount rate {discount_rate} for tier '{loyalty_tier}'. "
+                    f"Clamping to 0."
+                )
+                discount_rate = 0.0
             return current_price * (1 - discount_rate)
 
         return current_price
