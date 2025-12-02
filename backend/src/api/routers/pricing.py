@@ -21,12 +21,12 @@ PricingServiceDep = Annotated[PricingService, Depends(get_pricing_service)]
     summary="Optimize price for market context",
     description="""
     Calculate the optimal price recommendation for a given market context.
-    
+
     The endpoint orchestrates:
     1. **Segment Classification**: Assigns the context to a market segment using K-Means clustering
     2. **Price Optimization**: Runs grid search to find profit-maximizing price using ML demand prediction
     3. **Business Rules**: Applies floor, cap, and loyalty discount rules
-    
+
     Returns a complete pricing recommendation with confidence scores, profit metrics,
     segment information, and applied business rules.
     """,
