@@ -1,5 +1,6 @@
 """Machine Learning module for PrismIQ pricing engine."""
 
+from src.ml.demand_simulator import DemandSimulator, simulate_demand
 from src.ml.preprocessor import (
     get_basic_stats,
     get_descriptive_stats,
@@ -17,5 +18,7 @@ __all__ = [
     "get_eda_summary",
     "Segmenter",
     "analyze_optimal_k",
+    "DemandSimulator",
+    "simulate_demand",
 ]
 
