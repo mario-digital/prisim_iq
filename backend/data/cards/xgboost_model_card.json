@@ -1,0 +1,117 @@
+{
+  "model_name": "XGBoost Demand Predictor",
+  "model_version": "1.0.0",
+  "generated_at": "2025-12-02T13:11:04.829591+00:00",
+  "model_details": {
+    "architecture": "XGBoost Gradient Boosting Regressor",
+    "hyperparameters": {
+      "learning_rate": 0.1,
+      "max_depth": 7,
+      "n_estimators": 200
+    },
+    "training_date": "2024-12-01",
+    "framework": "XGBoost 2.1 / scikit-learn 1.5",
+    "input_features": [
+      "number_of_riders",
+      "number_of_drivers",
+      "location_category",
+      "customer_loyalty_status",
+      "number_of_past_rides",
+      "average_ratings",
+      "time_of_booking",
+      "vehicle_type",
+      "expected_ride_duration",
+      "historical_cost_of_ride",
+      "supply_demand_ratio",
+      "segment",
+      "price"
+    ],
+    "output": "Demand probability [0.0, 1.0] representing likelihood of ride acceptance at given price"
+  },
+  "intended_use": {
+    "primary_use": "Predict customer demand probability for dynamic ride pricing optimization",
+    "users": [
+      "Pricing Analysts - reviewing and adjusting pricing strategies",
+      "Data Scientists - model monitoring and improvement",
+      "Product Managers - understanding demand patterns",
+      "Business Stakeholders - revenue optimization decisions"
+    ],
+    "out_of_scope": [
+      "Real-time surge pricing without human oversight",
+      "Individual customer targeting based on personal characteristics",
+      "Price discrimination based on protected attributes",
+      "Extrapolation to markets outside training data geography",
+      "Predictions for vehicle types not in training data"
+    ]
+  },
+  "training_data": {
+    "dataset_name": "PrismIQ Synthetic Training Data",
+    "dataset_size": 8000,
+    "features_used": [
+      "number_of_riders",
+      "number_of_drivers",
+      "location_category",
+      "customer_loyalty_status",
+      "number_of_past_rides",
+      "average_ratings",
+      "time_of_booking",
+      "vehicle_type",
+      "expected_ride_duration",
+      "historical_cost_of_ride",
+      "supply_demand_ratio",
+      "segment",
+      "price"
+    ],
+    "target_variable": "demand",
+    "train_test_split": "80/20 stratified by segment"
+  },
+  "metrics": {
+    "r2_score": 0.9859162922765351,
+    "mae": 0.012951493671802879,
+    "rmse": 0.024960753428571396,
+    "test_set_size": 2000
+  },
+  "ethical_considerations": {
+    "fairness_considerations": [
+      "Model may exhibit different performance across customer segments",
+      "Price sensitivity varies by loyalty status - monitor for discriminatory outcomes",
+      "Geographic location features could encode socioeconomic biases",
+      "Regular fairness audits recommended across protected characteristics"
+    ],
+    "privacy_considerations": [
+      "Model trained on aggregated ride data without PII",
+      "Individual customer IDs not used as features",
+      "Predictions should not be used to identify individual customers"
+    ],
+    "transparency_notes": [
+      "SHAP values available for individual prediction explanations",
+      "Feature importance scores documented in this card",
+      "Decision traces logged for audit purposes",
+      "Model predictions include confidence intervals"
+    ]
+  },
+  "limitations": [
+    "Trained on synthetic demand data generated from elasticity curves",
+    "Performance may degrade for extreme price points outside training range",
+    "Assumes stable market conditions - may not generalize during special events",
+    "Limited to vehicle types present in training data (Economy, Premium)",
+    "Geographic scope limited to Urban, Suburban, and Rural location categories",
+    "Temporal patterns based on time_of_booking buckets, not continuous time"
+  ],
+  "feature_importance": {
+    "number_of_riders": 0.0014977218816056848,
+    "number_of_drivers": 0.009914528578519821,
+    "location_category": 0.07566744089126587,
+    "customer_loyalty_status": 0.009326590225100517,
+    "number_of_past_rides": 0.0024662406649440527,
+    "average_ratings": 0.00347633077763021,
+    "time_of_booking": 0.08860407024621964,
+    "vehicle_type": 0.027558153495192528,
+    "expected_ride_duration": 0.03334159776568413,
+    "historical_cost_of_ride": 0.40566566586494446,
+    "supply_demand_ratio": 0.050996843725442886,
+    "segment": 0.07074416428804398,
+    "price": 0.2207406759262085
+  },
+  "coefficients": null
+}

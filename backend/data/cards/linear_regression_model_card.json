@@ -1,0 +1,104 @@
+{
+  "model_name": "Linear Regression Baseline",
+  "model_version": "1.0.0",
+  "generated_at": "2025-12-02T13:11:04.830333+00:00",
+  "model_details": {
+    "architecture": "Ordinary Least Squares Linear Regression",
+    "hyperparameters": {},
+    "training_date": "2024-12-01",
+    "framework": "scikit-learn 1.5",
+    "input_features": [
+      "number_of_riders",
+      "number_of_drivers",
+      "location_category",
+      "customer_loyalty_status",
+      "number_of_past_rides",
+      "average_ratings",
+      "time_of_booking",
+      "vehicle_type",
+      "expected_ride_duration",
+      "historical_cost_of_ride",
+      "supply_demand_ratio",
+      "segment",
+      "price"
+    ],
+    "output": "Demand probability [0.0, 1.0] - may exceed bounds, clip in production"
+  },
+  "intended_use": {
+    "primary_use": "Baseline model for comparison - NOT recommended for production use",
+    "users": [
+      "Data Scientists - model comparison and benchmarking",
+      "Researchers - understanding linear relationships in data"
+    ],
+    "out_of_scope": [
+      "Production demand prediction (use XGBoost instead)",
+      "Any use case where accuracy is critical",
+      "Real-time pricing decisions"
+    ]
+  },
+  "training_data": {
+    "dataset_name": "PrismIQ Synthetic Training Data",
+    "dataset_size": 8000,
+    "features_used": [
+      "number_of_riders",
+      "number_of_drivers",
+      "location_category",
+      "customer_loyalty_status",
+      "number_of_past_rides",
+      "average_ratings",
+      "time_of_booking",
+      "vehicle_type",
+      "expected_ride_duration",
+      "historical_cost_of_ride",
+      "supply_demand_ratio",
+      "segment",
+      "price"
+    ],
+    "target_variable": "demand",
+    "train_test_split": "80/20 stratified by segment"
+  },
+  "metrics": {
+    "r2_score": 0.5764460300388691,
+    "mae": 0.09878746358370492,
+    "rmse": 0.1368842770879808,
+    "test_set_size": 2000
+  },
+  "ethical_considerations": {
+    "fairness_considerations": [
+      "Linear assumptions may not capture non-linear fairness issues",
+      "Coefficient interpretation enables bias detection"
+    ],
+    "privacy_considerations": [
+      "Same privacy considerations as other models"
+    ],
+    "transparency_notes": [
+      "Fully interpretable through coefficient analysis",
+      "Each coefficient represents direct feature impact on demand",
+      "Intercept represents baseline demand when all features are zero"
+    ]
+  },
+  "limitations": [
+    "Significantly lower accuracy than tree-based models (R\u00b2 0.58 vs 0.99)",
+    "Assumes linear relationships - demand/price relationship is non-linear",
+    "Predictions may exceed [0, 1] bounds - requires clipping",
+    "Cannot capture feature interactions without manual engineering",
+    "Provided as baseline only - not suitable for production"
+  ],
+  "feature_importance": null,
+  "coefficients": {
+    "number_of_riders": 8.245637374686211e-05,
+    "number_of_drivers": -0.00017624830084613438,
+    "location_category": 0.05303093065519058,
+    "customer_loyalty_status": 0.00785572818196746,
+    "number_of_past_rides": 2.973056135942903e-07,
+    "average_ratings": -0.005828509760896543,
+    "time_of_booking": -0.02034060578824671,
+    "vehicle_type": 0.00033070627707339195,
+    "expected_ride_duration": 5.045568630870988e-05,
+    "historical_cost_of_ride": 0.0008158984583144055,
+    "supply_demand_ratio": 0.1735184456953545,
+    "segment": -0.010197286382408414,
+    "price": -0.0006289104219996006,
+    "intercept": 0.2467789602483343
+  }
+}
