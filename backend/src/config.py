@@ -34,6 +34,12 @@ class Settings(BaseSettings):
         """Parse CORS origins string into list."""
         return [origin.strip() for origin in self.cors_origins.split(",")]
 
+    # Price Optimization
+    price_min: float = 5.0
+    price_max: float = 200.0
+    price_step: float = 0.50
+    optimization_cache_size: int = 1000
+
     # OpenAI
     openai_api_key: str = ""
 
