@@ -21,6 +21,7 @@ packaging==25.0
 pandas==2.3.3
 pluggy==1.6.0
 -e file:///Users/mario/Projects/AZNext_AI_Builder_Projects/prisim_iq/backend
+pyarrow==22.0.0
 pydantic==2.10.3
 pydantic-core==2.27.1
 pydantic-settings==2.6.1
