@@ -172,6 +172,31 @@ class TestFairnessConstraints:
         rural_rules = [r for r in result.applied_rules if r.rule_id == "surge_cap_rural"]
         assert len(rural_rules) == 1
 
+    def test_economy_vehicle_cap_in_urban(self, rules_engine: RulesEngine) -> None:
+        """Economy vehicles in Urban areas have 2.5x surge cap."""
+        context = MarketContext(
+            number_of_riders=50,
+            number_of_drivers=25,
+            location_category="Urban",  # Urban, not Rural
+            customer_loyalty_status="Bronze",  # No discount
+            number_of_past_rides=10,
+            average_ratings=4.2,
+            time_of_booking="Evening",
+            vehicle_type="Economy",  # Economy vehicle
+            expected_ride_duration=30,
+            historical_cost_of_ride=100.0,
+        )
+
+        # Try price above economy cap (2.5x = 250) but below general cap (3.0x = 300)
+        result = rules_engine.apply(context, optimal_price=280.0)
+
+        # Should be capped to 2.5x = 250.0 (no loyalty discount for Bronze)
+        assert result.final_price == 250.0
+
+        # Economy cap rule should be in applied rules
+        economy_rules = [r for r in result.applied_rules if r.rule_id == "surge_cap_economy"]
+        assert len(economy_rules) == 1
+
 
 class TestLoyaltyDiscounts:
     """Tests for loyalty tier discounts."""
