@@ -53,6 +53,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev,ml]"
 
+      - name: Generate training data and train models
+        run: |
+          echo "Generating training data..."
+          python scripts/generate_training_data.py --seed 42
+          echo "Training ML models..."
+          python -c "
+          from src.ml.training import ModelTrainer
+          trainer = ModelTrainer()
+          trainer.load_data()
+          trainer.train_all()
+          trainer.save_all()
+          print('Models trained successfully!')
+          "
+
       - name: Run linter
         run: |
           pip install ruff
