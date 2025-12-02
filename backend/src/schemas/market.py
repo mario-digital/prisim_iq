@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 
 class MarketContext(BaseModel):
@@ -12,61 +12,77 @@ class MarketContext(BaseModel):
     and segment classification based on the dynamic_pricing dataset.
     """
 
-    # Core segmentation features
-    supply_demand_ratio: float = Field(
+    number_of_riders: int = Field(
         ...,
-        ge=0,
-        description="Ratio of drivers to riders (Number_of_Drivers / Number_of_Riders)",
+        ge=1,
+        le=100,
+        description="Demand indicator - number of riders requesting rides",
     )
-    time_of_booking: Literal["Morning", "Afternoon", "Evening", "Night"] = Field(
+    number_of_drivers: int = Field(
         ...,
-        description="Time period of the booking",
+        ge=1,
+        le=100,
+        description="Supply indicator - number of available drivers",
     )
     location_category: Literal["Urban", "Suburban", "Rural"] = Field(
         ...,
         description="Geographic location category",
     )
-    vehicle_type: Literal["Economy", "Premium"] = Field(
+    customer_loyalty_status: Literal["Bronze", "Silver", "Gold", "Platinum"] = Field(
         ...,
-        description="Type of vehicle",
-    )
-
-    # Additional context (optional, for future use)
-    number_of_riders: int | None = Field(
-        default=None,
-        ge=0,
-        description="Number of riders requesting rides",
-    )
-    number_of_drivers: int | None = Field(
-        default=None,
-        ge=0,
-        description="Number of available drivers",
-    )
-    customer_loyalty_status: Literal["Silver", "Gold", "Regular"] | None = Field(
-        default=None,
         description="Customer loyalty tier",
     )
-    number_of_past_rides: int | None = Field(
-        default=None,
+    number_of_past_rides: int = Field(
+        ...,
         ge=0,
         description="Customer's historical ride count",
     )
-    average_ratings: float | None = Field(
-        default=None,
-        ge=0,
-        le=5,
-        description="Average customer rating",
+    average_ratings: float = Field(
+        ...,
+        ge=1.0,
+        le=5.0,
+        description="Average customer rating (1.0-5.0)",
     )
-    expected_ride_duration: float | None = Field(
-        default=None,
-        ge=0,
-        description="Expected duration in minutes",
+    time_of_booking: Literal["Morning", "Afternoon", "Evening", "Night"] = Field(
+        ...,
+        description="Time period of the booking",
     )
-    historical_cost_of_ride: float | None = Field(
-        default=None,
+    vehicle_type: Literal["Economy", "Premium"] = Field(
+        ...,
+        description="Type of vehicle requested",
+    )
+    expected_ride_duration: int = Field(
+        ...,
+        ge=1,
+        description="Expected ride duration in minutes",
+    )
+    historical_cost_of_ride: float = Field(
+        ...,
         ge=0,
-        description="Historical average ride cost",
+        description="Baseline/historical price for this route",
     )
 
-    model_config = {"extra": "forbid"}
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def supply_demand_ratio(self) -> float:
+        """Compute supply/demand ratio for segmentation."""
+        return self.number_of_drivers / self.number_of_riders
+
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra={
+            "example": {
+                "number_of_riders": 50,
+                "number_of_drivers": 25,
+                "location_category": "Urban",
+                "customer_loyalty_status": "Gold",
+                "number_of_past_rides": 20,
+                "average_ratings": 4.5,
+                "time_of_booking": "Evening",
+                "vehicle_type": "Premium",
+                "expected_ride_duration": 30,
+                "historical_cost_of_ride": 35.0,
+            }
+        },
+    )
 
