@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Check for problematic patterns in lock files
+  lint-lock-files:
+    name: Lint Lock Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for absolute paths in requirements.lock
+        run: |
+          echo "Checking for absolute paths in backend/requirements.lock..."
+          if grep -E "^-e file:///" backend/requirements.lock; then
+            echo "❌ ERROR: Found absolute path in requirements.lock!"
+            echo "This will break installs for other team members."
+            echo "Replace with: -e ."
+            exit 1
+          fi
+          echo "✅ No absolute paths found"
+
+      - name: Check for machine-specific paths
+        run: |
+          echo "Checking for machine-specific paths..."
+          if grep -rE "/Users/|/home/[^/]+/" backend/requirements.lock 2>/dev/null; then
+            echo "❌ ERROR: Found machine-specific path in lock file!"
+            exit 1
+          fi
+          echo "✅ No machine-specific paths found"
+
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,ml]"
+
+      - name: Run linter
+        run: |
+          pip install ruff
+          ruff check src tests
+
+      - name: Run tests
+        run: pytest -v
+
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        run: bun test
+
+      - name: Build check
+        run: bun run build
+
