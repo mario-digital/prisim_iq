@@ -1,5 +1,6 @@
 """Rules engine for applying business rules to optimized prices."""
 
+import re
 from pathlib import Path
 from typing import Any, Literal
 
@@ -8,6 +9,9 @@ from loguru import logger
 from pydantic import BaseModel, Field
 
 from src.schemas.market import MarketContext
+
+# Strict pattern for cost expressions: "cost * <positive_number>"
+COST_EXPRESSION_PATTERN = re.compile(r"^cost\s*\*\s*(\d+(?:\.\d+)?)$")
 
 
 class AppliedRule(BaseModel):
@@ -142,7 +146,7 @@ class RulesEngine:
         return False
 
     def _calculate_value(self, expression: str, cost: float) -> float:
-        """Evaluate a price expression.
+        """Evaluate a price expression with strict validation.
 
         Args:
             expression: Expression like 'cost * 1.10' or 'cost * 3.0'.
@@ -150,22 +154,37 @@ class RulesEngine:
 
         Returns:
             Calculated price value.
-        """
-        # Simple expression parser for cost-based calculations
-        # Supports: "cost * multiplier" format
-        expression = expression.strip()
-        if expression.startswith("cost"):
-            parts = expression.split("*")
-            if len(parts) == 2:
-                multiplier = float(parts[1].strip())
-                return cost * multiplier
 
-        # Try direct float conversion as fallback
+        Raises:
+            ValueError: If expression format is invalid.
+        """
+        expression = expression.strip()
+
+        # Try strict "cost * multiplier" pattern first
+        match = COST_EXPRESSION_PATTERN.match(expression)
+        if match:
+            multiplier = float(match.group(1))
+            if multiplier <= 0:
+                logger.error(f"Invalid multiplier (must be positive): {expression}")
+                raise ValueError(f"Invalid multiplier in expression: {expression}")
+            return cost * multiplier
+
+        # Try direct float conversion as fallback (for literal values)
         try:
-            return float(expression)
+            value = float(expression)
+            if value < 0:
+                logger.error(f"Negative value not allowed: {expression}")
+                raise ValueError(f"Negative value in expression: {expression}")
+            return value
         except ValueError:
-            logger.error(f"Cannot parse expression: {expression}")
-            return cost
+            logger.error(
+                f"Invalid expression format: '{expression}'. "
+                f"Expected 'cost * <number>' or a literal number."
+            )
+            raise ValueError(
+                f"Cannot parse expression: '{expression}'. "
+                f"Supported formats: 'cost * <number>' or literal number."
+            )
 
     def _apply_action(
         self,
@@ -195,6 +214,11 @@ class RulesEngine:
 
         elif action.type == "discount" and action.values:
             loyalty_tier = context.customer_loyalty_status
+            if loyalty_tier not in action.values:
+                logger.warning(
+                    f"Loyalty tier '{loyalty_tier}' not found in discount config. "
+                    f"Available tiers: {list(action.values.keys())}. Defaulting to 0% discount."
+                )
             discount_rate = action.values.get(loyalty_tier, 0.0)
             return current_price * (1 - discount_rate)
 

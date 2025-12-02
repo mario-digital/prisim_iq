@@ -353,3 +353,155 @@ class TestEdgeCases:
         ]
         assert len(cap_rules) == 0
 
+
+class TestExpressionValidation:
+    """Tests for expression parsing and validation."""
+
+    def test_invalid_expression_raises_error(self, tmp_path: Path) -> None:
+        """Invalid expression format raises ValueError."""
+        config = {
+            "rules": [
+                {
+                    "id": "bad_rule",
+                    "name": "Bad Rule",
+                    "priority": 1,
+                    "condition": {"type": "always"},
+                    "action": {"type": "floor", "value": "foobar"},
+                }
+            ]
+        }
+        config_file = tmp_path / "bad_config.yaml"
+        config_file.write_text(yaml.dump(config))
+
+        engine = RulesEngine(config_path=config_file)
+        context = MarketContext(
+            number_of_riders=50,
+            number_of_drivers=25,
+            location_category="Urban",
+            customer_loyalty_status="Gold",
+            number_of_past_rides=20,
+            average_ratings=4.5,
+            time_of_booking="Evening",
+            vehicle_type="Premium",
+            expected_ride_duration=30,
+            historical_cost_of_ride=100.0,
+        )
+
+        with pytest.raises(ValueError, match="Cannot parse expression"):
+            engine.apply(context, optimal_price=50.0)
+
+    def test_malformed_cost_expression_raises_error(self, tmp_path: Path) -> None:
+        """Malformed cost expression raises ValueError."""
+        config = {
+            "rules": [
+                {
+                    "id": "bad_rule",
+                    "name": "Bad Rule",
+                    "priority": 1,
+                    "condition": {"type": "always"},
+                    "action": {"type": "floor", "value": "cost * foo"},
+                }
+            ]
+        }
+        config_file = tmp_path / "bad_config.yaml"
+        config_file.write_text(yaml.dump(config))
+
+        engine = RulesEngine(config_path=config_file)
+        context = MarketContext(
+            number_of_riders=50,
+            number_of_drivers=25,
+            location_category="Urban",
+            customer_loyalty_status="Gold",
+            number_of_past_rides=20,
+            average_ratings=4.5,
+            time_of_booking="Evening",
+            vehicle_type="Premium",
+            expected_ride_duration=30,
+            historical_cost_of_ride=100.0,
+        )
+
+        with pytest.raises(ValueError, match="Cannot parse expression"):
+            engine.apply(context, optimal_price=50.0)
+
+    def test_valid_literal_number_expression(self, tmp_path: Path) -> None:
+        """Literal number expression is accepted."""
+        config = {
+            "rules": [
+                {
+                    "id": "literal_floor",
+                    "name": "Literal Floor",
+                    "priority": 1,
+                    "condition": {"type": "always"},
+                    "action": {"type": "floor", "value": "50.0"},
+                }
+            ]
+        }
+        config_file = tmp_path / "literal_config.yaml"
+        config_file.write_text(yaml.dump(config))
+
+        engine = RulesEngine(config_path=config_file)
+        context = MarketContext(
+            number_of_riders=50,
+            number_of_drivers=25,
+            location_category="Urban",
+            customer_loyalty_status="Gold",
+            number_of_past_rides=20,
+            average_ratings=4.5,
+            time_of_booking="Evening",
+            vehicle_type="Premium",
+            expected_ride_duration=30,
+            historical_cost_of_ride=100.0,
+        )
+
+        result = engine.apply(context, optimal_price=30.0)
+        # Floor should raise price to 50.0
+        assert result.final_price == 50.0
+
+
+class TestLoyaltyTierWarning:
+    """Tests for loyalty tier configuration warnings."""
+
+    def test_unknown_loyalty_tier_defaults_to_zero_discount(
+        self, tmp_path: Path
+    ) -> None:
+        """Unknown loyalty tier defaults to 0% discount without failing."""
+        config = {
+            "rules": [
+                {
+                    "id": "loyalty_discount",
+                    "name": "Loyalty Discount",
+                    "priority": 1,
+                    "condition": {"type": "always"},
+                    "action": {
+                        "type": "discount",
+                        "values": {"Silver": 0.05, "Gold": 0.10},  # Missing Bronze, Platinum
+                    },
+                }
+            ]
+        }
+        config_file = tmp_path / "partial_loyalty_config.yaml"
+        config_file.write_text(yaml.dump(config))
+
+        engine = RulesEngine(config_path=config_file)
+        context = MarketContext(
+            number_of_riders=50,
+            number_of_drivers=25,
+            location_category="Urban",
+            customer_loyalty_status="Platinum",  # Not in config
+            number_of_past_rides=100,
+            average_ratings=4.8,
+            time_of_booking="Evening",
+            vehicle_type="Premium",
+            expected_ride_duration=30,
+            historical_cost_of_ride=100.0,
+        )
+
+        result = engine.apply(context, optimal_price=100.0)
+
+        # Should still work, defaulting to 0% discount (no change to price)
+        assert result.final_price == 100.0
+
+        # No discount rule should be in applied_rules since 0% discount means no change
+        loyalty_rules = [r for r in result.applied_rules if r.rule_id == "loyalty_discount"]
+        assert len(loyalty_rules) == 0  # 0% discount = no price change = not recorded
+
