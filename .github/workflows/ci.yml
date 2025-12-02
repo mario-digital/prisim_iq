@@ -73,7 +73,8 @@ jobs:
           trainer = ModelTrainer()
           trainer.load_data()
           trainer.train_all()
-          trainer.save_all()
+          trainer.save_models()
+          trainer.save_metrics()
           print('Models trained successfully!')
           "
 
