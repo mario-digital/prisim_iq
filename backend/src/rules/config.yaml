@@ -1,0 +1,95 @@
+# Business Rules Configuration
+# Rules are applied in priority order (lower number = runs first)
+# 
+# Condition types:
+#   - always: Rule always applies
+#   - field_match: Checks a MarketContext field against a value
+#
+# Action types:
+#   - floor: Price cannot go below this value
+#   - cap: Price cannot exceed this value
+#   - discount: Apply percentage discount based on lookup
+
+rules:
+  # ============================================
+  # PRICE FLOORS (Priority 1-9)
+  # Ensure minimum margin above cost
+  # ============================================
+  
+  - id: price_floor
+    name: "Minimum Price Floor"
+    priority: 1
+    condition:
+      type: always
+    action:
+      type: floor
+      value: "cost * 1.10"  # 10% minimum margin
+
+  # ============================================
+  # GENERAL CAPS (Priority 10-19)
+  # Maximum surge multipliers
+  # ============================================
+  
+  - id: surge_cap_general
+    name: "General Surge Cap"
+    priority: 10
+    condition:
+      type: always
+    action:
+      type: cap
+      value: "cost * 3.0"  # Max 3x surge for all
+
+  # ============================================
+  # SEGMENT-SPECIFIC CAPS (Priority 20-29)
+  # Fairness constraints for vulnerable segments
+  # ============================================
+  
+  - id: surge_cap_rural
+    name: "Rural Fairness Cap"
+    priority: 20
+    condition:
+      type: field_match
+      field: location_category
+      operator: equals
+      value: "Rural"
+    action:
+      type: cap
+      value: "cost * 1.5"  # Max 1.5x for rural areas
+
+  # ============================================
+  # VEHICLE-SPECIFIC CAPS (Priority 30-39)
+  # Segment by vehicle type
+  # ============================================
+  
+  - id: surge_cap_economy
+    name: "Economy Vehicle Cap"
+    priority: 30
+    condition:
+      type: field_match
+      field: vehicle_type
+      operator: equals
+      value: "Economy"
+    action:
+      type: cap
+      value: "cost * 2.5"  # Economy vehicles: max 2.5x
+
+  # Premium vehicles can use full 3.0x cap (no additional rule needed)
+
+  # ============================================
+  # LOYALTY DISCOUNTS (Priority 100+)
+  # Always apply last, after all caps
+  # ============================================
+  
+  - id: loyalty_discount
+    name: "Loyalty Tier Discount"
+    priority: 100
+    condition:
+      type: always
+    action:
+      type: discount
+      values:
+        Bronze: 0.0
+        Silver: 0.05
+        Gold: 0.10
+        Platinum: 0.15
+
