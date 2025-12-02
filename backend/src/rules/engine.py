@@ -114,14 +114,18 @@ class RulesEngine:
         rules.sort(key=lambda r: r.priority)
         return rules
 
+    # Valid fields that can be used in rule conditions
+    VALID_CONTEXT_FIELDS = frozenset(MarketContext.model_fields.keys())
+
     def _evaluate_condition(
-        self, condition: RuleCondition, context: MarketContext
+        self, condition: RuleCondition, context: MarketContext, rule_id: str = ""
     ) -> bool:
         """Check if a rule condition is satisfied.
 
         Args:
             condition: The condition to evaluate.
             context: Market context with field values.
+            rule_id: Rule identifier for logging purposes.
 
         Returns:
             True if condition is met, False otherwise.
@@ -130,8 +134,19 @@ class RulesEngine:
             return True
 
         if condition.type == "field_match" and condition.field:
+            # Validate field exists on MarketContext
+            if condition.field not in self.VALID_CONTEXT_FIELDS:
+                logger.error(
+                    f"Rule '{rule_id}': Invalid field '{condition.field}' in condition. "
+                    f"Valid fields: {sorted(self.VALID_CONTEXT_FIELDS)}"
+                )
+                return False
+
             field_value = getattr(context, condition.field, None)
             if field_value is None:
+                logger.warning(
+                    f"Rule '{rule_id}': Field '{condition.field}' is None in context"
+                )
                 return False
 
             if condition.operator == "equals":
@@ -240,7 +255,7 @@ class RulesEngine:
         applied_rules: list[AppliedRule] = []
 
         for rule in self.rules:
-            if not self._evaluate_condition(rule.condition, context):
+            if not self._evaluate_condition(rule.condition, context, rule.id):
                 continue
 
             price_before = current_price

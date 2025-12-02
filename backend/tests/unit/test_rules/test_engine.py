@@ -458,6 +458,52 @@ class TestExpressionValidation:
         assert result.final_price == 50.0
 
 
+class TestConditionFieldValidation:
+    """Tests for condition field validation."""
+
+    def test_invalid_field_name_logs_error_and_skips_rule(
+        self, tmp_path: Path
+    ) -> None:
+        """Rule with invalid field name is skipped and logs error."""
+        config = {
+            "rules": [
+                {
+                    "id": "bad_field_rule",
+                    "name": "Bad Field Rule",
+                    "priority": 1,
+                    "condition": {
+                        "type": "field_match",
+                        "field": "nonexistent_field",  # Invalid field
+                        "operator": "equals",
+                        "value": "test",
+                    },
+                    "action": {"type": "cap", "value": "cost * 0.5"},
+                }
+            ]
+        }
+        config_file = tmp_path / "bad_field_config.yaml"
+        config_file.write_text(yaml.dump(config))
+
+        engine = RulesEngine(config_path=config_file)
+        context = MarketContext(
+            number_of_riders=50,
+            number_of_drivers=25,
+            location_category="Urban",
+            customer_loyalty_status="Gold",
+            number_of_past_rides=20,
+            average_ratings=4.5,
+            time_of_booking="Evening",
+            vehicle_type="Premium",
+            expected_ride_duration=30,
+            historical_cost_of_ride=100.0,
+        )
+
+        # Rule should be skipped (condition returns False), price unchanged
+        result = engine.apply(context, optimal_price=200.0)
+        assert result.final_price == 200.0
+        assert len(result.applied_rules) == 0
+
+
 class TestLoyaltyTierWarning:
     """Tests for loyalty tier configuration warnings."""
 
