@@ -15,7 +15,6 @@ from loguru import logger
 from src.explainability.decision_trace import (
     DecisionTrace,
     DecisionTracer,
-    format_trace_text,
 )
 from src.ml.model_manager import ModelManager, get_model_manager
 from src.ml.price_optimizer import PriceOptimizer, get_price_optimizer
