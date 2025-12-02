@@ -1,0 +1,148 @@
+{
+  "row_count": 1000,
+  "column_count": 11,
+  "columns": {
+    "Number_of_Riders": {
+      "dtype": "int64",
+      "missing_count": 0,
+      "unique_count": 81
+    },
+    "Number_of_Drivers": {
+      "dtype": "int64",
+      "missing_count": 0,
+      "unique_count": 79
+    },
+    "Location_Category": {
+      "dtype": "object",
+      "missing_count": 0,
+      "unique_count": 3
+    },
+    "Customer_Loyalty_Status": {
+      "dtype": "object",
+      "missing_count": 0,
+      "unique_count": 3
+    },
+    "Number_of_Past_Rides": {
+      "dtype": "int64",
+      "missing_count": 0,
+      "unique_count": 101
+    },
+    "Average_Ratings": {
+      "dtype": "float64",
+      "missing_count": 0,
+      "unique_count": 151
+    },
+    "Time_of_Booking": {
+      "dtype": "object",
+      "missing_count": 0,
+      "unique_count": 4
+    },
+    "Vehicle_Type": {
+      "dtype": "object",
+      "missing_count": 0,
+      "unique_count": 2
+    },
+    "Expected_Ride_Duration": {
+      "dtype": "int64",
+      "missing_count": 0,
+      "unique_count": 171
+    },
+    "Historical_Cost_of_Ride": {
+      "dtype": "float64",
+      "missing_count": 0,
+      "unique_count": 1000
+    },
+    "supply_demand_ratio": {
+      "dtype": "float64",
+      "missing_count": 0,
+      "unique_count": 685
+    }
+  },
+  "numeric_stats": {
+    "Number_of_Riders": {
+      "mean": 60.372,
+      "std": 23.701505804006995,
+      "min": 20.0,
+      "max": 100.0,
+      "median": 60.0,
+      "q25": 40.0,
+      "q75": 81.0
+    },
+    "Number_of_Drivers": {
+      "mean": 27.076,
+      "std": 19.068346174375634,
+      "min": 5.0,
+      "max": 89.0,
+      "median": 22.0,
+      "q25": 11.0,
+      "q75": 38.0
+    },
+    "Number_of_Past_Rides": {
+      "mean": 50.031,
+      "std": 29.313773833069266,
+      "min": 0.0,
+      "max": 100.0,
+      "median": 51.0,
+      "q25": 25.0,
+      "q75": 75.0
+    },
+    "Average_Ratings": {
+      "mean": 4.25722,
+      "std": 0.4357808813802833,
+      "min": 3.5,
+      "max": 5.0,
+      "median": 4.27,
+      "q25": 3.87,
+      "q75": 4.6325
+    },
+    "Expected_Ride_Duration": {
+      "mean": 99.588,
+      "std": 49.165450241989014,
+      "min": 10.0,
+      "max": 180.0,
+      "median": 102.0,
+      "q25": 59.75,
+      "q75": 143.0
+    },
+    "Historical_Cost_of_Ride": {
+      "mean": 372.5026233496332,
+      "std": 187.1587562201799,
+      "min": 25.993449448411635,
+      "max": 836.1164185613576,
+      "median": 362.01942584564324,
+      "q25": 221.36520242432184,
+      "q75": 510.49750412655465
+    },
+    "supply_demand_ratio": {
+      "mean": 0.43816175626549936,
+      "std": 0.21164997385438575,
+      "min": 0.056818181818181816,
+      "max": 0.898989898989899,
+      "median": 0.42424242424242425,
+      "q25": 0.2631578947368421,
+      "q75": 0.6028488955823293
+    }
+  },
+  "categorical_distributions": {
+    "Location_Category": {
+      "Urban": 346,
+      "Rural": 332,
+      "Suburban": 322
+    },
+    "Customer_Loyalty_Status": {
+      "Silver": 367,
+      "Regular": 320,
+      "Gold": 313
+    },
+    "Time_of_Booking": {
+      "Night": 276,
+      "Afternoon": 247,
+      "Morning": 246,
+      "Evening": 231
+    },
+    "Vehicle_Type": {
+      "Premium": 522,
+      "Economy": 478
+    }
+  }
+}
