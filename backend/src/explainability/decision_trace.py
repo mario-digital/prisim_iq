@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import time
 import uuid
+from collections.abc import Callable
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
-from collections.abc import Callable
 from typing import Any, Literal, TypeVar
 
 from loguru import logger
