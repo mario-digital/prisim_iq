@@ -10,6 +10,9 @@ mock.module('next/navigation', () => ({
   redirect: () => {},
 }));
 
+const layoutStoreModule = '../../../src/stores/layoutStore';
+const apiModule = '../../../src/lib/api';
+
 describe('Layout Store', () => {
   beforeEach(() => {
     // Clear localStorage before each test
@@ -19,7 +22,7 @@ describe('Layout Store', () => {
   });
 
   it('should have initial state with panels expanded', async () => {
-    const { useLayoutStore } = await import('@/stores/layoutStore');
+    const { useLayoutStore } = await import(layoutStoreModule);
     const state = useLayoutStore.getState();
     
     expect(state.leftPanelCollapsed).toBe(false);
@@ -28,7 +31,7 @@ describe('Layout Store', () => {
   });
 
   it('should toggle left panel', async () => {
-    const { useLayoutStore } = await import('@/stores/layoutStore');
+    const { useLayoutStore } = await import(layoutStoreModule);
     const store = useLayoutStore.getState();
     
     expect(store.leftPanelCollapsed).toBe(false);
@@ -39,7 +42,7 @@ describe('Layout Store', () => {
   });
 
   it('should toggle right panel', async () => {
-    const { useLayoutStore } = await import('@/stores/layoutStore');
+    const { useLayoutStore } = await import(layoutStoreModule);
     const store = useLayoutStore.getState();
     
     expect(store.rightPanelCollapsed).toBe(false);
@@ -50,7 +53,7 @@ describe('Layout Store', () => {
   });
 
   it('should set active tab', async () => {
-    const { useLayoutStore } = await import('@/stores/layoutStore');
+    const { useLayoutStore } = await import(layoutStoreModule);
     const store = useLayoutStore.getState();
     
     store.setActiveTab('executive');
@@ -89,7 +92,7 @@ describe('Tab Navigation', () => {
 
 describe('API Configuration', () => {
   it('should export API configuration', async () => {
-    const { apiConfig, apiUrl } = await import('@/lib/api');
+    const { apiConfig, apiUrl } = await import(apiModule);
     
     expect(apiConfig).toBeDefined();
     expect(apiConfig.baseUrl).toBeDefined();
@@ -98,7 +101,7 @@ describe('API Configuration', () => {
   });
 
   it('should build correct API URLs', async () => {
-    const { apiUrl, API_BASE_URL } = await import('@/lib/api');
+    const { apiUrl, API_BASE_URL } = await import(apiModule);
     
     expect(apiUrl('/health')).toBe(`${API_BASE_URL}/health`);
     expect(apiUrl('health')).toBe(`${API_BASE_URL}/health`);
