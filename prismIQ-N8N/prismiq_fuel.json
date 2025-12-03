@@ -1,0 +1,97 @@
+{
+  "name": "PrismIQ Fuel Prices",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule-fuel",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.eia.gov/v2/petroleum/pri/gnd/data/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "api_key", "value": "YOUR_EIA_API_KEY_HERE" },
+            { "name": "frequency", "value": "weekly" },
+            { "name": "data[0]", "value": "value" },
+            { "name": "facets[product][]", "value": "EPM0" },
+            { "name": "facets[duoarea][]", "value": "R40" },
+            { "name": "sort[0][column]", "value": "period" },
+            { "name": "sort[0][direction]", "value": "desc" },
+            { "name": "length", "value": "2" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-fuel",
+      "name": "Get Fuel Prices (EIA)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Transform EIA fuel data to PrismIQ format\nconst response = $input.first().json;\nconst data = response.response?.data || [];\n\nif (data.length === 0) {\n  // Fallback if no data\n  return [{\n    json: {\n      price_per_gallon: 3.50,\n      change_percent: 0,\n      region: \"Rocky Mountain (AZ)\",\n      source: \"eia-gov-fallback\"\n    }\n  }];\n}\n\n// Get current and previous week prices\nconst currentPrice = parseFloat(data[0].value);\nconst previousPrice = data[1] ? parseFloat(data[1].value) : currentPrice;\n\n// Calculate percent change\nconst changePercent = ((currentPrice - previousPrice) / previousPrice) * 100;\n\nreturn [{\n  json: {\n    price_per_gallon: Math.round(currentPrice * 100) / 100,\n    change_percent: Math.round(changePercent * 10) / 10,\n    region: \"Rocky Mountain (AZ)\",\n    source: \"eia-gov\"\n  }\n}];"
+      },
+      "id": "transform-fuel",
+      "name": "Transform",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/api/v1/external/webhook/fuel",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "send-fuel",
+      "name": "Send to PrismIQ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [{ "node": "Get Fuel Prices (EIA)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Get Fuel Prices (EIA)": {
+      "main": [
+        [{ "node": "Transform", "type": "main", "index": 0 }]
+      ]
+    },
+    "Transform": {
+      "main": [
+        [{ "node": "Send to PrismIQ", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0
+}
+

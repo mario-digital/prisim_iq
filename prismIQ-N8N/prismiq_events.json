@@ -1,0 +1,94 @@
+{
+  "name": "PrismIQ Events",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule-events",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://app.ticketmaster.com/discovery/v2/events.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "YOUR_TICKETMASTER_API_KEY_HERE" },
+            { "name": "city", "value": "Phoenix" },
+            { "name": "stateCode", "value": "AZ" },
+            { "name": "size", "value": "10" },
+            { "name": "sort", "value": "date,asc" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-events",
+      "name": "Get Events (Ticketmaster)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Transform Ticketmaster events to PrismIQ format\nconst response = $input.first().json;\nconst rawEvents = response._embedded?.events || [];\n\n// Map Ticketmaster data to PrismIQ format\nconst events = rawEvents.map(event => {\n  // Determine event type from classification\n  const segment = event.classifications?.[0]?.segment?.name?.toLowerCase() || \"\";\n  let type = \"other\";\n  \n  if (segment.includes(\"music\")) {\n    type = \"concert\";\n  } else if (segment.includes(\"sports\")) {\n    type = \"sports\";\n  } else if (segment.includes(\"arts\") || segment.includes(\"theatre\")) {\n    type = \"concert\"; // Treat arts/theatre like concerts\n  }\n  \n  return {\n    name: event.name,\n    type: type,\n    venue: event._embedded?.venues?.[0]?.name || \"Unknown Venue\",\n    start_time: event.dates?.start?.dateTime || new Date().toISOString(),\n    radius_miles: 5.0\n  };\n});\n\n// Filter to only events happening in next 24 hours\nconst now = new Date();\nconst tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);\n\nconst upcomingEvents = events.filter(e => {\n  const eventTime = new Date(e.start_time);\n  return eventTime >= now && eventTime <= tomorrow;\n});\n\nreturn [{\n  json: {\n    events: upcomingEvents\n  }\n}];"
+      },
+      "id": "transform-events",
+      "name": "Transform",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/api/v1/external/webhook/events",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "send-events",
+      "name": "Send to PrismIQ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [{ "node": "Get Events (Ticketmaster)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Get Events (Ticketmaster)": {
+      "main": [
+        [{ "node": "Transform", "type": "main", "index": 0 }]
+      ]
+    },
+    "Transform": {
+      "main": [
+        [{ "node": "Send to PrismIQ", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0
+}
+
