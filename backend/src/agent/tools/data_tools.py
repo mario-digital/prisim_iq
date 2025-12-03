@@ -8,6 +8,8 @@ from __future__ import annotations
 from langchain_core.tools import Tool
 from loguru import logger
 
+from src.agent.utils import sanitize_error_message
+
 
 def _format_segment_description(segment_name: str) -> str:
     """Format a segment name into a human-readable description.
@@ -93,7 +95,7 @@ def create_get_segment_tool() -> Tool:
             return "Error: Segmentation model not available. Please train the model first."
         except Exception as e:
             logger.error(f"get_segment tool error: {e}")
-            return f"Error classifying segment: {str(e)}"
+            return f"Error classifying segment: {sanitize_error_message(e)}"
 
     return Tool(
         name="get_segment",
@@ -162,7 +164,7 @@ def create_get_eda_summary_tool() -> Tool:
             return "Error: Dataset not found. Please ensure the data file exists."
         except Exception as e:
             logger.error(f"get_eda_summary tool error: {e}")
-            return f"Error loading dataset summary: {str(e)}"
+            return f"Error loading dataset summary: {sanitize_error_message(e)}"
 
     return Tool(
         name="get_eda_summary",
