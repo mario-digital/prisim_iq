@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { TabNavigation } from '@/components/layout';
+import { ToastContainer } from '@/components/ui/toast';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-background font-sans antialiased" suppressHydrationWarning>
         <TabNavigation />
         {children}
+        <ToastContainer />
       </body>
     </html>
   );
