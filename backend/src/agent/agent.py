@@ -8,6 +8,19 @@ Note on Memory Management:
     memory. This means all users/sessions share the same memory. For multi-user
     deployments, consider implementing per-session memory using the session_id
     field in ChatRequest, backed by Redis or similar for horizontal scaling.
+
+TODO (Multi-Session Memory):
+    - Implement session_id -> ConversationBufferMemory mapping
+    - Add memory expiration/cleanup for inactive sessions
+    - Consider Redis-backed memory for horizontal scaling
+    - Add session isolation tests
+
+Note on Error Strategy:
+    This module uses an encapsulation strategy for errors: all errors are
+    returned as part of the response body with HTTP 200 OK, rather than
+    raising HTTP error codes. This allows the client to always receive a
+    structured response. The 'error' field indicates failure when present.
+    For stricter API contracts, consider raising HTTPException on agent failures.
 """
 
 from __future__ import annotations
@@ -111,6 +124,12 @@ class PrismIQAgent:
 
         Returns:
             Dictionary with response message, tools used, and metadata.
+            Note: Timestamp is set by ChatResponse schema's default_factory
+            to ensure consistency. Processing time is calculated here.
+
+        Note:
+            Errors are encapsulated in the response (HTTP 200 with error field)
+            rather than raising HTTPException. See module docstring for rationale.
         """
         from src.agent.context import set_current_context
 
@@ -126,20 +145,18 @@ class PrismIQAgent:
             result = await self.executor.ainvoke({"input": message})
 
             # Extract tools used from intermediate steps
-            tools_used = []
-            if "intermediate_steps" in result:
-                for step in result["intermediate_steps"]:
-                    if hasattr(step, "__getitem__") and len(step) > 0:
-                        action = step[0]
-                        if hasattr(action, "tool"):
-                            tools_used.append(action.tool)
+            # Note: This assumes LangChain's intermediate_steps format where each
+            # step is a tuple of (AgentAction, observation). If LangChain changes
+            # this format, this extraction may need updating.
+            tools_used = _extract_tools_used(result)
 
             end_time = datetime.now(UTC)
             response = {
                 "message": result.get("output", ""),
                 "tools_used": tools_used,
+                # Context is returned as dict for JSON serialization.
+                # ChatResponse schema defines context as dict to allow flexibility.
                 "context": context.model_dump(),
-                "timestamp": end_time.isoformat(),
                 "processing_time_ms": (end_time - start_time).total_seconds() * 1000,
             }
 
@@ -158,7 +175,6 @@ class PrismIQAgent:
                 "message": f"I encountered an error processing your request. {user_message}",
                 "tools_used": [],
                 "context": context.model_dump(),
-                "timestamp": datetime.now(UTC).isoformat(),
                 "error": user_message,
             }
 
@@ -166,6 +182,42 @@ class PrismIQAgent:
         """Clear conversation memory for a fresh session."""
         self.memory.clear()
         logger.info("Agent memory cleared")
+
+
+def _extract_tools_used(result: dict) -> list[str]:
+    """Extract tool names from agent execution result.
+
+    Args:
+        result: The result dictionary from AgentExecutor.ainvoke().
+
+    Returns:
+        List of tool names that were invoked during execution.
+
+    Note:
+        This function assumes LangChain's intermediate_steps format where
+        each step is a tuple of (AgentAction, observation). The AgentAction
+        has a 'tool' attribute containing the tool name.
+
+        If the format is unexpected, this returns an empty list and logs
+        a warning rather than raising an exception.
+    """
+    tools_used = []
+
+    if "intermediate_steps" not in result:
+        return tools_used
+
+    try:
+        for step in result["intermediate_steps"]:
+            # Each step should be (AgentAction, observation) tuple
+            if hasattr(step, "__getitem__") and len(step) > 0:
+                action = step[0]
+                if hasattr(action, "tool"):
+                    tools_used.append(action.tool)
+    except (TypeError, IndexError, AttributeError) as e:
+        # Log but don't fail if format is unexpected
+        logger.warning(f"Unexpected intermediate_steps format: {e}")
+
+    return tools_used
 
 
 # Singleton agent instance
@@ -182,6 +234,12 @@ def _create_tools() -> tuple:
         Tools are cached to avoid recreation overhead. If running with
         hot-reload (e.g., uvicorn --reload), tools persist across reloads.
         Call _create_tools.cache_clear() if tools need to be recreated.
+
+    Warning:
+        This caching assumes tools are stateless. The tool instances returned
+        are shared across all agent invocations. Do not store mutable state
+        in tools. If stateful tools are needed, use a different caching
+        strategy or disable caching entirely.
     """
     from src.agent.tools import (
         create_explain_decision_tool,

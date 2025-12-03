@@ -2,6 +2,16 @@
 
 This module provides helpers for running async code in sync contexts
 and sanitizing error messages.
+
+Known Limitations:
+    - run_sync() uses ThreadPoolExecutor when event loop is running, which
+      may have performance implications in high-throughput scenarios.
+    - For Python 3.12+, asyncio APIs are evolving; monitor for changes.
+
+Future Improvements (TODO):
+    - Consider using nest_asyncio for cleaner nested loop handling
+    - Evaluate fully async tool execution when LangChain supports it
+    - Profile ThreadPoolExecutor overhead in production workloads
 """
 
 from __future__ import annotations
@@ -33,7 +43,20 @@ def run_sync(coro: Coroutine[Any, Any, T]) -> T:
     Note:
         For Python 3.10+, this uses asyncio.run() when no loop is running,
         which is the recommended approach. When a loop is already running,
-        it creates a new loop in a thread-safe manner.
+        it creates a new loop in a thread-safe manner using ThreadPoolExecutor.
+
+    Warning:
+        The ThreadPoolExecutor fallback introduces a thread context switch
+        which may have performance implications. For high-throughput scenarios,
+        consider:
+        1. Using nest_asyncio library for cleaner nested loop handling
+        2. Refactoring to fully async execution path
+        3. Ensuring tools are called from non-async context when possible
+
+    TODO:
+        - Evaluate nest_asyncio as alternative for nested event loops
+        - Monitor Python 3.12+ asyncio changes for compatibility
+        - Consider async tool support when LangChain adds it
     """
     try:
         # Check if there's already a running event loop
@@ -44,6 +67,9 @@ def run_sync(coro: Coroutine[Any, Any, T]) -> T:
 
     # Loop is already running - we need an alternative approach
     # This can happen in Jupyter, some test frameworks, or nested async contexts
+    #
+    # WARNING: This uses ThreadPoolExecutor which has overhead. For production
+    # high-throughput scenarios, consider nest_asyncio or fully async execution.
     import concurrent.futures
 
     logger.debug("Event loop already running, using thread executor")
@@ -94,4 +120,3 @@ def sanitize_error_message(error: Exception) -> str:
 
     # Default: return the error type without internal details
     return f"An error occurred ({error_type}). Please try again or contact support."
-
