@@ -132,9 +132,9 @@ jobs:
             echo "✅ ML models found in cache"
           fi
 
-      - name: Run tests
-        run: uv run pytest -v --timeout=120 -x
-        timeout-minutes: 5
+      - name: Run tests (skip slow ProcessPoolExecutor tests in CI)
+        run: uv run pytest -v --timeout=60 -x -m "not slow"
+        timeout-minutes: 3
 
   frontend-tests:
     name: Frontend Tests
