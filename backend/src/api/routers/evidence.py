@@ -39,10 +39,16 @@ def _load_model_cards() -> list[ModelCard]:
     for filename in card_files:
         filepath = CARDS_DIR / filename
         if filepath.exists():
-            with open(filepath) as f:
-                data = json.load(f)
-                model_cards.append(ModelCard.model_validate(data))
-                logger.debug(f"Loaded model card: {filename}")
+            try:
+                with open(filepath) as f:
+                    data = json.load(f)
+                    model_cards.append(ModelCard.model_validate(data))
+                    logger.debug(f"Loaded model card: {filename}")
+            except json.JSONDecodeError as e:
+                logger.error(f"Invalid JSON in model card {filename}: {e}")
+                # Skip corrupt files, continue loading others
+            except Exception as e:
+                logger.error(f"Error loading model card {filename}: {e}")
         else:
             logger.warning(f"Model card not found: {filepath}")
 
@@ -55,10 +61,14 @@ def _load_data_card() -> DataCard:
     if not filepath.exists():
         logger.error(f"Required data card not found: {filepath}")
         raise FileNotFoundError(f"Data card not found: {filepath}")
-    with open(filepath) as f:
-        data = json.load(f)
-        logger.debug(f"Loaded data card: {filepath.name}")
-        return DataCard.model_validate(data)
+    try:
+        with open(filepath) as f:
+            data = json.load(f)
+            logger.debug(f"Loaded data card: {filepath.name}")
+            return DataCard.model_validate(data)
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in data card: {e}")
+        raise ValueError(f"Data card contains invalid JSON: {e}") from e
 
 
 def _load_methodology() -> MethodologyDoc:
@@ -67,10 +77,14 @@ def _load_methodology() -> MethodologyDoc:
     if not filepath.exists():
         logger.error(f"Required methodology doc not found: {filepath}")
         raise FileNotFoundError(f"Methodology documentation not found: {filepath}")
-    with open(filepath) as f:
-        data = json.load(f)
-        logger.debug(f"Loaded methodology: {filepath.name}")
-        return MethodologyDoc.model_validate(data)
+    try:
+        with open(filepath) as f:
+            data = json.load(f)
+            logger.debug(f"Loaded methodology: {filepath.name}")
+            return MethodologyDoc.model_validate(data)
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in methodology doc: {e}")
+        raise ValueError(f"Methodology documentation contains invalid JSON: {e}") from e
 
 
 def _load_honeywell_mapping() -> dict:
@@ -79,9 +93,14 @@ def _load_honeywell_mapping() -> dict:
     if not filepath.exists():
         logger.error(f"Required Honeywell mapping not found: {filepath}")
         raise FileNotFoundError(f"Honeywell mapping not found: {filepath}")
-    with open(filepath) as f:
-        logger.debug(f"Loaded Honeywell mapping: {filepath.name}")
-        return json.load(f)
+    try:
+        with open(filepath) as f:
+            data = json.load(f)
+            logger.debug(f"Loaded Honeywell mapping: {filepath.name}")
+            return data
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in Honeywell mapping: {e}")
+        raise ValueError(f"Honeywell mapping contains invalid JSON: {e}") from e
 
 
 @lru_cache(maxsize=1)
