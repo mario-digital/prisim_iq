@@ -113,7 +113,8 @@ def _run_scenario_in_process(
     if scenario_type == "cost":
         context_dict["historical_cost_of_ride"] *= modifier
     elif scenario_type == "demand":
-        context_dict["number_of_riders"] = max(1, int(context_dict["number_of_riders"] * modifier))
+        # Use round() instead of int() to avoid low-bias truncation (e.g., 8.9 -> 9, not 8)
+        context_dict["number_of_riders"] = max(1, round(context_dict["number_of_riders"] * modifier))
 
     # Reconstruct MarketContext from modified dict
     modified_context = MarketContext(**context_dict)

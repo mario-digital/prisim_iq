@@ -1,5 +1,6 @@
 """Sensitivity analysis API router for robustness testing endpoints."""
 
+import math
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -68,20 +69,38 @@ def _scenario_to_summary(scenario: ScenarioResult, base_price: float) -> Scenari
     Returns:
         ScenarioSummary with description for UI display.
     """
-    if scenario.modifier == 1.0:
+    # Use math.isclose for robust floating-point comparisons
+    price_increased = scenario.optimal_price > base_price and not math.isclose(
+        scenario.optimal_price, base_price, rel_tol=1e-4
+    )
+    price_decreased = scenario.optimal_price < base_price and not math.isclose(
+        scenario.optimal_price, base_price, rel_tol=1e-4
+    )
+
+    if math.isclose(scenario.modifier, 1.0, rel_tol=1e-9):
         description = f"Base case: optimal price is ${scenario.optimal_price:.2f}"
     elif scenario.modifier < 1.0:
         change = abs(round((scenario.modifier - 1.0) * 100))
-        # Compare scenario price to base price to determine direction
-        price_direction = "increases" if scenario.optimal_price > base_price else "decreases"
+        # Determine price direction based on actual values
+        if price_increased:
+            price_direction = "increases"
+        elif price_decreased:
+            price_direction = "decreases"
+        else:
+            price_direction = "maintains"
         description = (
             f"{change}% lower {scenario.scenario_type} "
             f"{price_direction} optimal price to ${scenario.optimal_price:.2f}"
         )
     else:
         change = round((scenario.modifier - 1.0) * 100)
-        # Compare scenario price to base price to determine direction
-        price_direction = "reduces" if scenario.optimal_price < base_price else "increases"
+        # Determine price direction based on actual values
+        if price_decreased:
+            price_direction = "reduces"
+        elif price_increased:
+            price_direction = "increases"
+        else:
+            price_direction = "maintains"
         description = (
             f"{change}% higher {scenario.scenario_type} "
             f"{price_direction} optimal price to ${scenario.optimal_price:.2f}"
