@@ -27,7 +27,11 @@ class ChatRequest(BaseModel):
     )
     session_id: str | None = Field(
         default=None,
-        description="Optional session ID for conversation continuity",
+        description=(
+            "Optional session ID for conversation continuity. "
+            "⚠️ NOTE: Not currently used - all sessions share global memory. "
+            "See agent.py TODO for per-session memory implementation."
+        ),
     )
 
     model_config = {

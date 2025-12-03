@@ -9,6 +9,40 @@ from langchain_core.tools import Tool
 from loguru import logger
 
 
+def _format_segment_description(segment_name: str) -> str:
+    """Format a segment name into a human-readable description.
+
+    Args:
+        segment_name: The segment name (e.g., "Urban_Evening_Premium").
+
+    Returns:
+        Human-readable description of the segment.
+
+    Note:
+        This assumes segment names follow the pattern:
+        "{Location}_{TimeProfile}_{VehicleType}" (e.g., "Urban_Evening_Premium")
+
+        If the format doesn't match, returns a generic description.
+        If segment naming conventions change, update this logic.
+    """
+    try:
+        parts = segment_name.split("_")
+        if len(parts) >= 3:
+            location, time_profile, vehicle = parts[0], parts[1], parts[2]
+            return (
+                f"{location} area during {time_profile.lower()} hours "
+                f"with {vehicle.lower()} vehicle preference"
+            )
+        elif len(parts) == 2:
+            # Handle 2-part names gracefully
+            return f"{parts[0]} {parts[1].lower()} segment"
+        else:
+            return f"Market segment: {segment_name}"
+    except (AttributeError, IndexError) as e:
+        logger.warning(f"Unexpected segment name format '{segment_name}': {e}")
+        return f"Market segment: {segment_name}"
+
+
 def create_get_segment_tool() -> Tool:
     """Create the get_segment tool for market segmentation.
 
@@ -27,16 +61,11 @@ def create_get_segment_tool() -> Tool:
 
             result = segmenter.classify(context)
 
-            # Generate human-readable description
-            parts = result.segment_name.split("_")
-            if len(parts) >= 3:
-                location, time_profile, vehicle = parts[0], parts[1], parts[2]
-                description = (
-                    f"{location} area during {time_profile.lower()} hours "
-                    f"with {vehicle.lower()} vehicle preference"
-                )
-            else:
-                description = f"Market segment: {result.segment_name}"
+            # Generate human-readable description from segment name
+            # Note: This parsing assumes segment names follow the pattern:
+            # "{Location}_{TimeProfile}_{VehicleType}" (e.g., "Urban_Evening_Premium")
+            # If segment naming conventions change, update this logic.
+            description = _format_segment_description(result.segment_name)
 
             # Determine confidence level
             if result.centroid_distance < 1.0:
