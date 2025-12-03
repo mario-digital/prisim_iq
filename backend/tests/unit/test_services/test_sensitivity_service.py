@@ -358,7 +358,7 @@ class TestRobustnessScoreCalculation:
 
 class TestScenarioModifierApplication:
     """Tests for scenario modifier application.
-    
+
     Note: The SensitivityService now uses ProcessPoolExecutor with process-local
     optimizers. Scenario modifiers are applied within worker processes.
     These tests verify the modifier logic works correctly by testing the
@@ -372,7 +372,7 @@ class TestScenarioModifierApplication:
         # Simulate what _run_scenario_in_process does for cost modifier
         context_dict = sample_market_context.model_dump()
         context_dict = {k: v for k, v in context_dict.items() if k != "supply_demand_ratio"}
-        
+
         # Apply cost modifier
         context_dict["historical_cost_of_ride"] *= 1.1
         modified = MarketContext(**context_dict)
@@ -387,7 +387,7 @@ class TestScenarioModifierApplication:
         # Simulate what _run_scenario_in_process does for demand modifier
         context_dict = sample_market_context.model_dump()
         context_dict = {k: v for k, v in context_dict.items() if k != "supply_demand_ratio"}
-        
+
         # Apply demand modifier (with round, not int)
         context_dict["number_of_riders"] = max(1, round(context_dict["number_of_riders"] * 1.2))
         modified = MarketContext(**context_dict)
@@ -421,7 +421,7 @@ class TestScenarioModifierApplication:
 
 class TestParallelExecution:
     """Tests for parallel scenario execution.
-    
+
     Note: The SensitivityService uses ProcessPoolExecutor with process-local
     optimizers. Mock optimizers cannot be used because each worker process
     initializes its own optimizer. These tests verify the result structure
@@ -495,7 +495,7 @@ class TestScenarioResultsVisualizationReady:
 
 class TestGetSensitivityService:
     """Tests for get_sensitivity_service singleton function.
-    
+
     Note: get_sensitivity_service() no longer accepts parameters - it creates
     its own PriceOptimizer internally using get_price_optimizer().
     """
