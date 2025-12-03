@@ -978,10 +978,14 @@ version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
+    { name = "langchain-core" },
+    { name = "langchain-openai" },
+    { name = "langgraph" },
     { name = "loguru" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
+    { name = "sse-starlette" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -1043,8 +1047,11 @@ requires-dist = [
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.28.0" },
     { name = "joblib", marker = "extra == 'ml'", specifier = ">=1.4.0" },
     { name = "langchain", marker = "extra == 'agent'", specifier = ">=1.1.0" },
+    { name = "langchain-core", specifier = ">=1.1.0" },
     { name = "langchain-core", marker = "extra == 'agent'", specifier = ">=1.0.0" },
+    { name = "langchain-openai", specifier = ">=1.1.0" },
     { name = "langchain-openai", marker = "extra == 'agent'", specifier = ">=1.0.0" },
+    { name = "langgraph", specifier = ">=1.0.4" },
     { name = "langgraph", marker = "extra == 'agent'", specifier = ">=1.0.0" },
     { name = "loguru", specifier = ">=0.7.0" },
     { name = "numpy", marker = "extra == 'ml'", specifier = ">=2.0.0" },
@@ -1063,6 +1070,7 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
     { name = "scikit-learn", marker = "extra == 'ml'", specifier = ">=1.5.0" },
     { name = "shap", marker = "extra == 'ml'", specifier = ">=0.46.0" },
+    { name = "sse-starlette", specifier = ">=3.0.3" },
     { name = "sse-starlette", marker = "extra == 'agent'", specifier = ">=1.8.2" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32.0" },
     { name = "xgboost", marker = "extra == 'ml'", specifier = ">=2.1.0" },

@@ -16,6 +16,10 @@ dependencies = [
     "pydantic-settings>=2.6.0",
     "python-dotenv>=1.0.0",
     "loguru>=0.7.0",
+    "sse-starlette>=3.0.3",
+    "langchain-core>=1.1.0",
+    "langgraph>=1.0.4",
+    "langchain-openai>=1.1.0",
 ]
 
 [project.optional-dependencies]
