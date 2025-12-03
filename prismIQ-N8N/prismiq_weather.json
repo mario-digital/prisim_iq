@@ -1,0 +1,48 @@
+{
+    "name": "PrismIQ Weather",
+    "nodes": [
+      {
+        "name": "Schedule",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "position": [250, 300],
+        "parameters": {
+          "rule": { "interval": [{ "field": "minutes", "minutesInterval": 30 }] }
+        }
+      },
+      {
+        "name": "Get Weather",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [450, 300],
+        "parameters": {
+          "url": "https://api.open-meteo.com/v1/forecast?latitude=33.45&longitude=-112.07&current_weather=true",
+          "method": "GET"
+        }
+      },
+      {
+        "name": "Transform",
+        "type": "n8n-nodes-base.code",
+        "position": [650, 300],
+        "parameters": {
+          "jsCode": "const wc = $input.first().json.current_weather.weathercode;\nconst temp = $input.first().json.current_weather.temperature * 9/5 + 32;\nlet condition = 'cloudy';\nif (wc <= 1) condition = 'sunny';\nelse if (wc >= 61 && wc <= 67) condition = 'rainy';\nelse if (wc >= 71) condition = 'snowy';\nreturn [{ json: { condition, temperature_f: temp, source: 'open-meteo' } }];"
+        }
+      },
+      {
+        "name": "Send to PrismIQ",
+        "type": "n8n-nodes-base.httpRequest",
+        "position": [850, 300],
+        "parameters": {
+          "url": "http://host.docker.internal:8000/api/v1/external/webhook/weather",
+          "method": "POST",
+          "sendBody": true,
+          "bodyParameters": { "parameters": [] },
+          "specifyBody": "json",
+          "jsonBody": "={{ $json }}"
+        }
+      }
+    ],
+    "connections": {
+      "Schedule": { "main": [[{ "node": "Get Weather" }]] },
+      "Get Weather": { "main": [[{ "node": "Transform" }]] },
+      "Transform": { "main": [[{ "node": "Send to PrismIQ" }]] }
+    }
+  }
