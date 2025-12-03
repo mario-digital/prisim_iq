@@ -1,6 +1,8 @@
 """Tests for agent prompts."""
 
-from src.agent.prompts.system import SYSTEM_PROMPT, create_prompt
+from langchain_core.messages import SystemMessage
+
+from src.agent.prompts.system import SYSTEM_PROMPT, get_system_message
 
 
 class TestSystemPrompt:
@@ -32,15 +34,16 @@ class TestSystemPrompt:
         assert "Guidelines" in SYSTEM_PROMPT
         assert "Response Format" in SYSTEM_PROMPT
 
-    def test_create_prompt_returns_template(self) -> None:
-        """Test create_prompt returns a valid ChatPromptTemplate."""
-        from langchain_core.prompts import ChatPromptTemplate
+    def test_get_system_message_returns_system_message(self) -> None:
+        """Test get_system_message returns a valid SystemMessage for LangGraph."""
+        message = get_system_message()
 
-        prompt = create_prompt()
+        assert isinstance(message, SystemMessage)
+        assert message.content == SYSTEM_PROMPT
+        assert "PrismIQ" in message.content
 
-        assert isinstance(prompt, ChatPromptTemplate)
-        # Check that required variables are present
-        assert "input" in prompt.input_variables or any(
-            "input" in str(m) for m in prompt.messages
-        )
-
+    def test_system_prompt_has_tool_selection_guide(self) -> None:
+        """Test system prompt has tool selection guide."""
+        assert "Tool Selection Guide" in SYSTEM_PROMPT
+        assert 'Questions about "what price"' in SYSTEM_PROMPT
+        assert 'Questions about "why"' in SYSTEM_PROMPT

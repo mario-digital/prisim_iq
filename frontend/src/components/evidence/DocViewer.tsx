@@ -205,4 +205,3 @@ export const DocViewer: FC<DocViewerProps> = ({ content, isLoading }) => {
     </article>
   );
 };
-

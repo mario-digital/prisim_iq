@@ -28,7 +28,7 @@ export const DecisionTrace: FC<DecisionTraceProps> = ({ steps }) => {
     });
   };
 
-  const getStatusColor = (status: DecisionStep['status']) => {
+  const getStatusColor = (status: DecisionStep['status']): string => {
     switch (status) {
       case 'success':
         return 'bg-emerald-500';
@@ -36,12 +36,16 @@ export const DecisionTrace: FC<DecisionTraceProps> = ({ steps }) => {
         return 'bg-amber-500';
       case 'error':
         return 'bg-red-500';
-      default:
+      default: {
+        // Exhaustive check - this should never be reached if types are correct
+        const _exhaustiveCheck: never = status;
+        console.warn(`[DecisionTrace] Unexpected status value: ${_exhaustiveCheck}`);
         return 'bg-gray-500';
+      }
     }
   };
 
-  const getStatusIcon = (status: DecisionStep['status']) => {
+  const getStatusIcon = (status: DecisionStep['status']): string => {
     switch (status) {
       case 'success':
         return '✓';
@@ -49,8 +53,12 @@ export const DecisionTrace: FC<DecisionTraceProps> = ({ steps }) => {
         return '!';
       case 'error':
         return '✗';
-      default:
+      default: {
+        // Exhaustive check - this should never be reached if types are correct
+        const _exhaustiveCheck: never = status;
+        console.warn(`[DecisionTrace] Unexpected status value: ${_exhaustiveCheck}`);
         return '?';
+      }
     }
   };
 

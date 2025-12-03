@@ -1,8 +1,16 @@
-"""Integration tests for sensitivity analysis endpoint."""
+"""Integration tests for sensitivity analysis endpoint.
+
+These tests run real sensitivity analysis with ProcessPoolExecutor,
+which is slow in CI. Marked slow to skip in fast CI runs.
+"""
 
 import time
 
+import pytest
 from fastapi.testclient import TestClient
+
+# Mark all tests in this module as slow
+pytestmark = pytest.mark.slow
 
 
 class TestSensitivityAnalysisEndpoint:

@@ -184,4 +184,3 @@ export interface HoneywellMappingResponse {
   mapping: Record<string, string>;
   compliance_notes: string[];
 }
-

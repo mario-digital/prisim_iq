@@ -547,4 +547,3 @@ export function clearEvidenceCache(): void {
   cachedEvidence = null;
   cachedHoneywellMapping = null;
 }
-

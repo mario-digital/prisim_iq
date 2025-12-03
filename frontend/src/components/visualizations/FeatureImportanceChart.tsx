@@ -44,6 +44,7 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
   data,
 }) => {
   // Sort by importance and take top 6 features
+  // Clamp importance to [0, 1] to handle invalid data gracefully
   const chartData = [...data]
     .sort((a, b) => b.importance - a.importance)
     .slice(0, 6)
@@ -143,4 +144,3 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
 });
 
 FeatureImportanceChart.displayName = 'FeatureImportanceChart';
-

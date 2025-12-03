@@ -79,4 +79,3 @@ export const DocNavigation: FC<DocNavigationProps> = ({
     </nav>
   );
 };
-
