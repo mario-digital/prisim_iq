@@ -120,6 +120,9 @@ frontend/.env.local
 backend/data/models/*.joblib
 backend/data/models/*.pkl
 
+# External data cache (n8n webhooks)
+backend/data/cache/
+
 # Large data files
 *.csv
 *.xlsx
