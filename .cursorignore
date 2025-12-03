@@ -1,0 +1,26 @@
+# Lock files - auto-generated, should not be edited or analyzed
+**/bun.lock
+**/bun.lockb
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+**/uv.lock
+**/requirements.lock
+
+# Python cache
+**/__pycache__/
+**/*.pyc
+
+# Node modules
+**/node_modules/
+
+# Build outputs
+**/.next/
+**/dist/
+**/build/
+
+# Environment files
+**/.env
+**/.env.local
+**/.env.*.local
+
