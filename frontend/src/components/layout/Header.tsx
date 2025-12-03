@@ -1,26 +1,32 @@
 'use client';
 
 import type { FC } from 'react';
-import { Zap } from 'lucide-react';
+import { Brand } from './Brand';
+import { PipelineStatus } from './PipelineStatus';
+import { SystemStatus } from './SystemStatus';
+import { HoneywellToggle } from './HoneywellToggle';
 
+/**
+ * Main header component for PrismIQ application.
+ * Contains: Brand, Pipeline Status, System Status, Honeywell Toggle.
+ * Tab navigation is rendered separately below header (via TabNavigation).
+ */
 export const Header: FC = () => {
   return (
     <header className="h-14 border-b border-border bg-card px-4 flex items-center justify-between">
-      {/* Logo */}
-      <div className="flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-prism-500 to-prism-700">
-          <Zap className="h-4 w-4 text-white" />
-        </div>
-        <span className="text-lg font-semibold">
-          Prism<span className="text-prism-600">IQ</span>
-        </span>
+      {/* Left: Brand */}
+      <Brand />
+
+      {/* Center: Pipeline Status */}
+      <div className="flex items-center">
+        <PipelineStatus />
       </div>
 
-      {/* Placeholder for additional header content - Grace will implement */}
-      <div className="text-xs text-muted-foreground">
-        Header content (Story 4.7)
+      {/* Right: System Status + Honeywell Toggle */}
+      <div className="flex items-center gap-3">
+        <SystemStatus />
+        <HoneywellToggle />
       </div>
     </header>
   );
 };
-

@@ -10,6 +10,7 @@ from src.schemas.evidence import (
     ModelCard,
 )
 from src.schemas.explainability import FeatureContribution, FeatureImportanceResult
+from src.schemas.explanation import ExplainRequest, PriceExplanation
 from src.schemas.health import HealthResponse
 from src.schemas.market import MarketContext
 from src.schemas.optimization import OptimizationResult, PriceDemandPoint
@@ -26,6 +27,7 @@ __all__ = [
     "DataSummaryResponse",
     "ErrorResponse",
     "EvidenceResponse",
+    "ExplainRequest",
     "FeatureContribution",
     "FeatureImportanceResult",
     "HealthResponse",
@@ -36,6 +38,7 @@ __all__ = [
     "ModelCard",
     "OptimizationResult",
     "PriceDemandPoint",
+    "PriceExplanation",
     "PriceRange",
     "ScenarioResult",
     "SegmentDetails",
