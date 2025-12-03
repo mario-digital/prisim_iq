@@ -34,6 +34,26 @@ jobs:
           fi
           echo "✅ No machine-specific paths found"
 
+  backend-lint:
+    name: Backend Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Run linter
+        run: uvx ruff check src tests
+
   backend-tests:
     name: Backend Tests
     runs-on: ubuntu-latest
@@ -48,15 +68,36 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev,ml,agent]"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
 
-      - name: Train segmenter, generate data, and train ML models
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/uv
+            backend/.venv
+          key: uv-${{ runner.os }}-${{ hashFiles('backend/pyproject.toml') }}
+          restore-keys: |
+            uv-${{ runner.os }}-
+
+      - name: Cache trained models
+        uses: actions/cache@v4
+        with:
+          path: |
+            backend/data/models
+            backend/data/processed
+          key: ml-models-${{ hashFiles('backend/data/dynamic_pricing.xlsx', 'backend/scripts/generate_training_data.py') }}
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Train models (if not cached)
         run: |
-          echo "Training segmenter model..."
-          python -c "
+          # Check if models exist from cache
+          if [ ! -f "data/models/segmenter.joblib" ]; then
+            echo "Training segmenter model..."
+            uv run python -c "
           from src.ml.preprocessor import load_dataset
           from src.ml.segmenter import Segmenter, DEFAULT_MODEL_PATH
           df = load_dataset()
@@ -65,10 +106,20 @@ jobs:
           segmenter.save(DEFAULT_MODEL_PATH)
           print(f'Segmenter saved to {DEFAULT_MODEL_PATH}')
           "
-          echo "Generating training data..."
-          python scripts/generate_training_data.py --seed 42
-          echo "Training ML models..."
-          python -c "
+          else
+            echo "✅ Segmenter model found in cache"
+          fi
+
+          if [ ! -f "data/processed/training_data.parquet" ]; then
+            echo "Generating training data..."
+            uv run python scripts/generate_training_data.py --seed 42
+          else
+            echo "✅ Training data found in cache"
+          fi
+
+          if [ ! -f "data/models/xgboost_model.joblib" ]; then
+            echo "Training ML models..."
+            uv run python -c "
           from src.ml.training import ModelTrainer
           trainer = ModelTrainer()
           trainer.load_data()
@@ -77,15 +128,13 @@ jobs:
           trainer.save_metrics()
           print('Models trained successfully!')
           "
-
-      - name: Run linter
-        run: |
-          pip install ruff
-          ruff check src tests
+          else
+            echo "✅ ML models found in cache"
+          fi
 
       - name: Run tests
-        run: pytest -v --timeout=120
-        timeout-minutes: 10
+        run: uv run pytest -v --timeout=120 -x
+        timeout-minutes: 5
 
   frontend-tests:
     name: Frontend Tests
@@ -101,12 +150,21 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Cache Bun dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            frontend/node_modules
+          key: bun-${{ runner.os }}-${{ hashFiles('frontend/bun.lock') }}
+          restore-keys: |
+            bun-${{ runner.os }}-
+
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Run tests
         run: bun test
 
       - name: Build check
         run: bun run build
-
