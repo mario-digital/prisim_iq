@@ -186,15 +186,17 @@ class ExplanationService:
             include_shap=request.include_shap,
         )
 
-        # Step 3: Get model predictions and agreement
+        # Step 3: Get model predictions and calculate agreement
+        # NOTE: Always recalculate agreement from fresh predictions to ensure consistency.
+        # The trace may contain its own model_agreement (used for trace output), but the
+        # top-level response agreement must match the current model_predictions to avoid
+        # subtle inconsistencies if traces are cached or from different computation paths.
         model_predictions = self._model_manager.get_all_predictions(
             context=context,
             price=result.recommended_price,
             segment=result.segment.segment_name,
         )
-        model_agreement = trace.model_agreement or self._calculate_agreement(
-            model_predictions
-        )
+        model_agreement = self._calculate_agreement(model_predictions)
 
         # Step 4: Generate natural language summary
         natural_language_summary = generate_narrative(
