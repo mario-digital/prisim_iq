@@ -20,7 +20,10 @@ export const RecommendationCard: FC<RecommendationCardProps> = ({
   profitUpliftPercent,
 }) => {
   const priceChange = result.recommendedPrice - result.basePrice;
-  const priceChangePercent = ((priceChange / result.basePrice) * 100);
+  // Guard against division by zero - if basePrice is 0, show 0% change
+  const priceChangePercent = result.basePrice > 0
+    ? ((priceChange / result.basePrice) * 100)
+    : 0;
 
   return (
     <Card>
