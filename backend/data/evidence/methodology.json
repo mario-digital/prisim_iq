@@ -1,0 +1,101 @@
+{
+  "title": "PrismIQ Pricing Methodology",
+  "sections": [
+    {
+      "heading": "Overview",
+      "content": "PrismIQ uses machine learning to optimize dynamic pricing by predicting demand elasticity and recommending prices that maximize revenue while maintaining customer satisfaction. The system combines predictive models with business rules to ensure recommendations are both data-driven and aligned with strategic objectives.",
+      "subsections": null
+    },
+    {
+      "heading": "Data Pipeline",
+      "content": "The methodology begins with data preparation and customer segmentation.",
+      "subsections": [
+        {
+          "heading": "Data Sources",
+          "content": "Historical transaction data including ride requests, pricing, customer profiles, and market conditions. The dataset contains 1,000+ records with 11 features covering demand signals, supply metrics, and customer attributes.",
+          "subsections": null
+        },
+        {
+          "heading": "Customer Segmentation",
+          "content": "K-Means clustering identifies distinct customer segments based on behavior patterns: price-sensitive bargain seekers, convenience-focused regulars, and premium customers willing to pay for quality. Segmentation enables targeted pricing strategies.",
+          "subsections": null
+        }
+      ]
+    },
+    {
+      "heading": "Demand Prediction",
+      "content": "Multiple machine learning models predict demand probability at different price points.",
+      "subsections": [
+        {
+          "heading": "Model Architecture",
+          "content": "An ensemble of three models provides robust predictions: Linear Regression (baseline interpretability), Decision Tree (captures non-linear patterns), and XGBoost (highest accuracy). The XGBoost model achieves R² > 0.98 on test data.",
+          "subsections": null
+        },
+        {
+          "heading": "Feature Engineering",
+          "content": "Key features include supply-demand ratio (drivers/riders), customer loyalty status, historical pricing, time of booking, and location category. Feature importance analysis shows historical_cost_of_ride and price are the strongest predictors.",
+          "subsections": null
+        }
+      ]
+    },
+    {
+      "heading": "Price Optimization",
+      "content": "The optimizer searches for the price that maximizes expected revenue subject to business constraints.",
+      "subsections": [
+        {
+          "heading": "Objective Function",
+          "content": "Expected Revenue = Price × Predicted Demand Probability. The optimizer uses golden-section search to find the optimal price within configured bounds.",
+          "subsections": null
+        },
+        {
+          "heading": "Business Rules",
+          "content": "Constraints ensure prices stay within acceptable ranges: minimum margins, maximum surge multipliers, segment-specific caps, and competitive positioning rules. Rules can override ML recommendations when business logic requires.",
+          "subsections": null
+        }
+      ]
+    },
+    {
+      "heading": "Explainability",
+      "content": "Every pricing recommendation includes comprehensive explanations to build trust and enable human oversight.",
+      "subsections": [
+        {
+          "heading": "SHAP Analysis",
+          "content": "SHapley Additive exPlanations quantify each feature's contribution to predictions. Waterfall charts show how features push predictions above or below baseline.",
+          "subsections": null
+        },
+        {
+          "heading": "Decision Trace",
+          "content": "Complete audit trail of the pricing decision: input features, model predictions, optimization steps, rule applications, and final recommendation with confidence intervals.",
+          "subsections": null
+        },
+        {
+          "heading": "Sensitivity Analysis",
+          "content": "Shows how demand changes across a range of prices, visualizing the elasticity curve and identifying the revenue-maximizing sweet spot.",
+          "subsections": null
+        }
+      ]
+    },
+    {
+      "heading": "Model Governance",
+      "content": "Responsible AI practices ensure fair, transparent, and accountable pricing.",
+      "subsections": [
+        {
+          "heading": "Model Cards",
+          "content": "Each model has a detailed card documenting its purpose, performance metrics, training data, limitations, and ethical considerations.",
+          "subsections": null
+        },
+        {
+          "heading": "Fairness Monitoring",
+          "content": "Regular audits check for disparate impact across customer segments. The system flags recommendations that deviate significantly from historical patterns.",
+          "subsections": null
+        },
+        {
+          "heading": "Human-in-the-Loop",
+          "content": "PrismIQ is designed as a decision-support tool, not an autonomous pricing system. All recommendations require human review before implementation.",
+          "subsections": null
+        }
+      ]
+    }
+  ]
+}
+

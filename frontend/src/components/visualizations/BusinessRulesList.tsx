@@ -88,9 +88,9 @@ export const BusinessRulesList: FC<BusinessRulesListProps> = ({ rules }) => {
                   {skippedRules.length} rules not triggered
                 </summary>
                 <div className="mt-2 space-y-2 pl-4 border-l-2 border-muted">
-                  {skippedRules.map((rule, index) => (
+                  {skippedRules.map((rule) => (
                     <div
-                      key={`${rule.id}-skipped-${index}`}
+                      key={rule.id}
                       className="flex items-center gap-2 text-xs text-muted-foreground"
                     >
                       <span>{getRuleTypeIcon(rule.type)}</span>

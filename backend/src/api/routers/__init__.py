@@ -1,6 +1,5 @@
 """API routers for PrismIQ backend."""
 
-from src.api.routers import data, health, pricing
+from src.api.routers import chat, data, evidence, explain, health, pricing, sensitivity
 
-__all__ = ["data", "health", "pricing"]
-
+__all__ = ["chat", "data", "evidence", "explain", "health", "pricing", "sensitivity"]

@@ -8,9 +8,10 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 
 from src.api.middleware import LoggingMiddleware, TimingMiddleware
-from src.api.routers import data, health, pricing
+from src.api.routers import chat, data, evidence, explain, health, pricing, sensitivity
 from src.config import get_settings
 from src.schemas.data import ErrorResponse
+from src.services.sensitivity_service import shutdown_sensitivity_service
 
 
 @asynccontextmanager
@@ -23,6 +24,8 @@ async def lifespan(_app: FastAPI):
     yield
     # Shutdown
     logger.info("Shutting down PrismIQ API")
+    # Gracefully shutdown ProcessPoolExecutor to prevent orphaned workers
+    shutdown_sensitivity_service(wait=True)
 
 
 def create_app() -> FastAPI:
@@ -61,6 +64,10 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(data.router, prefix="/api/v1")
     app.include_router(pricing.router, prefix="/api/v1")
+    app.include_router(explain.router, prefix="/api/v1")
+    app.include_router(sensitivity.router, prefix="/api/v1")
+    app.include_router(evidence.router, prefix="/api/v1")
+    app.include_router(chat.router, prefix="/api/v1")
 
     return app
 
@@ -81,9 +88,7 @@ def _register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(FileNotFoundError)
-    async def file_not_found_handler(
-        _request: Request, exc: FileNotFoundError
-    ) -> JSONResponse:
+    async def file_not_found_handler(_request: Request, exc: FileNotFoundError) -> JSONResponse:
         """Handle FileNotFoundError as 404 Not Found."""
         logger.warning(f"FileNotFoundError: {exc}")
         return JSONResponse(
@@ -95,9 +100,7 @@ def _register_exception_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(Exception)
-    async def general_exception_handler(
-        _request: Request, exc: Exception
-    ) -> JSONResponse:
+    async def general_exception_handler(_request: Request, exc: Exception) -> JSONResponse:
         """Handle unexpected exceptions as 500 Internal Server Error."""
         logger.error(f"Unhandled exception: {exc}", exc_info=True)
         return JSONResponse(
