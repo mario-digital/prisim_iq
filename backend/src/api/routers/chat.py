@@ -1,5 +1,6 @@
 """Chat endpoint router for PrismIQ agent interactions with SSE streaming support."""
 
+from datetime import UTC, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -7,7 +8,8 @@ from loguru import logger
 from sse_starlette.sse import EventSourceResponse
 
 from src.agent.agent import PrismIQAgent, get_agent
-from src.agent.streaming import sse_generator
+from src.agent.streaming import sse_generator, sse_keepalive_generator
+from src.agent.tools import ALL_TOOLS
 from src.config import get_settings
 from src.schemas.chat import ChatRequest, ChatResponse
 
@@ -118,6 +120,24 @@ async def chat(
         True,
         description="Enable streaming response (SSE). Set to false for single JSON response.",
     ),
+    plan: bool = Query(
+        False,
+        description="Route through orchestrator (multi-agent plan).",
+    ),
+    keepalive: bool = Query(
+        False,
+        description="Send periodic SSE keepalive comments during long runs.",
+    ),
+    interval: float = Query(
+        15.0,
+        description="Keepalive interval in seconds (when keepalive=true).",
+        ge=5.0,
+        le=120.0,
+    ),
+    model: str | None = Query(
+        None,
+        description="Optional model hint (allowlist enforced server-side).",
+    ),
 ):
     """Process a chat message with optional streaming.
 
@@ -136,14 +156,25 @@ async def chat(
         f"session_id={session_id}, stream={stream}"
     )
 
+    # Enforce model allowlist (hint only; agent defaults still apply)
+    if model:
+        settings = get_settings()
+        if model not in settings.allowed_models:
+            logger.warning("Requested model '{}' not in allowlist; ignoring.", model)
+            model = None
+
     if stream:
         # Return SSE streaming response
+        gen = sse_keepalive_generator if keepalive else sse_generator
         return EventSourceResponse(
-            sse_generator(
+            gen(
                 agent=agent,
                 message=request.message,
                 context=request.context,
                 session_id=session_id,
+                plan=plan,
+                model=model,
+                **({"keepalive_interval": interval} if keepalive else {}),
             ),
             media_type="text/event-stream",
         )
@@ -202,3 +233,28 @@ async def clear_memory(
     agent.clear_memory(session_id)
     logger.info(f"Chat memory cleared for session: {session_id}")
     return {"status": "ok", "message": f"Conversation memory cleared for session: {session_id}"}
+
+
+@router.get(
+    "/health",
+    summary="Chat health",
+    description="Lightweight health probe for the chat subsystem.",
+)
+async def chat_health() -> dict:
+    settings = get_settings()
+    model = settings.openai_default_model
+    return {
+        "status": "ok",
+        "model": model,
+        "tools_count": len(ALL_TOOLS),
+        "time": datetime.now(UTC).isoformat(),
+    }
+
+
+@router.get(
+    "/tools",
+    summary="List available tools",
+    description="Return the current tool names and descriptions.",
+)
+async def chat_tools() -> list[dict[str, str]]:
+    return [{"name": t.name, "description": t.description or ""} for t in ALL_TOOLS]

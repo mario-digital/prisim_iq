@@ -42,10 +42,15 @@ class Settings(BaseSettings):
 
     # OpenAI
     openai_api_key: str = ""
+    openai_default_model: str = "gpt-4o"
+    openai_model_allowlist: str = "gpt-4o,gpt-4o-mini"
+
+    @property
+    def allowed_models(self) -> list[str]:
+        return [m.strip() for m in self.openai_model_allowlist.split(",") if m.strip()]
 
 
 @lru_cache
 def get_settings() -> Settings:
     """Get cached settings instance."""
     return Settings()
-

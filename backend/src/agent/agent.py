@@ -55,7 +55,7 @@ class PrismIQAgent:
 
         # v1: Use langchain-openai ChatOpenAI (tool calling capable model)
         self.llm = ChatOpenAI(
-            model="gpt-4o",
+            model=settings.openai_default_model,
             temperature=0,
             api_key=settings.openai_api_key,
             streaming=True,
@@ -151,6 +151,8 @@ class PrismIQAgent:
         message: str,
         context: MarketContext,
         session_id: str = "default",
+        plan: bool = False,
+        model: str | None = None,
     ) -> AsyncGenerator[dict[str, Any], None]:
         """Stream chat response with token-by-token output for SSE.
 
@@ -246,18 +248,40 @@ class PrismIQAgent:
             history = self._history.get(session_id, [])
             messages = history + [("user", message)]
 
-            # Stream normalized v1 events from the agent runnable
-            async for event in self.agent.astream_events(
-                {"messages": messages}, version="v1"
-            ):
+            # Decide which runnable to stream: orchestrator graph or single agent
+            from src.config import get_settings
+            settings = get_settings()
+            if plan:
+                from src.orchestrator import build_graph
+
+                # compile once per process per model choice
+                if not hasattr(self, "_plan_graph") or getattr(self, "_plan_graph_model", None) != model:
+                    self._plan_graph = build_graph(model=model)
+                    self._plan_graph_model = model
+
+                # Seed orchestrator state
+                stream_iter = self._plan_graph.astream_events(
+                    {
+                        "user_message": message,
+                        "context": context.model_dump(),
+                        "outputs": {},
+                    },
+                    version="v1",
+                )
+            else:
+                stream_iter = self.agent.astream_events({"messages": messages}, version="v1")
+
+            # Stream normalized v1 events
+            async for event in stream_iter:
                 etype = event.get("event")
-                with suppress(Exception):
-                    logger.debug(
-                        "LC event {} name={} data_keys={}",
-                        etype,
-                        event.get("name"),
-                        list(event.get("data", {}).keys()),
-                    )
+                if settings.debug:
+                    with suppress(Exception):
+                        logger.debug(
+                            "LC event {} name={} data_keys={}",
+                            etype,
+                            event.get("name"),
+                            list(event.get("data", {}).keys()),
+                        )
 
                 # Token events (generic + chat-specific)
                 if etype == "on_llm_new_token":
