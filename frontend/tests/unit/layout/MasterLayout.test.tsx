@@ -17,11 +17,18 @@ const layoutStoreModule = resolveModule('../../../src/stores/layoutStore.ts');
 const apiModule = resolveModule('../../../src/lib/api.ts');
 
 describe('Layout Store', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     // Clear localStorage before each test
     if (typeof localStorage !== 'undefined') {
       localStorage.clear();
     }
+    // Reset store state to initial values (module is cached, so state persists)
+    const { useLayoutStore } = await import(layoutStoreModule);
+    useLayoutStore.setState({
+      leftPanelCollapsed: false,
+      rightPanelCollapsed: false,
+      activeTab: 'workspace',
+    });
   });
 
   it('should have initial state with panels expanded', async () => {
