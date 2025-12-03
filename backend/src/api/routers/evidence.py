@@ -28,30 +28,32 @@ EVIDENCE_DIR = DATA_DIR / "evidence"
 
 
 def _load_model_cards() -> list[ModelCard]:
-    """Load all model cards from the cards directory."""
+    """Load all model cards from the cards directory.
+
+    Auto-discovers all *_model_card.json files in the cards directory.
+    This excludes data cards and other JSON files.
+    """
     model_cards = []
-    card_files = [
-        "xgboost_model_card.json",
-        "decision_tree_model_card.json",
-        "linear_regression_model_card.json",
-    ]
+    # Auto-discover model cards using naming convention
+    card_files = sorted(CARDS_DIR.glob("*_model_card.json"))
 
-    for filename in card_files:
-        filepath = CARDS_DIR / filename
-        if filepath.exists():
-            try:
-                with open(filepath) as f:
-                    data = json.load(f)
-                    model_cards.append(ModelCard.model_validate(data))
-                    logger.debug(f"Loaded model card: {filename}")
-            except json.JSONDecodeError as e:
-                logger.error(f"Invalid JSON in model card {filename}: {e}")
-                # Skip corrupt files, continue loading others
-            except Exception as e:
-                logger.error(f"Error loading model card {filename}: {e}")
-        else:
-            logger.warning(f"Model card not found: {filepath}")
+    if not card_files:
+        logger.warning(f"No model cards found in {CARDS_DIR}")
+        return model_cards
 
+    for filepath in card_files:
+        try:
+            with open(filepath) as f:
+                data = json.load(f)
+                model_cards.append(ModelCard.model_validate(data))
+                logger.debug(f"Loaded model card: {filepath.name}")
+        except json.JSONDecodeError as e:
+            logger.error(f"Invalid JSON in model card {filepath.name}: {e}")
+            # Skip corrupt files, continue loading others
+        except Exception as e:
+            logger.error(f"Error loading model card {filepath.name}: {e}")
+
+    logger.info(f"Loaded {len(model_cards)} model cards")
     return model_cards
 
 
