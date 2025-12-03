@@ -117,8 +117,13 @@ class TestSensitivityScenarios:
                 assert "modifier" in scenario, f"Missing modifier in {scenario_type}"
 
 
+@pytest.mark.slow
 class TestSensitivityService:
-    """Tests for SensitivityService class."""
+    """Tests for SensitivityService class.
+
+    These tests run real sensitivity analysis with ProcessPoolExecutor,
+    which spawns worker processes that load ML models. Marked slow for CI.
+    """
 
     def test_service_initialization(self, mock_price_optimizer: MagicMock) -> None:
         """Test service can be initialized with price_optimizer parameter."""
@@ -419,13 +424,14 @@ class TestScenarioModifierApplication:
         assert modified.number_of_riders >= 1
 
 
+@pytest.mark.slow
 class TestParallelExecution:
     """Tests for parallel scenario execution.
 
     Note: The SensitivityService uses ProcessPoolExecutor with process-local
     optimizers. Mock optimizers cannot be used because each worker process
     initializes its own optimizer. These tests verify the result structure
-    from real parallel execution.
+    from real parallel execution. Marked slow for CI.
     """
 
     @pytest.mark.asyncio
@@ -458,8 +464,9 @@ class TestParallelExecution:
         assert result.analysis_time_ms < 5000  # Allow 5s for CI environments
 
 
+@pytest.mark.slow
 class TestScenarioResultsVisualizationReady:
-    """Tests for visualization-ready output format (AC: 4)."""
+    """Tests for visualization-ready output format (AC: 4). Marked slow for CI."""
 
     @pytest.mark.asyncio
     async def test_elasticity_results_have_required_fields(
@@ -493,11 +500,13 @@ class TestScenarioResultsVisualizationReady:
         assert len(json_str) > 0
 
 
+@pytest.mark.slow
 class TestGetSensitivityService:
     """Tests for get_sensitivity_service singleton function.
 
     Note: get_sensitivity_service() no longer accepts parameters - it creates
     its own PriceOptimizer internally using get_price_optimizer().
+    Marked slow for CI because it loads real models.
     """
 
     def test_creates_service(self) -> None:
