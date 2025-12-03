@@ -26,6 +26,9 @@ interface StatusState {
   // Honeywell overlay
   honeywellOverlayVisible: boolean;
   
+  // Internal: timeout tracking (not exposed to consumers)
+  _completedStagesTimeoutId: ReturnType<typeof setTimeout> | null;
+  
   // Actions
   setHealth: (health: HealthStatus) => void;
   setHealthCheck: (health: HealthStatus) => void;
@@ -39,6 +42,13 @@ interface StatusState {
   setHoneywellOverlay: (visible: boolean) => void;
 }
 
+// Helper to clear any pending timeout
+const clearCompletedStagesTimeout = (state: StatusState) => {
+  if (state._completedStagesTimeoutId !== null) {
+    clearTimeout(state._completedStagesTimeoutId);
+  }
+};
+
 export const useStatusStore = create<StatusState>((set, get) => ({
   // Initial state
   health: 'healthy',
@@ -51,6 +61,7 @@ export const useStatusStore = create<StatusState>((set, get) => ({
   totalModels: 3,
   lastResponseTime: null,
   honeywellOverlayVisible: false,
+  _completedStagesTimeoutId: null,
 
   // Actions
   setHealth: (health) => set({ health }),
@@ -60,11 +71,16 @@ export const useStatusStore = create<StatusState>((set, get) => ({
     lastHealthCheck: new Date() 
   }),
 
-  startProcessing: () => set({ 
-    isProcessing: true, 
-    currentStage: 0,
-    completedStages: [],
-  }),
+  startProcessing: () => {
+    // Clear any pending timeout from previous processing
+    clearCompletedStagesTimeout(get());
+    set({ 
+      isProcessing: true, 
+      currentStage: 0,
+      completedStages: [],
+      _completedStagesTimeoutId: null,
+    });
+  },
 
   advanceStage: () => {
     const { currentStage, completedStages } = get();
@@ -77,24 +93,36 @@ export const useStatusStore = create<StatusState>((set, get) => ({
   },
 
   completeProcessing: (responseTime) => {
-    const { completedStages, currentStage } = get();
+    const state = get();
+    // Clear any existing timeout first to prevent race conditions
+    clearCompletedStagesTimeout(state);
+    
+    const { completedStages, currentStage } = state;
+    
+    // Schedule the reset and store the timeout ID
+    const timeoutId = setTimeout(() => {
+      set({ completedStages: [], _completedStagesTimeoutId: null });
+    }, 2000);
+    
     set({
       isProcessing: false,
       currentStage: -1,
       completedStages: [...completedStages, currentStage].filter((s) => s >= 0),
       lastResponseTime: responseTime,
+      _completedStagesTimeoutId: timeoutId,
     });
-    // Reset completed stages after brief display
-    setTimeout(() => {
-      set({ completedStages: [] });
-    }, 2000);
   },
 
-  resetPipeline: () => set({
-    isProcessing: false,
-    currentStage: -1,
-    completedStages: [],
-  }),
+  resetPipeline: () => {
+    // Clear any pending timeout
+    clearCompletedStagesTimeout(get());
+    set({
+      isProcessing: false,
+      currentStage: -1,
+      completedStages: [],
+      _completedStagesTimeoutId: null,
+    });
+  },
 
   setSegment: (currentSegment) => set({ currentSegment }),
 
