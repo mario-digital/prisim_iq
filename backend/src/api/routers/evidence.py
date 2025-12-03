@@ -52,23 +52,35 @@ def _load_model_cards() -> list[ModelCard]:
 def _load_data_card() -> DataCard:
     """Load the data card."""
     filepath = CARDS_DIR / "dynamic_pricing_data_card.json"
+    if not filepath.exists():
+        logger.error(f"Required data card not found: {filepath}")
+        raise FileNotFoundError(f"Data card not found: {filepath}")
     with open(filepath) as f:
         data = json.load(f)
+        logger.debug(f"Loaded data card: {filepath.name}")
         return DataCard.model_validate(data)
 
 
 def _load_methodology() -> MethodologyDoc:
     """Load methodology documentation."""
     filepath = EVIDENCE_DIR / "methodology.json"
+    if not filepath.exists():
+        logger.error(f"Required methodology doc not found: {filepath}")
+        raise FileNotFoundError(f"Methodology documentation not found: {filepath}")
     with open(filepath) as f:
         data = json.load(f)
+        logger.debug(f"Loaded methodology: {filepath.name}")
         return MethodologyDoc.model_validate(data)
 
 
 def _load_honeywell_mapping() -> dict:
     """Load Honeywell mapping data."""
     filepath = EVIDENCE_DIR / "honeywell_mapping.json"
+    if not filepath.exists():
+        logger.error(f"Required Honeywell mapping not found: {filepath}")
+        raise FileNotFoundError(f"Honeywell mapping not found: {filepath}")
     with open(filepath) as f:
+        logger.debug(f"Loaded Honeywell mapping: {filepath.name}")
         return json.load(f)
 
 
@@ -296,4 +308,3 @@ async def get_honeywell_mapping(
         )
 
     return mapping
-
