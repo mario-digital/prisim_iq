@@ -119,8 +119,8 @@ export const DemandCurveChart: FC<DemandCurveChartProps> = memo(({
                 />
               )}
 
-              {/* Current price point marker */}
-              {currentPoint && currentPoint.price !== optimalPoint?.price && (
+              {/* Current price point marker - only show if both points exist and prices differ */}
+              {currentPoint && optimalPoint && currentPoint.price !== optimalPoint.price && (
                 <ReferenceDot
                   x={currentPoint.price}
                   y={currentPoint.value}
