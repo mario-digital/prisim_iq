@@ -11,9 +11,11 @@ in separate processes, bypassing Python's GIL.
 from __future__ import annotations
 
 import asyncio
+import atexit
 import os
+import pickle
 import time
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import BrokenExecutor, ProcessPoolExecutor
 from typing import TYPE_CHECKING, Literal
 
 from loguru import logger
@@ -27,6 +29,35 @@ from src.schemas.sensitivity import (
 
 if TYPE_CHECKING:
     from src.ml.price_optimizer import PriceOptimizer
+
+
+# ============================================================================
+# Custom Exceptions for Error Differentiation
+# ============================================================================
+
+
+class SensitivityServiceError(Exception):
+    """Base exception for sensitivity service errors."""
+
+    pass
+
+
+class WorkerProcessError(SensitivityServiceError):
+    """Raised when a worker process crashes or becomes unavailable.
+
+    This is typically a transient error - the executor may recover on next request.
+    """
+
+    pass
+
+
+class ModelExecutionError(SensitivityServiceError):
+    """Raised when the model execution fails within a worker.
+
+    This may indicate a permanent issue with the model or input data.
+    """
+
+    pass
 
 
 # ============================================================================
@@ -162,7 +193,7 @@ class SensitivityService:
         self._executor = ProcessPoolExecutor(max_workers=self._max_workers)
         logger.info(f"SensitivityService initialized with {self._max_workers} worker processes")
 
-    def shutdown(self, wait: bool = True) -> None:
+    def shutdown(self, wait: bool = True, quiet: bool = False) -> None:
         """Shutdown the ProcessPoolExecutor gracefully.
 
         Should be called during application shutdown to ensure worker
@@ -171,11 +202,16 @@ class SensitivityService:
         Args:
             wait: If True, wait for pending tasks to complete.
                   If False, cancel pending tasks immediately.
+            quiet: If True, skip logging (for atexit when I/O may be closed).
         """
         if hasattr(self, "_executor") and self._executor is not None:
-            logger.info(f"Shutting down SensitivityService executor (wait={wait})")
+            if not quiet:
+                logger.info(f"Shutting down SensitivityService executor (wait={wait})")
+
             self._executor.shutdown(wait=wait, cancel_futures=not wait)
-            logger.info("SensitivityService executor shutdown complete")
+
+            if not quiet:
+                logger.info("SensitivityService executor shutdown complete")
 
     async def _run_single_scenario(
         self,
@@ -196,24 +232,51 @@ class SensitivityService:
 
         Returns:
             ScenarioResult with optimization results for this scenario.
+
+        Raises:
+            WorkerProcessError: If a worker process crashes (transient).
+            ModelExecutionError: If model execution fails (may be permanent).
         """
         loop = asyncio.get_running_loop()
+        scenario_name = str(scenario["name"])
 
         # Convert to dict for pickling across process boundary
         context_dict = context.model_dump()
 
-        # Submit to process pool
-        result_dict = await loop.run_in_executor(
-            self._executor,
-            _run_scenario_in_process,
-            context_dict,
-            scenario_type,
-            str(scenario["name"]),
-            float(scenario["modifier"]),
-            segment,
-        )
+        try:
+            # Submit to process pool
+            result_dict = await loop.run_in_executor(
+                self._executor,
+                _run_scenario_in_process,
+                context_dict,
+                scenario_type,
+                scenario_name,
+                float(scenario["modifier"]),
+                segment,
+            )
+            return ScenarioResult(**result_dict)
 
-        return ScenarioResult(**result_dict)
+        except BrokenExecutor as e:
+            # Worker process crashed - transient error, may recover
+            logger.error(f"Worker process crashed during scenario {scenario_name}: {e}")
+            raise WorkerProcessError(
+                f"Worker process crashed during scenario '{scenario_name}'. "
+                "This is a transient error - retry may succeed."
+            ) from e
+
+        except (pickle.PicklingError, TypeError) as e:
+            # Serialization error - likely a configuration issue
+            logger.error(f"Serialization error for scenario {scenario_name}: {e}")
+            raise ModelExecutionError(
+                f"Failed to serialize data for scenario '{scenario_name}': {e}"
+            ) from e
+
+        except Exception as e:
+            # Model or execution error - may be permanent
+            logger.error(f"Model execution error for scenario {scenario_name}: {e}")
+            raise ModelExecutionError(
+                f"Model execution failed for scenario '{scenario_name}': {e}"
+            ) from e
 
     async def run_sensitivity_analysis(
         self,
@@ -392,3 +455,26 @@ def shutdown_sensitivity_service(wait: bool = True) -> None:
     if _sensitivity_service is not None:
         _sensitivity_service.shutdown(wait=wait)
         _sensitivity_service = None
+
+
+def _atexit_cleanup() -> None:
+    """Emergency cleanup on interpreter exit.
+
+    This is a fallback safety net in case the normal shutdown path
+    (via FastAPI lifespan) doesn't execute (e.g., SIGKILL, crash).
+    Uses wait=False to avoid blocking interpreter shutdown.
+    Uses quiet=True because I/O streams may be closed during interpreter exit.
+    """
+    import contextlib
+
+    global _sensitivity_service
+    if _sensitivity_service is not None:
+        with contextlib.suppress(Exception):
+            _sensitivity_service.shutdown(wait=False, quiet=True)
+        _sensitivity_service = None
+
+
+# Register atexit handler as defensive fallback
+# This runs AFTER FastAPI lifespan shutdown in normal cases (no-op),
+# but provides safety net for abnormal exits
+atexit.register(_atexit_cleanup)
