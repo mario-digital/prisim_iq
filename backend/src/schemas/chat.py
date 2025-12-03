@@ -1,10 +1,15 @@
 """Pydantic schemas for chat endpoint."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, Field
 
 from src.schemas.market import MarketContext
+
+
+def _utc_now() -> datetime:
+    """Return current UTC time as timezone-aware datetime."""
+    return datetime.now(UTC)
 
 
 class ChatRequest(BaseModel):
@@ -63,8 +68,8 @@ class ChatResponse(BaseModel):
         description="Market context used for the response",
     )
     timestamp: datetime = Field(
-        default_factory=datetime.now,
-        description="Response timestamp",
+        default_factory=_utc_now,
+        description="Response timestamp (UTC)",
     )
     processing_time_ms: float | None = Field(
         default=None,

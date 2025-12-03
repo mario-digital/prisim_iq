@@ -5,10 +5,10 @@ These tools provide access to price optimization, explanation, and sensitivity a
 
 from __future__ import annotations
 
-import asyncio
-
 from langchain_core.tools import Tool
 from loguru import logger
+
+from src.agent.utils import run_sync, sanitize_error_message
 
 
 def create_optimize_price_tool() -> Tool:
@@ -27,10 +27,8 @@ def create_optimize_price_tool() -> Tool:
             context = get_current_context()
             pricing_service = get_pricing_service()
 
-            # Run async in sync context
-            result = asyncio.get_event_loop().run_until_complete(
-                pricing_service.get_recommendation(context)
-            )
+            # Run async service in sync context
+            result = run_sync(pricing_service.get_recommendation(context))
 
             return (
                 f"Optimal Price: ${result.recommended_price:.2f}\n"
@@ -45,7 +43,7 @@ def create_optimize_price_tool() -> Tool:
 
         except Exception as e:
             logger.error(f"optimize_price tool error: {e}")
-            return f"Error getting price recommendation: {str(e)}"
+            return f"Error getting price recommendation: {sanitize_error_message(e)}"
 
     return Tool(
         name="optimize_price",
@@ -81,10 +79,8 @@ def create_explain_decision_tool() -> Tool:
                 include_shap=True,
             )
 
-            # Run async in sync context
-            result = asyncio.get_event_loop().run_until_complete(
-                explanation_service.explain(request)
-            )
+            # Run async service in sync context
+            result = run_sync(explanation_service.explain(request))
 
             # Format top factors
             top_factors = result.feature_importance[:5]
@@ -104,7 +100,7 @@ def create_explain_decision_tool() -> Tool:
 
         except Exception as e:
             logger.error(f"explain_decision tool error: {e}")
-            return f"Error generating explanation: {str(e)}"
+            return f"Error generating explanation: {sanitize_error_message(e)}"
 
     return Tool(
         name="explain_decision",
@@ -134,10 +130,8 @@ def create_sensitivity_tool() -> Tool:
             context = get_current_context()
             sensitivity_service = get_sensitivity_service()
 
-            # Run async in sync context
-            result = asyncio.get_event_loop().run_until_complete(
-                sensitivity_service.run_sensitivity_analysis(context)
-            )
+            # Run async service in sync context
+            result = run_sync(sensitivity_service.run_sensitivity_analysis(context))
 
             return (
                 f"Sensitivity Analysis Results:\n\n"
@@ -158,7 +152,7 @@ def create_sensitivity_tool() -> Tool:
 
         except Exception as e:
             logger.error(f"sensitivity_analysis tool error: {e}")
-            return f"Error running sensitivity analysis: {str(e)}"
+            return f"Error running sensitivity analysis: {sanitize_error_message(e)}"
 
     return Tool(
         name="sensitivity_analysis",
@@ -170,4 +164,3 @@ def create_sensitivity_tool() -> Tool:
         ),
         func=sensitivity_analysis,
     )
-
