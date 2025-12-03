@@ -1,6 +1,6 @@
 """Market context schema for pricing and segmentation."""
 
-from typing import Literal, Optional, Dict
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
@@ -63,7 +63,7 @@ class MarketContext(BaseModel):
     )
 
     # Optional tier prices for policy checks (rideshare analog of catalog hierarchy)
-    tier_prices: Optional[Dict[str, float]] = Field(
+    tier_prices: dict[str, float] | None = Field(
         default=None,
         description="Optional explicit tier prices (keys: new, exchange, repair, usm)",
     )
