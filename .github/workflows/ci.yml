@@ -84,7 +84,8 @@ jobs:
           ruff check src tests
 
       - name: Run tests
-        run: pytest -v
+        run: pytest -v --timeout=120
+        timeout-minutes: 10
 
   frontend-tests:
     name: Frontend Tests
