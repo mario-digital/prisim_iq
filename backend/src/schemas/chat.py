@@ -27,11 +27,7 @@ class ChatRequest(BaseModel):
     )
     session_id: str | None = Field(
         default=None,
-        description=(
-            "Optional session ID for conversation continuity. "
-            "⚠️ NOTE: Not currently used - all sessions share global memory. "
-            "See agent.py TODO for per-session memory implementation."
-        ),
+        description="Session ID for conversation continuity across requests",
     )
 
     model_config = {
@@ -57,7 +53,7 @@ class ChatRequest(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    """Response schema for chat endpoint."""
+    """Response schema for chat endpoint (non-streaming)."""
 
     message: str = Field(
         ...,
@@ -97,3 +93,55 @@ class ChatResponse(BaseModel):
         }
     }
 
+
+class ChatStreamEvent(BaseModel):
+    """Schema for SSE stream events.
+
+    Each event represents one of:
+    - Token: Incremental text from LLM (token set, done=False)
+    - Tool call: Notification of tool invocation (tool_call set, done=False)
+    - Completion: Final response with all data (message set, done=True)
+    - Error: Error occurred (error set, done=True)
+    """
+
+    token: str | None = Field(
+        default=None,
+        description="Incremental token from LLM output",
+    )
+    tool_call: str | None = Field(
+        default=None,
+        description="Name of tool being invoked",
+    )
+    message: str | None = Field(
+        default=None,
+        description="Complete response message (on completion)",
+    )
+    tools_used: list[str] | None = Field(
+        default=None,
+        description="List of all tools used (on completion)",
+    )
+    error: str | None = Field(
+        default=None,
+        description="Error message if stream failed",
+    )
+    done: bool = Field(
+        default=False,
+        description="True when stream is complete (success or error)",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {"token": "The ", "done": False},
+                {"token": "optimal ", "done": False},
+                {"tool_call": "optimize_price", "done": False},
+                {"token": "price is $24.50", "done": False},
+                {
+                    "message": "The optimal price is $24.50...",
+                    "tools_used": ["optimize_price"],
+                    "done": True,
+                },
+                {"error": "Rate limit exceeded", "done": True},
+            ]
+        }
+    }
