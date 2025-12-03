@@ -1,6 +1,6 @@
 """Market context schema for pricing and segmentation."""
 
-from typing import Literal
+from typing import Literal, Optional, Dict
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
@@ -62,6 +62,12 @@ class MarketContext(BaseModel):
         description="Baseline/historical price for this route",
     )
 
+    # Optional tier prices for policy checks (rideshare analog of catalog hierarchy)
+    tier_prices: Optional[Dict[str, float]] = Field(
+        default=None,
+        description="Optional explicit tier prices (keys: new, exchange, repair, usm)",
+    )
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def supply_demand_ratio(self) -> float:
@@ -85,4 +91,3 @@ class MarketContext(BaseModel):
             }
         },
     )
-

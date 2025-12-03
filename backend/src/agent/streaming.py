@@ -21,6 +21,8 @@ async def sse_generator(
     message: str,
     context: MarketContext,
     session_id: str = "default",
+    plan: bool = False,
+    model: str | None = None,
 ) -> AsyncGenerator[str, None]:
     """Convert agent stream to SSE format.
 
@@ -43,7 +45,7 @@ async def sse_generator(
         data: {"error": "...", "done": true}
     """
     try:
-        async for event in agent.stream_chat(message, context, session_id):
+        async for event in agent.stream_chat(message, context, session_id, plan=plan, model=model):
             yield {"data": json.dumps(event)}
     except Exception as e:
         logger.error(f"SSE generator error: {e}", exc_info=True)
@@ -57,6 +59,8 @@ async def sse_keepalive_generator(
     context: MarketContext,
     session_id: str = "default",
     keepalive_interval: float = 15.0,
+    plan: bool = False,
+    model: str | None = None,
 ) -> AsyncGenerator[str, None]:
     """SSE generator with keepalive comments for connection health.
 
@@ -88,7 +92,7 @@ async def sse_keepalive_generator(
         return None
 
     try:
-        async for event in agent.stream_chat(message, context, session_id):
+        async for event in agent.stream_chat(message, context, session_id, plan=plan, model=model):
             last_event_time = datetime.now(UTC)
             yield {"data": json.dumps(event)}
 
