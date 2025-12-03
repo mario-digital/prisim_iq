@@ -22,7 +22,7 @@ describe('Layout Store', () => {
     if (typeof localStorage !== 'undefined') {
       localStorage.clear();
     }
-    // Reset store state to initial values (module is cached, so state persists)
+    // Reset store to initial state to prevent test pollution
     const { useLayoutStore } = await import(layoutStoreModule);
     useLayoutStore.setState({
       leftPanelCollapsed: false,

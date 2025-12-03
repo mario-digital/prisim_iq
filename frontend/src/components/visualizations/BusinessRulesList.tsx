@@ -74,8 +74,8 @@ export const BusinessRulesList: FC<BusinessRulesListProps> = ({ rules }) => {
                 <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Applied Rules
                 </div>
-                {triggeredRules.map((rule) => (
-                  <RuleItem key={rule.id} rule={rule} getRuleTypeColor={getRuleTypeColor} getRuleTypeIcon={getRuleTypeIcon} />
+                {triggeredRules.map((rule, index) => (
+                  <RuleItem key={`${rule.id}-${index}`} rule={rule} getRuleTypeColor={getRuleTypeColor} getRuleTypeIcon={getRuleTypeIcon} />
                 ))}
               </div>
             )}
@@ -88,9 +88,9 @@ export const BusinessRulesList: FC<BusinessRulesListProps> = ({ rules }) => {
                   {skippedRules.length} rules not triggered
                 </summary>
                 <div className="mt-2 space-y-2 pl-4 border-l-2 border-muted">
-                  {skippedRules.map((rule) => (
+                  {skippedRules.map((rule, index) => (
                     <div
-                      key={rule.id}
+                      key={`${rule.id}-skipped-${index}`}
                       className="flex items-center gap-2 text-xs text-muted-foreground"
                     >
                       <span>{getRuleTypeIcon(rule.type)}</span>
