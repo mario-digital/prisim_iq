@@ -1,5 +1,6 @@
 """Pydantic schemas for PrismIQ API."""
 
+from src.schemas.chat import ChatRequest, ChatResponse
 from src.schemas.data import DataSummaryResponse, ErrorResponse, PriceRange
 from src.schemas.evidence import (
     DataCard,
@@ -22,6 +23,8 @@ from src.schemas.sensitivity import (
 )
 
 __all__ = [
+    "ChatRequest",
+    "ChatResponse",
     "ConfidenceBand",
     "DataCard",
     "DataSummaryResponse",

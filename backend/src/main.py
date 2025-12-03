@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 
 from src.api.middleware import LoggingMiddleware, TimingMiddleware
-from src.api.routers import data, evidence, explain, health, pricing, sensitivity
+from src.api.routers import chat, data, evidence, explain, health, pricing, sensitivity
 from src.config import get_settings
 from src.schemas.data import ErrorResponse
 from src.services.sensitivity_service import shutdown_sensitivity_service
@@ -67,6 +67,7 @@ def create_app() -> FastAPI:
     app.include_router(explain.router, prefix="/api/v1")
     app.include_router(sensitivity.router, prefix="/api/v1")
     app.include_router(evidence.router, prefix="/api/v1")
+    app.include_router(chat.router, prefix="/api/v1")
 
     return app
 
