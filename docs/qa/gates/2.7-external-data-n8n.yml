@@ -1,0 +1,44 @@
+schema: 1
+story: '2.7'
+story_title: 'External Data Integration via n8n'
+gate: PASS
+status_reason: 'All 9 acceptance criteria met with comprehensive test coverage (56 tests). Implementation follows project standards with proper service layer, caching, and fallback behavior.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-12-03T12:00:00Z'
+
+top_issues: []
+
+waiver: { active: false }
+
+quality_score: 95
+expires: '2025-12-17T12:00:00Z'
+
+evidence:
+  tests_reviewed: 56
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    ac_gaps: []
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Webhooks for internal n8n use only. Pydantic validation prevents injection. No sensitive data logged.'
+  performance:
+    status: PASS
+    notes: 'File-based caching appropriate for low-volume external data. No network calls on cache hit.'
+  reliability:
+    status: PASS
+    notes: 'Graceful fallback to mock data when n8n unavailable. Proper error handling.'
+  maintainability:
+    status: PASS
+    notes: 'Clean service layer pattern, comprehensive docstrings, backwards-compatible demand_simulator changes.'
+
+recommendations:
+  immediate: []
+  future:
+    - action: 'Consider rate limiting webhook endpoints if exposed externally'
+      refs: ['backend/src/api/routers/external.py']
+    - action: 'Migrate datetime.utcnow() to datetime.now(UTC) for Python 3.12+ compatibility'
+      refs: ['backend/src/services/external_service.py', 'backend/src/schemas/external.py']
+
