@@ -9,6 +9,7 @@ from typing import Literal
 from fastapi import APIRouter, Header, Query
 from fastapi.responses import PlainTextResponse
 from loguru import logger
+from pydantic import ValidationError
 
 from src.schemas.evidence import (
     DataCard,
@@ -50,6 +51,9 @@ def _load_model_cards() -> list[ModelCard]:
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in model card {filepath.name}: {e}")
             # Skip corrupt files, continue loading others
+        except ValidationError as e:
+            logger.error(f"Invalid schema in model card {filepath.name}: {e}")
+            # Skip files with wrong structure, continue loading others
         except Exception as e:
             logger.error(f"Error loading model card {filepath.name}: {e}")
 
@@ -71,6 +75,9 @@ def _load_data_card() -> DataCard:
     except json.JSONDecodeError as e:
         logger.error(f"Invalid JSON in data card: {e}")
         raise ValueError(f"Data card contains invalid JSON: {e}") from e
+    except ValidationError as e:
+        logger.error(f"Invalid schema in data card: {e}")
+        raise ValueError(f"Data card has invalid schema: {e}") from e
 
 
 def _load_methodology() -> MethodologyDoc:
@@ -87,6 +94,9 @@ def _load_methodology() -> MethodologyDoc:
     except json.JSONDecodeError as e:
         logger.error(f"Invalid JSON in methodology doc: {e}")
         raise ValueError(f"Methodology documentation contains invalid JSON: {e}") from e
+    except ValidationError as e:
+        logger.error(f"Invalid schema in methodology doc: {e}")
+        raise ValueError(f"Methodology documentation has invalid schema: {e}") from e
 
 
 def _load_honeywell_mapping() -> dict:
