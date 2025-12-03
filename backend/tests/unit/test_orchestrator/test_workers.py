@@ -154,7 +154,7 @@ class TestPolicyNode:
     """Tests for the policy checker worker node."""
 
     def test_policy_node_with_valid_tier_prices(self) -> None:
-        """Policy node validates provided tier prices."""
+        """Policy node validates provided tier prices and reports source."""
         from src.orchestrator.nodes.policy import policy_node
 
         state = {
@@ -176,6 +176,9 @@ class TestPolicyNode:
         policy_output = result["outputs"]["policy"]
         assert policy_output["violations"] == []
         assert "No hierarchy violations" in policy_output["summary"]
+        # New: verify source tracking
+        assert policy_output["source"] == "context"
+        assert policy_output["parse_errors"] is None
 
     def test_policy_node_detects_hierarchy_violations(self) -> None:
         """Policy node detects when tier prices violate hierarchy."""
@@ -199,6 +202,7 @@ class TestPolicyNode:
         assert len(policy_output["violations"]) > 0
         assert policy_output["violations"][0]["type"] == "hierarchy_inversion"
         assert len(policy_output["suggestions"]) > 0
+        assert policy_output["source"] == "context"
 
     def test_policy_node_derives_from_optimizer_output(self) -> None:
         """Policy node derives tier prices from optimizer output when not provided."""
@@ -217,6 +221,8 @@ class TestPolicyNode:
         assert policy_output["tier_prices"]["exchange"] == 95.0  # 95%
         assert policy_output["tier_prices"]["repair"] == 90.0   # 90%
         assert policy_output["tier_prices"]["usm"] == 85.0      # 85%
+        # New: verify source tracking
+        assert policy_output["source"] == "optimizer"
 
     def test_policy_node_uses_defaults_when_no_input(self) -> None:
         """Policy node uses safe defaults when no prices available."""
@@ -227,9 +233,50 @@ class TestPolicyNode:
         result = policy_node(state)  # type: ignore[arg-type]
 
         policy_output = result["outputs"]["policy"]
-        # Should use default prices
+        # Should use default prices with source tracking
         assert "tier_prices" in policy_output
         assert policy_output["tier_prices"]["new"] == 100.0
+        assert policy_output["source"] == "default"
+
+    def test_policy_node_handles_invalid_tier_price_values(self) -> None:
+        """Policy node handles non-numeric tier price values gracefully."""
+        from src.orchestrator.nodes.policy import policy_node
+
+        state = {
+            "context": {
+                "tier_prices": {
+                    "new": "not_a_number",
+                    "exchange": 95.0,
+                }
+            },
+            "outputs": {},
+        }
+
+        result = policy_node(state)  # type: ignore[arg-type]
+
+        policy_output = result["outputs"]["policy"]
+        # Should have parse errors but still produce output
+        assert policy_output["parse_errors"] is not None
+        assert len(policy_output["parse_errors"]) == 1
+        assert "new" in policy_output["parse_errors"][0]
+        # Only valid value should be in tier_prices
+        assert "exchange" in policy_output["tier_prices"]
+
+    def test_policy_node_tolerant_price_format(self) -> None:
+        """Policy node extracts prices from various optimizer output formats."""
+        from src.orchestrator.nodes.policy import policy_node
+
+        # Test alternative format (matches "price: $X" pattern)
+        state = {
+            "context": {},
+            "outputs": {"optimizer": "Based on analysis, the price: $150 is optimal"},
+        }
+
+        result = policy_node(state)  # type: ignore[arg-type]
+
+        policy_output = result["outputs"]["policy"]
+        assert policy_output["tier_prices"]["new"] == 150.0
+        assert policy_output["source"] == "optimizer"
 
 
 class TestReporterNode:
