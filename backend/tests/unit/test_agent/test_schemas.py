@@ -1,10 +1,10 @@
-"""Tests for chat schemas."""
+"""Tests for chat schemas including streaming events."""
 
 from datetime import datetime
 
 import pytest
 
-from src.schemas.chat import ChatRequest, ChatResponse
+from src.schemas.chat import ChatRequest, ChatResponse, ChatStreamEvent
 from src.schemas.market import MarketContext
 
 
@@ -134,3 +134,82 @@ class TestChatResponse:
         assert "optimize_price" in response.tools_used
         assert "explain_decision" in response.tools_used
 
+
+class TestChatStreamEvent:
+    """Tests for ChatStreamEvent schema (SSE streaming)."""
+
+    def test_token_event(self) -> None:
+        """Test creating a token stream event."""
+        event = ChatStreamEvent(
+            token="The ",
+            done=False,
+        )
+
+        assert event.token == "The "
+        assert event.done is False
+        assert event.message is None
+        assert event.tool_call is None
+        assert event.error is None
+
+    def test_tool_call_event(self) -> None:
+        """Test creating a tool call stream event."""
+        event = ChatStreamEvent(
+            tool_call="optimize_price",
+            done=False,
+        )
+
+        assert event.tool_call == "optimize_price"
+        assert event.done is False
+        assert event.token is None
+
+    def test_completion_event(self) -> None:
+        """Test creating a completion stream event."""
+        event = ChatStreamEvent(
+            message="The optimal price is $24.50",
+            tools_used=["optimize_price"],
+            done=True,
+        )
+
+        assert event.message == "The optimal price is $24.50"
+        assert event.tools_used == ["optimize_price"]
+        assert event.done is True
+        assert event.error is None
+
+    def test_error_event(self) -> None:
+        """Test creating an error stream event."""
+        event = ChatStreamEvent(
+            error="Rate limit exceeded",
+            done=True,
+        )
+
+        assert event.error == "Rate limit exceeded"
+        assert event.done is True
+        assert event.message is None
+
+    def test_default_done_is_false(self) -> None:
+        """Test that done defaults to False."""
+        event = ChatStreamEvent()
+        assert event.done is False
+
+    def test_stream_event_serialization(self) -> None:
+        """Test stream event can be serialized to JSON."""
+        event = ChatStreamEvent(
+            token="Hello",
+            done=False,
+        )
+
+        # Should serialize without error
+        json_data = event.model_dump_json()
+        assert "token" in json_data
+        assert "Hello" in json_data
+
+    def test_completion_event_with_multiple_tools(self) -> None:
+        """Test completion event with multiple tools."""
+        event = ChatStreamEvent(
+            message="Based on the analysis...",
+            tools_used=["optimize_price", "explain_decision", "sensitivity_analysis"],
+            done=True,
+        )
+
+        assert len(event.tools_used) == 3
+        assert "optimize_price" in event.tools_used

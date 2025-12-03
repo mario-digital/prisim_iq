@@ -1,6 +1,10 @@
-"""System prompt for PrismIQ agent."""
+"""System prompt for PrismIQ agent.
 
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+Used as the system message in a ChatPromptTemplate for a
+LangChain v1 tool-calling agent.
+"""
+
+from langchain_core.messages import SystemMessage
 
 SYSTEM_PROMPT = """You are PrismIQ, an AI pricing copilot for dynamic pricing optimization.
 
@@ -43,16 +47,10 @@ Your role is to help pricing analysts understand and optimize prices using machi
 Current market context is automatically available to tools - you don't need to pass it explicitly."""
 
 
-def create_prompt() -> ChatPromptTemplate:
-    """Create the chat prompt template for the agent.
+def get_system_message() -> SystemMessage:
+    """Get the system message for the agent.
 
     Returns:
-        ChatPromptTemplate with system message, chat history, and user input.
+        SystemMessage with the full system prompt.
     """
-    return ChatPromptTemplate.from_messages([
-        ("system", SYSTEM_PROMPT),
-        MessagesPlaceholder(variable_name="chat_history", optional=True),
-        ("human", "{input}"),
-        MessagesPlaceholder(variable_name="agent_scratchpad"),
-    ])
-
+    return SystemMessage(content=SYSTEM_PROMPT)
