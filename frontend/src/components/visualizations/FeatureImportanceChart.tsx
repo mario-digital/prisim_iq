@@ -9,8 +9,16 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
+  LabelList,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  chartColors,
+  chartConfig,
+  tooltipStyle,
+  animationProps,
+  getDirectionColor,
+} from '@/lib/chartTheme';
 import type { FeatureContribution } from './types';
 
 interface FeatureImportanceChartProps {
@@ -40,27 +48,15 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
   const chartData = [...data]
     .sort((a, b) => b.importance - a.importance)
     .slice(0, 6)
-    .map((d) => {
-      // Defensive: clamp importance to valid range [0, 1]
-      const normalizedImportance = clamp(d.importance, 0, 1);
-      return {
-        name: d.displayName,
-        value: normalizedImportance * 100,
-        direction: d.direction,
-        currentValue: d.currentValue,
-      };
-    });
+    .map((d) => ({
+      name: d.displayName,
+      value: clamp(d.importance, 0, 1) * 100,
+      direction: d.direction,
+      currentValue: d.currentValue,
+    }));
 
-  const getBarColor = (direction: string) => {
-    switch (direction) {
-      case 'positive':
-        return '#10b981'; // emerald-500
-      case 'negative':
-        return '#ef4444'; // red-500
-      default:
-        return '#6b7280'; // gray-500
-    }
-  };
+  const getBarColor = (direction: string) =>
+    getDirectionColor(direction as 'positive' | 'negative' | 'neutral');
 
   return (
     <Card>
@@ -69,27 +65,28 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
       </CardHeader>
       <CardContent>
         {chartData.length === 0 ? (
-          <div className="flex items-center justify-center h-[200px] text-sm text-muted-foreground">
+          <div className="flex items-center justify-center h-[220px] text-sm text-muted-foreground">
             No feature data available
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={220}>
             <BarChart
               data={chartData}
               layout="vertical"
-              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              margin={{ top: 5, right: 45, left: 20, bottom: 5 }}
             >
               <XAxis
                 type="number"
                 domain={[0, 100]}
                 tickFormatter={(v) => `${v}%`}
-                fontSize={12}
+                fontSize={chartConfig.fontSize}
+                tickLine={false}
               />
               <YAxis
                 type="category"
                 dataKey="name"
-                width={100}
-                fontSize={12}
+                width={110}
+                fontSize={chartConfig.fontSize}
                 tickLine={false}
                 axisLine={false}
               />
@@ -99,20 +96,26 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
                   const item = chartData.find((d) => d.name === label);
                   return `${label}: ${item?.currentValue ?? 'N/A'}`;
                 }}
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                }}
+                contentStyle={tooltipStyle}
               />
-              <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+              <Bar
+                dataKey="value"
+                radius={[0, 4, 4, 0]}
+                {...animationProps}
+              >
                 {chartData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
                     fill={getBarColor(entry.direction)}
                   />
                 ))}
+                <LabelList
+                  dataKey="value"
+                  position="right"
+                  formatter={(v: number) => `${v.toFixed(1)}%`}
+                  fontSize={chartConfig.fontSizeSmall}
+                  fill={chartColors.muted}
+                />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -120,12 +123,18 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
 
         {/* Legend */}
         <div className="flex justify-center gap-4 mt-2 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-sm bg-emerald-500" />
+          <div className="flex items-center gap-1.5">
+            <div
+              className="w-3 h-3 rounded-sm"
+              style={{ backgroundColor: chartColors.positive }}
+            />
             <span className="text-muted-foreground">Increases price</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-sm bg-red-500" />
+          <div className="flex items-center gap-1.5">
+            <div
+              className="w-3 h-3 rounded-sm"
+              style={{ backgroundColor: chartColors.negative }}
+            />
             <span className="text-muted-foreground">Decreases price</span>
           </div>
         </div>
@@ -135,4 +144,3 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
 });
 
 FeatureImportanceChart.displayName = 'FeatureImportanceChart';
-

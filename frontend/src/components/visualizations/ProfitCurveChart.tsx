@@ -12,6 +12,12 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  chartColors,
+  chartConfig,
+  tooltipStyle,
+  animationProps,
+} from '@/lib/chartTheme';
 import type { CurvePoint } from './types';
 
 interface ProfitCurveChartProps {
@@ -68,25 +74,33 @@ export const ProfitCurveChart: FC<ProfitCurveChartProps> = memo(({
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart
               data={data}
-              margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
+              margin={chartConfig.margin}
             >
               {/* Gradient definition */}
               <defs>
                 <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05} />
+                  <stop
+                    offset="5%"
+                    stopColor={chartColors.primary}
+                    stopOpacity={0.4}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor={chartColors.primary}
+                    stopOpacity={0.05}
+                  />
                 </linearGradient>
               </defs>
 
               <XAxis
                 dataKey="price"
                 tickFormatter={(v) => `$${v}`}
-                fontSize={12}
+                fontSize={chartConfig.fontSize}
                 tickLine={false}
               />
               <YAxis
                 tickFormatter={(v) => `$${v}`}
-                fontSize={12}
+                fontSize={chartConfig.fontSize}
                 tickLine={false}
                 axisLine={false}
                 domain={[minProfit * 0.9, 'auto']}
@@ -94,19 +108,14 @@ export const ProfitCurveChart: FC<ProfitCurveChartProps> = memo(({
               <Tooltip
                 formatter={(value: number) => [`$${value.toFixed(2)}`, 'Expected Profit']}
                 labelFormatter={(label) => `Price: $${label}`}
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                }}
+                contentStyle={tooltipStyle}
               />
 
               {/* Baseline reference */}
               {minProfit > 0 && (
                 <ReferenceLine
                   y={minProfit}
-                  stroke="#94a3b8"
+                  stroke={chartColors.muted}
                   strokeDasharray="4 4"
                   strokeWidth={1}
                 />
@@ -116,21 +125,28 @@ export const ProfitCurveChart: FC<ProfitCurveChartProps> = memo(({
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#3b82f6"
+                stroke={chartColors.primary}
                 strokeWidth={2}
                 fill="url(#profitGradient)"
-                activeDot={{ r: 4, fill: '#3b82f6' }}
+                activeDot={{ r: 4, fill: chartColors.primary }}
+                {...animationProps}
               />
 
-              {/* Maximum profit point marker */}
+              {/* Maximum profit point marker with label */}
               {maxProfitPoint && (
                 <ReferenceDot
                   x={maxProfitPoint.price}
                   y={maxProfitPoint.value}
                   r={6}
-                  fill="#10b981"
+                  fill={chartColors.secondary}
                   stroke="#fff"
                   strokeWidth={2}
+                  label={{
+                    value: `$${maxProfitPoint.value.toFixed(0)}`,
+                    position: 'top',
+                    fontSize: chartConfig.fontSizeSmall,
+                    fill: chartColors.secondary,
+                  }}
                 />
               )}
 
@@ -141,7 +157,7 @@ export const ProfitCurveChart: FC<ProfitCurveChartProps> = memo(({
                     x={optimalPoint.price}
                     y={optimalPoint.value}
                     r={5}
-                    fill="#f59e0b"
+                    fill={chartColors.accent}
                     stroke="#fff"
                     strokeWidth={2}
                   />
@@ -152,12 +168,18 @@ export const ProfitCurveChart: FC<ProfitCurveChartProps> = memo(({
 
         {/* Legend */}
         <div className="flex justify-center gap-4 mt-2 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-emerald-500" />
+          <div className="flex items-center gap-1.5">
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: chartColors.secondary }}
+            />
             <span className="text-muted-foreground">Maximum Profit</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-amber-500" />
+          <div className="flex items-center gap-1.5">
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: chartColors.accent }}
+            />
             <span className="text-muted-foreground">Recommended</span>
           </div>
         </div>

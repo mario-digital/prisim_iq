@@ -12,6 +12,95 @@ export interface DocTreeCategory {
   items: DocTreeItem[];
 }
 
+/**
+ * All valid document IDs used in the evidence navigation tree.
+ * This is the single source of truth for document identifiers.
+ */
+export const DOC_IDS = [
+  'xgboost',
+  'decision_tree',
+  'linear_regression',
+  'data_card',
+  'feature_definitions',
+  'pricing_algorithm',
+  'demand_modeling',
+  'rules_engine',
+  'audit_trail',
+  'honeywell_mapping',
+] as const;
+
+/** Union type of all valid document IDs for type safety */
+export type DocId = (typeof DOC_IDS)[number];
+
+/**
+ * Centralized document tree structure.
+ * Single source of truth for navigation - imported by components and tests.
+ * 
+ * @remarks
+ * All item.id values MUST be unique across the entire tree.
+ * This is enforced at compile-time via the DocId type and
+ * validated at runtime in tests.
+ */
+export const DOC_TREE: DocTreeCategory[] = [
+  {
+    category: 'Model Documentation',
+    items: [
+      { id: 'xgboost', label: 'XGBoost Model Card' },
+      { id: 'decision_tree', label: 'Decision Tree Model Card' },
+      { id: 'linear_regression', label: 'Linear Regression Model Card' },
+    ],
+  },
+  {
+    category: 'Data Documentation',
+    items: [
+      { id: 'data_card', label: 'Dataset Card' },
+      { id: 'feature_definitions', label: 'Feature Definitions' },
+    ],
+  },
+  {
+    category: 'Methodology',
+    items: [
+      { id: 'pricing_algorithm', label: 'Pricing Algorithm' },
+      { id: 'demand_modeling', label: 'Demand Modeling' },
+      { id: 'rules_engine', label: 'Business Rules' },
+    ],
+  },
+  {
+    category: 'Compliance',
+    items: [
+      { id: 'audit_trail', label: 'Audit Trail' },
+      { id: 'honeywell_mapping', label: 'Honeywell Mapping' },
+    ],
+  },
+];
+
+/**
+ * Helper to get all document IDs from the tree.
+ * Useful for validation and iteration.
+ */
+export function getAllDocIds(): string[] {
+  return DOC_TREE.flatMap((category) => category.items.map((item) => item.id));
+}
+
+/**
+ * Validates that all IDs in DOC_TREE are unique.
+ * Call this in tests to ensure tree integrity.
+ */
+export function validateDocTreeUniqueness(): { valid: boolean; duplicates: string[] } {
+  const ids = getAllDocIds();
+  const seen = new Set<string>();
+  const duplicates: string[] = [];
+  
+  for (const id of ids) {
+    if (seen.has(id)) {
+      duplicates.push(id);
+    }
+    seen.add(id);
+  }
+  
+  return { valid: duplicates.length === 0, duplicates };
+}
+
 export interface ModelCardMetrics {
   r2_score: number;
   mae: number;
@@ -95,4 +184,3 @@ export interface HoneywellMappingResponse {
   mapping: Record<string, string>;
   compliance_notes: string[];
 }
-

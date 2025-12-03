@@ -9,26 +9,84 @@ interface DocViewerProps {
   isLoading: boolean;
 }
 
+/**
+ * Skeleton loader that mimics typical markdown document layout.
+ * Displays realistic structure: H1 title, meta info, H2 sections,
+ * paragraph text, tables, and code blocks.
+ */
 function DocumentSkeleton() {
   return (
-    <div className="space-y-4 animate-pulse">
-      <Skeleton className="h-8 w-3/4" />
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-5/6" />
-      <div className="pt-4 space-y-3">
-        <Skeleton className="h-6 w-1/2" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-4/5" />
-        <Skeleton className="h-4 w-3/4" />
+    <div className="space-y-6 animate-pulse">
+      {/* H1 Title */}
+      <Skeleton className="h-9 w-2/3" />
+      
+      {/* Meta line (Version, Date, etc.) */}
+      <div className="flex gap-4">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-4 w-20" />
       </div>
-      <div className="pt-4 space-y-3">
-        <Skeleton className="h-6 w-2/5" />
-        <Skeleton className="h-32 w-full" />
+      
+      {/* Horizontal rule */}
+      <Skeleton className="h-px w-full" />
+      
+      {/* Section 1: Overview with paragraph */}
+      <div className="space-y-3 pt-2">
+        <Skeleton className="h-7 w-1/3" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-11/12" />
+          <Skeleton className="h-4 w-4/5" />
+        </div>
       </div>
-      <div className="pt-4 space-y-3">
-        <Skeleton className="h-6 w-1/3" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-5/6" />
+      
+      {/* Section 2: Details with bullet list */}
+      <div className="space-y-3 pt-4">
+        <Skeleton className="h-7 w-2/5" />
+        <div className="space-y-2 pl-4">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-2 w-2 rounded-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-2 w-2 rounded-full" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-2 w-2 rounded-full" />
+            <Skeleton className="h-4 w-4/5" />
+          </div>
+        </div>
+      </div>
+      
+      {/* Section 3: Table */}
+      <div className="space-y-3 pt-4">
+        <Skeleton className="h-7 w-1/4" />
+        <div className="border rounded-lg overflow-hidden">
+          {/* Table header */}
+          <div className="flex gap-2 p-3 bg-muted/30">
+            <Skeleton className="h-4 w-1/4" />
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-4 w-1/5" />
+          </div>
+          {/* Table rows */}
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex gap-2 p-3 border-t">
+              <Skeleton className="h-4 w-1/4" />
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-4 w-1/5" />
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      {/* Section 4: Code block */}
+      <div className="space-y-3 pt-4">
+        <Skeleton className="h-7 w-1/3" />
+        <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
       </div>
     </div>
   );
@@ -147,4 +205,3 @@ export const DocViewer: FC<DocViewerProps> = ({ content, isLoading }) => {
     </article>
   );
 };
-

@@ -4,52 +4,19 @@ import { useState } from 'react';
 import type { FC } from 'react';
 import { ChevronDown, ChevronRight, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { DocTreeCategory } from './types';
+import { DOC_TREE } from './types';
 
 interface DocNavigationProps {
   selectedId: string;
   onSelect: (id: string) => void;
 }
 
-const docTree: DocTreeCategory[] = [
-  {
-    category: 'Model Documentation',
-    items: [
-      { id: 'xgboost', label: 'XGBoost Model Card' },
-      { id: 'decision_tree', label: 'Decision Tree Model Card' },
-      { id: 'linear_regression', label: 'Linear Regression Model Card' },
-    ],
-  },
-  {
-    category: 'Data Documentation',
-    items: [
-      { id: 'data_card', label: 'Dataset Card' },
-      { id: 'feature_definitions', label: 'Feature Definitions' },
-    ],
-  },
-  {
-    category: 'Methodology',
-    items: [
-      { id: 'pricing_algorithm', label: 'Pricing Algorithm' },
-      { id: 'demand_modeling', label: 'Demand Modeling' },
-      { id: 'rules_engine', label: 'Business Rules' },
-    ],
-  },
-  {
-    category: 'Compliance',
-    items: [
-      { id: 'audit_trail', label: 'Audit Trail' },
-      { id: 'honeywell_mapping', label: 'Honeywell Mapping' },
-    ],
-  },
-];
-
 export const DocNavigation: FC<DocNavigationProps> = ({
   selectedId,
   onSelect,
 }) => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(docTree.map((c) => c.category))
+    new Set(DOC_TREE.map((c) => c.category))
   );
 
   const toggleCategory = (category: string) => {
@@ -69,7 +36,7 @@ export const DocNavigation: FC<DocNavigationProps> = ({
       <h3 className="text-sm font-semibold text-foreground mb-4">
         Documentation
       </h3>
-      {docTree.map((category) => {
+      {DOC_TREE.map((category) => {
         const isExpanded = expandedCategories.has(category.category);
         return (
           <div key={category.category} className="space-y-1">
@@ -112,4 +79,3 @@ export const DocNavigation: FC<DocNavigationProps> = ({
     </nav>
   );
 };
-

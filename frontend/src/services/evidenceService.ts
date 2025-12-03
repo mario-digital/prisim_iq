@@ -19,7 +19,20 @@ const api = ky.create({
 let cachedEvidence: EvidenceResponse | null = null;
 let cachedHoneywellMapping: HoneywellMappingResponse | null = null;
 
-// Fallback markdown content for when API is unavailable
+/**
+ * Fallback markdown content for offline/demo mode.
+ * 
+ * @remarks
+ * MAINTAINABILITY NOTE: This hardcoded content serves as a fallback when the
+ * backend API is unavailable. For production projects, consider:
+ * 
+ * 1. Moving content to separate .md files in /public/fallback/docs/
+ * 2. Using a build-time import or fetch from local assets
+ * 3. Implementing a mock service layer for testing
+ * 
+ * Current structure mirrors the DOC_IDS from types.ts - ensure any new
+ * document IDs added to DOC_TREE have corresponding fallback content here.
+ */
 const fallbackContent: Record<string, string> = {
   xgboost: `# XGBoost Demand Predictor
 
@@ -348,7 +361,15 @@ const fallbackModelCards: ModelCard[] = [
   },
 ];
 
-// Fallback data card
+/**
+ * Fallback data card for offline/demo mode.
+ * 
+ * @remarks
+ * This fallback data is used when the API is unavailable.
+ * For production maintainability, consider moving this to a
+ * separate JSON file (e.g., /public/fallback/data-card.json)
+ * and importing it, or loading via a mock service.
+ */
 const fallbackDataCard: DataCard = {
   dataset_name: 'Dynamic Pricing Dataset',
   version: '1.0.0',
@@ -358,7 +379,85 @@ const fallbackDataCard: DataCard = {
     collection_date: '2024',
     preprocessing_steps: ['Loaded from Excel', 'Computed supply_demand_ratio'],
   },
-  features: [],
+  features: [
+    {
+      name: 'Number_of_Riders',
+      dtype: 'int64',
+      description: 'Number of customers requesting rides in the area',
+      range_or_values: '20-100',
+      distribution: 'Normal',
+    },
+    {
+      name: 'Number_of_Drivers',
+      dtype: 'int64',
+      description: 'Number of available drivers in the area',
+      range_or_values: '5-89',
+      distribution: 'Normal',
+    },
+    {
+      name: 'Location_Category',
+      dtype: 'category',
+      description: 'Type of area where the ride originates',
+      range_or_values: 'Urban, Suburban, Rural',
+      distribution: 'Categorical',
+    },
+    {
+      name: 'Customer_Loyalty_Status',
+      dtype: 'category',
+      description: 'Customer loyalty tier',
+      range_or_values: 'Regular, Silver, Gold',
+      distribution: 'Categorical',
+    },
+    {
+      name: 'Number_of_Past_Rides',
+      dtype: 'int64',
+      description: 'Historical ride count for the customer',
+      range_or_values: '0-100',
+      distribution: 'Right-skewed',
+    },
+    {
+      name: 'Average_Ratings',
+      dtype: 'float64',
+      description: 'Customer average rating',
+      range_or_values: '3.5-5.0',
+      distribution: 'Left-skewed',
+    },
+    {
+      name: 'Time_of_Booking',
+      dtype: 'category',
+      description: 'Time slot when ride was booked',
+      range_or_values: 'Morning, Afternoon, Evening, Night',
+      distribution: 'Categorical',
+    },
+    {
+      name: 'Vehicle_Type',
+      dtype: 'category',
+      description: 'Type of vehicle requested',
+      range_or_values: 'Economy, Premium',
+      distribution: 'Categorical (60/40 split)',
+    },
+    {
+      name: 'Expected_Ride_Duration',
+      dtype: 'float64',
+      description: 'Predicted trip duration in minutes',
+      range_or_values: '10-180',
+      distribution: 'Right-skewed',
+    },
+    {
+      name: 'Historical_Cost_of_Ride',
+      dtype: 'float64',
+      description: 'Historical average cost for similar rides',
+      range_or_values: '$25.99-$836.12',
+      distribution: 'Right-skewed',
+    },
+    {
+      name: 'supply_demand_ratio',
+      dtype: 'float64',
+      description: 'Computed ratio of drivers to riders',
+      range_or_values: '0.06-0.90',
+      distribution: 'Normal',
+    },
+  ],
   statistics: {
     row_count: 1000,
     column_count: 11,
@@ -423,7 +522,8 @@ export async function getDocContent(docId: string): Promise<string> {
   try {
     // Try to get from cached evidence first
     const evidence = await getEvidence();
-    if (evidence.markdown_content?.[docId]) {
+    // Check for property existence, not truthiness (empty string is valid cached content)
+    if (evidence.markdown_content && docId in evidence.markdown_content) {
       return evidence.markdown_content[docId];
     }
 
@@ -447,4 +547,3 @@ export function clearEvidenceCache(): void {
   cachedEvidence = null;
   cachedHoneywellMapping = null;
 }
-

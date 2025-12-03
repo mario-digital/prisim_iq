@@ -9,7 +9,12 @@ export { DecisionTrace } from './DecisionTrace';
 export { DemandCurveChart } from './DemandCurveChart';
 export { ProfitCurveChart } from './ProfitCurveChart';
 export { SensitivitySection } from './SensitivitySection';
+export { SensitivityBandChart } from './SensitivityBandChart';
+export { SegmentPerformanceChart } from './SegmentPerformanceChart';
 export { BusinessRulesList } from './BusinessRulesList';
+
+// Chart shared utilities
+export * from './charts/shared';
 
 export type {
   FeatureContribution,
@@ -19,4 +24,7 @@ export type {
   BusinessRule,
   PriceExplanation,
 } from './types';
+
+export type { SensitivityBandPoint } from './SensitivityBandChart';
+export type { SegmentPerformanceData } from './SegmentPerformanceChart';
 

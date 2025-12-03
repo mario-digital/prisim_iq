@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'bun:test';
 import type { DocTreeCategory, DocTreeItem } from '@/components/evidence/types';
+import {
+  DOC_TREE,
+  DOC_IDS,
+  getAllDocIds,
+  validateDocTreeUniqueness,
+} from '@/components/evidence/types';
 
 describe('DocNavigation Types', () => {
   it('should define DocTreeItem correctly', () => {
@@ -24,33 +30,65 @@ describe('DocNavigation Types', () => {
   });
 });
 
-describe('DocNavigation Selection Logic', () => {
-  it('should identify selected item correctly', () => {
-    const selectedId = 'xgboost';
-    const items = [
-      { id: 'xgboost', label: 'XGBoost Model Card' },
-      { id: 'decision_tree', label: 'Decision Tree Model Card' },
-    ];
+describe('DOC_TREE Centralized Data', () => {
+  it('should have all expected categories', () => {
+    const categoryNames = DOC_TREE.map((c) => c.category);
+    expect(categoryNames).toContain('Model Documentation');
+    expect(categoryNames).toContain('Data Documentation');
+    expect(categoryNames).toContain('Methodology');
+    expect(categoryNames).toContain('Compliance');
+  });
 
-    const selectedItem = items.find((item) => item.id === selectedId);
+  it('should have unique IDs across the entire tree (CRITICAL)', () => {
+    const { valid, duplicates } = validateDocTreeUniqueness();
+    expect(duplicates).toEqual([]);
+    expect(valid).toBe(true);
+  });
+
+  it('should have IDs matching DOC_IDS constant', () => {
+    const treeIds = getAllDocIds();
+    const constantIds = [...DOC_IDS];
+    
+    // Every tree ID should be in DOC_IDS
+    for (const id of treeIds) {
+      expect(constantIds).toContain(id);
+    }
+    
+    // DOC_IDS and tree IDs should match in count
+    expect(treeIds.length).toBe(constantIds.length);
+  });
+
+  it('should have non-empty labels for all items', () => {
+    for (const category of DOC_TREE) {
+      for (const item of category.items) {
+        expect(item.label.length).toBeGreaterThan(0);
+      }
+    }
+  });
+});
+
+describe('DocNavigation Selection Logic', () => {
+  it('should identify selected item correctly using DOC_TREE', () => {
+    const selectedId = 'xgboost';
+    const allItems = DOC_TREE.flatMap((c) => c.items);
+    
+    const selectedItem = allItems.find((item) => item.id === selectedId);
     expect(selectedItem).toBeDefined();
     expect(selectedItem?.label).toBe('XGBoost Model Card');
   });
 
   it('should handle unknown selection', () => {
     const selectedId = 'unknown';
-    const items = [
-      { id: 'xgboost', label: 'XGBoost Model Card' },
-    ];
+    const allItems = DOC_TREE.flatMap((c) => c.items);
 
-    const selectedItem = items.find((item) => item.id === selectedId);
+    const selectedItem = allItems.find((item) => item.id === selectedId);
     expect(selectedItem).toBeUndefined();
   });
 });
 
 describe('Category Expansion State', () => {
   it('should track expanded categories with Set', () => {
-    const categories = ['Model Documentation', 'Data Documentation'];
+    const categories = DOC_TREE.map((c) => c.category);
     const expandedCategories = new Set(categories);
 
     expect(expandedCategories.has('Model Documentation')).toBe(true);
