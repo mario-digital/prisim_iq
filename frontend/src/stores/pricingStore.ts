@@ -16,7 +16,7 @@
 import { create } from 'zustand';
 import type { PriceExplanation } from '@/components/visualizations/types';
 import type { MarketContext } from './contextStore';
-import { apiUrl, apiConfig } from '@/lib/api';
+import { apiUrl } from '@/lib/api';
 
 interface PricingState {
   /** Current price explanation with all visualization data */
@@ -27,6 +27,9 @@ interface PricingState {
 
   /** Error message if pricing failed (null = no error) */
   error: string | null;
+
+  /** Fetch pricing explanation for a market context */
+  fetchPricing: (context: MarketContext) => Promise<void>;
 
   /** Set the complete explanation data (clears loading and error) */
   setExplanation: (explanation: PriceExplanation) => void;
@@ -61,6 +64,41 @@ const INITIAL_STATE = {
  */
 export const usePricingStore = create<PricingState>((set) => ({
   ...INITIAL_STATE,
+
+  fetchPricing: async (context: MarketContext) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const response = await fetch(apiUrl('/api/v1/explain-decision'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(context),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.detail || `Request failed with status ${response.status}`
+        );
+      }
+
+      const data: PriceExplanation = await response.json();
+      set({
+        explanation: data,
+        isLoading: false,
+        error: null,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to fetch pricing';
+      set({
+        error: message,
+        isLoading: false,
+      });
+    }
+  },
 
   setExplanation: (explanation) =>
     set({
