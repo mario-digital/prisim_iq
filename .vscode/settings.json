@@ -1,0 +1,30 @@
+{
+  // Treat bun.lock as plain text to avoid JSON validation errors
+  // bun.lock uses a special format that looks like JSON but has trailing commas
+  "files.associations": {
+    "**/bun.lock": "plaintext",
+    "**/bun.lockb": "plaintext"
+  },
+  
+  // JSON settings
+  "json.validate.enable": true,
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  
+  // Editor settings
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  
+  // TypeScript settings
+  "typescript.tsdk": "node_modules/typescript/lib",
+  
+  // ESLint workspaces
+  "eslint.workingDirectories": [
+    { "directory": "frontend", "changeProcessCWD": true },
+    { "directory": "backend", "changeProcessCWD": true }
+  ]
+}
+
