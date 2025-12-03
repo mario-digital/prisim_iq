@@ -162,10 +162,20 @@ class SensitivityService:
         self._executor = ProcessPoolExecutor(max_workers=self._max_workers)
         logger.info(f"SensitivityService initialized with {self._max_workers} worker processes")
 
-    def __del__(self) -> None:
-        """Cleanup executor on deletion."""
-        if hasattr(self, "_executor"):
-            self._executor.shutdown(wait=False)
+    def shutdown(self, wait: bool = True) -> None:
+        """Shutdown the ProcessPoolExecutor gracefully.
+
+        Should be called during application shutdown to ensure worker
+        processes are properly terminated.
+
+        Args:
+            wait: If True, wait for pending tasks to complete.
+                  If False, cancel pending tasks immediately.
+        """
+        if hasattr(self, "_executor") and self._executor is not None:
+            logger.info(f"Shutting down SensitivityService executor (wait={wait})")
+            self._executor.shutdown(wait=wait, cancel_futures=not wait)
+            logger.info("SensitivityService executor shutdown complete")
 
     async def _run_single_scenario(
         self,
@@ -366,3 +376,19 @@ def get_sensitivity_service() -> SensitivityService:
         price_optimizer = get_price_optimizer()
         _sensitivity_service = SensitivityService(price_optimizer=price_optimizer)
     return _sensitivity_service
+
+
+def shutdown_sensitivity_service(wait: bool = True) -> None:
+    """Shutdown the singleton SensitivityService if initialized.
+
+    This should be called during application shutdown (e.g., via FastAPI
+    lifespan) to ensure ProcessPoolExecutor workers are properly terminated.
+
+    Args:
+        wait: If True, wait for pending tasks to complete.
+              If False, cancel pending tasks immediately.
+    """
+    global _sensitivity_service
+    if _sensitivity_service is not None:
+        _sensitivity_service.shutdown(wait=wait)
+        _sensitivity_service = None

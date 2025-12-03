@@ -11,6 +11,7 @@ from src.api.middleware import LoggingMiddleware, TimingMiddleware
 from src.api.routers import data, health, pricing, sensitivity
 from src.config import get_settings
 from src.schemas.data import ErrorResponse
+from src.services.sensitivity_service import shutdown_sensitivity_service
 
 
 @asynccontextmanager
@@ -23,6 +24,8 @@ async def lifespan(_app: FastAPI):
     yield
     # Shutdown
     logger.info("Shutting down PrismIQ API")
+    # Gracefully shutdown ProcessPoolExecutor to prevent orphaned workers
+    shutdown_sensitivity_service(wait=True)
 
 
 def create_app() -> FastAPI:
