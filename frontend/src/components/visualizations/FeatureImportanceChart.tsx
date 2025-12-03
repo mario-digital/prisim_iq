@@ -18,23 +18,38 @@ interface FeatureImportanceChartProps {
 }
 
 /**
+ * Clamps a value to the specified range [min, max].
+ * Defensive utility for handling potentially invalid backend data.
+ */
+const clamp = (value: number, min: number, max: number): number =>
+  Math.max(min, Math.min(max, value));
+
+/**
  * Horizontal bar chart showing feature importance for the pricing decision.
  * Features are sorted by importance and color-coded by impact direction.
  * Memoized to prevent unnecessary re-renders when parent updates.
+ *
+ * NOTE: Importance values are defensively clamped to [0, 1] to handle
+ * potential backend data errors gracefully without breaking the UI.
  */
 export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
   data,
 }) => {
   // Sort by importance and take top 6 features
+  // Clamp importance to [0, 1] to handle invalid data gracefully
   const chartData = [...data]
     .sort((a, b) => b.importance - a.importance)
     .slice(0, 6)
-    .map((d) => ({
-      name: d.displayName,
-      value: d.importance * 100,
-      direction: d.direction,
-      currentValue: d.currentValue,
-    }));
+    .map((d) => {
+      // Defensive: clamp importance to valid range [0, 1]
+      const normalizedImportance = clamp(d.importance, 0, 1);
+      return {
+        name: d.displayName,
+        value: normalizedImportance * 100,
+        direction: d.direction,
+        currentValue: d.currentValue,
+      };
+    });
 
   const getBarColor = (direction: string) => {
     switch (direction) {
