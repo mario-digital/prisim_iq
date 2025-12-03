@@ -15,6 +15,8 @@
 
 import { create } from 'zustand';
 import type { PriceExplanation } from '@/components/visualizations/types';
+import type { MarketContext } from './contextStore';
+import { apiUrl, apiConfig } from '@/lib/api';
 
 interface PricingState {
   /** Current price explanation with all visualization data */
