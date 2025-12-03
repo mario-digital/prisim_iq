@@ -12,6 +12,12 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  chartColors,
+  chartConfig,
+  tooltipStyle,
+  animationProps,
+} from '@/lib/chartTheme';
 import type { CurvePoint } from './types';
 
 interface DemandCurveChartProps {
@@ -55,67 +61,69 @@ export const DemandCurveChart: FC<DemandCurveChartProps> = memo(({
           <ResponsiveContainer width="100%" height={200}>
             <LineChart
               data={data}
-              margin={{ top: 10, right: 30, left: 0, bottom: 5 }}
+              margin={chartConfig.marginWithLabel}
             >
               <XAxis
                 dataKey="price"
                 tickFormatter={(v) => `$${v}`}
-                fontSize={12}
+                fontSize={chartConfig.fontSize}
                 tickLine={false}
               />
               <YAxis
                 tickFormatter={(v) => v.toFixed(0)}
-                fontSize={12}
+                fontSize={chartConfig.fontSize}
                 tickLine={false}
                 axisLine={false}
                 label={{
                   value: 'Demand',
                   angle: -90,
                   position: 'insideLeft',
-                  fontSize: 11,
-                  fill: 'hsl(var(--muted-foreground))',
+                  fontSize: chartConfig.fontSizeSmall,
+                  fill: chartColors.muted,
                 }}
               />
               <Tooltip
                 formatter={(value: number) => [value.toFixed(0), 'Expected Demand']}
                 labelFormatter={(label) => `Price: $${label}`}
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                }}
+                contentStyle={tooltipStyle}
               />
 
               {/* Main demand curve */}
               <Line
                 type="monotone"
                 dataKey="value"
-                stroke="#3b82f6"
+                stroke={chartColors.primary}
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, fill: '#3b82f6' }}
+                activeDot={{ r: 4, fill: chartColors.primary }}
+                {...animationProps}
               />
 
               {/* Reference line for current price */}
               {currentPoint && (
                 <ReferenceLine
                   x={currentPoint.price}
-                  stroke="#10b981"
+                  stroke={chartColors.secondary}
                   strokeDasharray="4 4"
                   strokeWidth={1}
                 />
               )}
 
-              {/* Optimal price point marker */}
+              {/* Optimal price point marker with label */}
               {optimalPoint && (
                 <ReferenceDot
                   x={optimalPoint.price}
                   y={optimalPoint.value}
                   r={6}
-                  fill="#10b981"
+                  fill={chartColors.secondary}
                   stroke="#fff"
                   strokeWidth={2}
+                  label={{
+                    value: `$${optimalPoint.price}`,
+                    position: 'top',
+                    fontSize: chartConfig.fontSizeSmall,
+                    fill: chartColors.secondary,
+                  }}
                 />
               )}
 
@@ -125,7 +133,7 @@ export const DemandCurveChart: FC<DemandCurveChartProps> = memo(({
                   x={currentPoint.price}
                   y={currentPoint.value}
                   r={5}
-                  fill="#6366f1"
+                  fill={chartColors.indigo}
                   stroke="#fff"
                   strokeWidth={2}
                 />
@@ -136,12 +144,18 @@ export const DemandCurveChart: FC<DemandCurveChartProps> = memo(({
 
         {/* Legend */}
         <div className="flex justify-center gap-4 mt-2 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-emerald-500" />
+          <div className="flex items-center gap-1.5">
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: chartColors.secondary }}
+            />
             <span className="text-muted-foreground">Optimal Price</span>
           </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-indigo-500" />
+          <div className="flex items-center gap-1.5">
+            <div
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: chartColors.indigo }}
+            />
             <span className="text-muted-foreground">Current Price</span>
           </div>
         </div>

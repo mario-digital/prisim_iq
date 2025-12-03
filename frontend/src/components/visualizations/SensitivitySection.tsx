@@ -12,6 +12,12 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import {
+  chartColors,
+  chartConfig,
+  tooltipStyle,
+  animationProps,
+} from '@/lib/chartTheme';
 import type { SensitivityResult } from './types';
 
 interface SensitivitySectionProps {
@@ -153,12 +159,12 @@ export const SensitivitySection: FC<SensitivitySectionProps> = ({
                       >
                         <stop
                           offset="5%"
-                          stopColor="#6366f1"
+                          stopColor={chartColors.indigo}
                           stopOpacity={0.3}
                         />
                         <stop
                           offset="95%"
-                          stopColor="#6366f1"
+                          stopColor={chartColors.indigo}
                           stopOpacity={0.05}
                         />
                       </linearGradient>
@@ -167,12 +173,12 @@ export const SensitivitySection: FC<SensitivitySectionProps> = ({
                     <XAxis
                       dataKey="price"
                       tickFormatter={(v) => `$${v}`}
-                      fontSize={11}
+                      fontSize={chartConfig.fontSizeSmall}
                       tickLine={false}
                     />
                     <YAxis
                       tickFormatter={(v) => v.toFixed(0)}
-                      fontSize={11}
+                      fontSize={chartConfig.fontSizeSmall}
                       tickLine={false}
                       axisLine={false}
                     />
@@ -182,41 +188,37 @@ export const SensitivitySection: FC<SensitivitySectionProps> = ({
                         'Expected Value',
                       ]}
                       labelFormatter={(label) => `Price: $${label}`}
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                        fontSize: '12px',
-                      }}
+                      contentStyle={tooltipStyle}
                     />
 
                     {/* Lower bound reference */}
                     <ReferenceLine
                       x={sensitivity.lowerBound}
-                      stroke="#94a3b8"
+                      stroke={chartColors.muted}
                       strokeDasharray="4 4"
                     />
 
                     {/* Upper bound reference */}
                     <ReferenceLine
                       x={sensitivity.upperBound}
-                      stroke="#94a3b8"
+                      stroke={chartColors.muted}
                       strokeDasharray="4 4"
                     />
 
                     {/* Base price reference */}
                     <ReferenceLine
                       x={sensitivity.basePrice}
-                      stroke="#3b82f6"
+                      stroke={chartColors.primary}
                       strokeWidth={2}
                     />
 
                     <Area
                       type="monotone"
                       dataKey="value"
-                      stroke="#6366f1"
+                      stroke={chartColors.indigo}
                       strokeWidth={2}
                       fill="url(#sensitivityGradient)"
+                      {...animationProps}
                     />
                   </AreaChart>
                 </ResponsiveContainer>
