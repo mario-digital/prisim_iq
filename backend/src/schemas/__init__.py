@@ -1,6 +1,14 @@
 """Pydantic schemas for PrismIQ API."""
 
 from src.schemas.data import DataSummaryResponse, ErrorResponse, PriceRange
+from src.schemas.evidence import (
+    DataCard,
+    EvidenceResponse,
+    HoneywellMapping,
+    HoneywellMappingResponse,
+    MethodologyDoc,
+    ModelCard,
+)
 from src.schemas.explainability import FeatureContribution, FeatureImportanceResult
 from src.schemas.health import HealthResponse
 from src.schemas.market import MarketContext
@@ -14,12 +22,18 @@ from src.schemas.sensitivity import (
 
 __all__ = [
     "ConfidenceBand",
+    "DataCard",
     "DataSummaryResponse",
     "ErrorResponse",
+    "EvidenceResponse",
     "FeatureContribution",
     "FeatureImportanceResult",
     "HealthResponse",
+    "HoneywellMapping",
+    "HoneywellMappingResponse",
     "MarketContext",
+    "MethodologyDoc",
+    "ModelCard",
     "OptimizationResult",
     "PriceDemandPoint",
     "PriceRange",
