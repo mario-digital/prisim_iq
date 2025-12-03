@@ -14,7 +14,6 @@ from pydantic import ValidationError
 from src.schemas.evidence import (
     DataCard,
     EvidenceResponse,
-    HoneywellMapping,
     HoneywellMappingResponse,
     MethodologyDoc,
     ModelCard,
@@ -99,8 +98,8 @@ def _load_methodology() -> MethodologyDoc:
         raise ValueError(f"Methodology documentation has invalid schema: {e}") from e
 
 
-def _load_honeywell_mapping() -> dict:
-    """Load Honeywell mapping data."""
+def _load_honeywell_mapping() -> HoneywellMappingResponse:
+    """Load and validate Honeywell mapping data."""
     filepath = EVIDENCE_DIR / "honeywell_mapping.json"
     if not filepath.exists():
         logger.error(f"Required Honeywell mapping not found: {filepath}")
@@ -109,10 +108,13 @@ def _load_honeywell_mapping() -> dict:
         with open(filepath) as f:
             data = json.load(f)
             logger.debug(f"Loaded Honeywell mapping: {filepath.name}")
-            return data
+            return HoneywellMappingResponse.model_validate(data)
     except json.JSONDecodeError as e:
         logger.error(f"Invalid JSON in Honeywell mapping: {e}")
         raise ValueError(f"Honeywell mapping contains invalid JSON: {e}") from e
+    except ValidationError as e:
+        logger.error(f"Invalid schema in Honeywell mapping: {e}")
+        raise ValueError(f"Honeywell mapping has invalid schema: {e}") from e
 
 
 @lru_cache(maxsize=1)
@@ -132,14 +134,7 @@ def get_cached_evidence() -> EvidenceResponse:
 def get_cached_honeywell_mapping() -> HoneywellMappingResponse:
     """Load and cache Honeywell mapping - regenerate on restart."""
     logger.info("Loading Honeywell mapping (will be cached)")
-    data = _load_honeywell_mapping()
-    return HoneywellMappingResponse(
-        title=data["title"],
-        description=data["description"],
-        mappings=[HoneywellMapping.model_validate(m) for m in data["mappings"]],
-        business_context=data["business_context"],
-        rendered_markdown=None,
-    )
+    return _load_honeywell_mapping()
 
 
 def _render_evidence_markdown(evidence: EvidenceResponse) -> str:
