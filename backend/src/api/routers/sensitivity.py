@@ -58,11 +58,12 @@ def _scenario_to_point(scenario: ScenarioResult) -> SensitivityPoint:
     )
 
 
-def _scenario_to_summary(scenario: ScenarioResult) -> ScenarioSummary:
+def _scenario_to_summary(scenario: ScenarioResult, base_price: float) -> ScenarioSummary:
     """Convert ScenarioResult to human-readable ScenarioSummary.
 
     Args:
         scenario: Internal scenario result.
+        base_price: Base optimal price for comparison.
 
     Returns:
         ScenarioSummary with description for UI display.
@@ -71,17 +72,19 @@ def _scenario_to_summary(scenario: ScenarioResult) -> ScenarioSummary:
         description = f"Base case: optimal price is ${scenario.optimal_price:.2f}"
     elif scenario.modifier < 1.0:
         change = abs(round((scenario.modifier - 1.0) * 100))
+        # Compare scenario price to base price to determine direction
+        price_direction = "increases" if scenario.optimal_price > base_price else "decreases"
         description = (
             f"{change}% lower {scenario.scenario_type} "
-            f"{'increases' if scenario.optimal_price > 0 else 'decreases'} "
-            f"optimal price to ${scenario.optimal_price:.2f}"
+            f"{price_direction} optimal price to ${scenario.optimal_price:.2f}"
         )
     else:
         change = round((scenario.modifier - 1.0) * 100)
+        # Compare scenario price to base price to determine direction
+        price_direction = "reduces" if scenario.optimal_price < base_price else "increases"
         description = (
             f"{change}% higher {scenario.scenario_type} "
-            f"{'reduces' if scenario.optimal_price > 0 else 'increases'} "
-            f"optimal price to ${scenario.optimal_price:.2f}"
+            f"{price_direction} optimal price to ${scenario.optimal_price:.2f}"
         )
 
     return ScenarioSummary(
@@ -141,8 +144,8 @@ def _format_for_charts(
             range_percent=result.confidence_band.range_percent,
         ),
         robustness_score=result.robustness_score,
-        worst_case=_scenario_to_summary(result.worst_case),
-        best_case=_scenario_to_summary(result.best_case),
+        worst_case=_scenario_to_summary(result.worst_case, result.base_price),
+        best_case=_scenario_to_summary(result.best_case, result.base_price),
         scenarios_calculated=total_scenarios,
         processing_time_ms=result.analysis_time_ms,
     )

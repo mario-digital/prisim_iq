@@ -318,8 +318,31 @@ class SensitivityService:
         for scenario in SENSITIVITY_SCENARIOS["cost"]:
             coroutines.append(self._run_single_scenario(context, "cost", scenario, segment))
 
-        # Run all scenarios in parallel via thread pool
-        results = await asyncio.gather(*coroutines)
+        # Run all scenarios in parallel via process pool
+        # Use return_exceptions=True to capture all results even if some fail
+        raw_results = await asyncio.gather(*coroutines, return_exceptions=True)
+
+        # Check for errors and separate valid results from exceptions
+        results: list[ScenarioResult] = []
+        errors: list[Exception] = []
+
+        for result in raw_results:
+            if isinstance(result, Exception):
+                errors.append(result)
+            else:
+                results.append(result)
+
+        # If all scenarios failed, raise the first error
+        if not results:
+            logger.error(f"All {len(errors)} scenarios failed")
+            raise errors[0] if errors else RuntimeError("No results returned")
+
+        # Log partial failures but continue with available results
+        if errors:
+            logger.warning(
+                f"{len(errors)} of {len(raw_results)} scenarios failed; "
+                f"proceeding with {len(results)} successful results"
+            )
 
         # Separate results by type
         elasticity_results = [r for r in results if r.scenario_type == "elasticity"]
