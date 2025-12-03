@@ -4,6 +4,7 @@ Implements a log-linear demand model with behavioral economics principles:
 - Price elasticity varies by segment (Premium less elastic than Economy)
 - Reference pricing effects (anchoring to historical cost)
 - Modifiers for time of day, loyalty tier, and supply/demand ratio
+- External factors: weather, events, fuel prices (from n8n)
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ import yaml
 from loguru import logger
 
 if TYPE_CHECKING:
+    from src.schemas.external import ExternalContext
     from src.schemas.market import MarketContext
 
 # Default config path
@@ -50,9 +52,7 @@ class DemandSimulator:
             yaml.YAMLError: If config file is invalid YAML.
         """
         if not self._config_path.exists():
-            logger.warning(
-                f"Config file not found at {self._config_path}, using defaults"
-            )
+            logger.warning(f"Config file not found at {self._config_path}, using defaults")
             return self._get_default_config()
 
         with open(self._config_path) as f:
@@ -120,8 +120,7 @@ class DemandSimulator:
         for time_key in time_mods:
             if time_key not in valid_times:
                 logger.warning(
-                    f"Unknown time modifier key '{time_key}'. "
-                    f"Expected one of: {valid_times}"
+                    f"Unknown time modifier key '{time_key}'. Expected one of: {valid_times}"
                 )
 
         loyalty_mods = modifiers.get("loyalty", {})
@@ -303,9 +302,7 @@ class DemandSimulator:
 
         return base_demand
 
-    def _calculate_reference_price_effect(
-        self, price: float, reference_price: float
-    ) -> float:
+    def _calculate_reference_price_effect(self, price: float, reference_price: float) -> float:
         """Calculate anchoring effect from price deviation.
 
         Larger deviations from reference price have greater demand impact.
@@ -327,9 +324,7 @@ class DemandSimulator:
         # Positive deviation (price above reference) -> negative effect
         effect = math.exp(-sensitivity * deviation)
 
-        logger.debug(
-            f"Reference price effect: deviation={deviation:.3f}, effect={effect:.3f}"
-        )
+        logger.debug(f"Reference price effect: deviation={deviation:.3f}, effect={effect:.3f}")
 
         return effect
 
@@ -338,7 +333,7 @@ class DemandSimulator:
         context: MarketContext,
         price: float,
         elasticity_params: dict | None = None,
-        external_factors: dict | None = None,
+        external_factors: ExternalContext | dict | None = None,
     ) -> float:
         """Simulate demand probability for given context and price.
 
@@ -349,7 +344,7 @@ class DemandSimulator:
             context: Market context with all features.
             price: Proposed price point.
             elasticity_params: Override default elasticity (optional).
-            external_factors: Weather, events, etc. from n8n (optional).
+            external_factors: ExternalContext from n8n or dict for legacy support.
 
         Returns:
             Demand probability in [0.0, 1.0].
@@ -371,31 +366,13 @@ class DemandSimulator:
 
         # Log-linear demand model
         price_ratio = price / reference_price
-        price_effect = (
-            math.exp(elasticity * math.log(price_ratio)) if price_ratio > 0 else 1.0
-        )
+        price_effect = math.exp(elasticity * math.log(price_ratio)) if price_ratio > 0 else 1.0
 
         # Apply reference pricing (anchoring) effect
         reference_effect = self._calculate_reference_price_effect(price, reference_price)
 
         # Apply external factors if provided
-        external_multiplier = 1.0
-        if external_factors:
-            # Weather effect (bad weather increases demand for rides)
-            weather_effects = {
-                "sunny": 0.9,
-                "cloudy": 1.0,
-                "rainy": 1.2,
-                "stormy": 1.3,
-            }
-            weather = external_factors.get("weather", "").lower()
-            external_multiplier *= weather_effects.get(weather, 1.0)
-
-            # Event effect (events increase demand)
-            if external_factors.get("event_nearby", False):
-                external_multiplier *= 1.15
-
-            logger.debug(f"External factors multiplier: {external_multiplier:.3f}")
+        external_multiplier = self._calculate_external_multiplier(external_factors)
 
         # Combine all effects
         demand = base_demand * price_effect * reference_effect * external_multiplier
@@ -411,6 +388,56 @@ class DemandSimulator:
 
         return bounded_demand
 
+    def _calculate_external_multiplier(
+        self, external_factors: ExternalContext | dict | None
+    ) -> float:
+        """Calculate demand multiplier from external factors.
+
+        Supports both ExternalContext model (preferred) and legacy dict format.
+
+        Args:
+            external_factors: External factors from n8n or legacy dict.
+
+        Returns:
+            Combined multiplier from weather and events.
+        """
+        if external_factors is None:
+            return 1.0
+
+        external_multiplier = 1.0
+
+        # Handle ExternalContext model (preferred)
+        if hasattr(external_factors, "weather") and hasattr(external_factors, "events"):
+            # ExternalContext model
+            if external_factors.weather:
+                external_multiplier *= external_factors.weather.demand_modifier
+                logger.debug(
+                    f"Weather modifier ({external_factors.weather.condition}): "
+                    f"{external_factors.weather.demand_modifier:.3f}"
+                )
+
+            for event in external_factors.events:
+                external_multiplier *= event.surge_modifier
+                logger.debug(f"Event modifier ({event.name}): {event.surge_modifier:.3f}")
+        else:
+            # Legacy dict format for backwards compatibility
+            weather_effects = {
+                "sunny": 0.9,
+                "cloudy": 1.0,
+                "rainy": 1.2,
+                "stormy": 1.3,
+            }
+            weather = external_factors.get("weather", "").lower()
+            external_multiplier *= weather_effects.get(weather, 1.0)
+
+            if external_factors.get("event_nearby", False):
+                external_multiplier *= 1.15
+
+        if external_multiplier != 1.0:
+            logger.debug(f"External factors multiplier: {external_multiplier:.3f}")
+
+        return external_multiplier
+
 
 # Module-level convenience function
 _default_simulator: DemandSimulator | None = None
@@ -420,7 +447,7 @@ def simulate_demand(
     context: MarketContext,
     price: float,
     elasticity_params: dict | None = None,
-    external_factors: dict | None = None,
+    external_factors: ExternalContext | dict | None = None,
 ) -> float:
     """Simulate demand probability for given context and price.
 
@@ -430,7 +457,7 @@ def simulate_demand(
         context: Market context with all features.
         price: Proposed price point.
         elasticity_params: Override default elasticity (optional).
-        external_factors: Weather, events, etc. from n8n (optional).
+        external_factors: ExternalContext from n8n or dict for legacy support.
 
     Returns:
         Demand probability in [0.0, 1.0].
@@ -439,7 +466,4 @@ def simulate_demand(
     if _default_simulator is None:
         _default_simulator = DemandSimulator()
 
-    return _default_simulator.simulate_demand(
-        context, price, elasticity_params, external_factors
-    )
-
+    return _default_simulator.simulate_demand(context, price, elasticity_params, external_factors)

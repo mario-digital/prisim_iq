@@ -12,6 +12,13 @@ from src.schemas.evidence import (
 )
 from src.schemas.explainability import FeatureContribution, FeatureImportanceResult
 from src.schemas.explanation import ExplainRequest, PriceExplanation
+from src.schemas.external import (
+    EventData,
+    ExternalContext,
+    ExternalContextResponse,
+    FuelData,
+    WeatherData,
+)
 from src.schemas.health import HealthResponse
 from src.schemas.market import MarketContext
 from src.schemas.optimization import OptimizationResult, PriceDemandPoint
@@ -30,10 +37,14 @@ __all__ = [
     "DataCard",
     "DataSummaryResponse",
     "ErrorResponse",
+    "EventData",
     "EvidenceResponse",
     "ExplainRequest",
+    "ExternalContext",
+    "ExternalContextResponse",
     "FeatureContribution",
     "FeatureImportanceResult",
+    "FuelData",
     "HealthResponse",
     "HoneywellMapping",
     "HoneywellMappingResponse",
@@ -48,4 +59,5 @@ __all__ = [
     "SegmentDetails",
     "SegmentResult",
     "SensitivityResult",
+    "WeatherData",
 ]
