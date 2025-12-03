@@ -20,11 +20,18 @@ def get_agent_dependency() -> PrismIQAgent:
 
     Raises:
         HTTPException: If OpenAI API key is not configured or agent fails to initialize.
+
+    Note:
+        Settings are cached via @lru_cache in get_settings(), so this check is
+        efficient even when called repeatedly. We use HTTP 503 (Service Unavailable)
+        rather than 401/403 because this is a server configuration issue, not a
+        client authentication issue - the service cannot function without the key.
     """
-    settings = get_settings()
+    settings = get_settings()  # Cached via @lru_cache
 
     if not settings.openai_api_key:
         logger.error("OpenAI API key not configured")
+        # 503: Service is unavailable due to missing configuration (not client auth)
         raise HTTPException(
             status_code=503,
             detail="Chat service unavailable: OpenAI API key not configured. "

@@ -152,17 +152,33 @@ def create_get_external_context_tool() -> Tool:
 
     Returns:
         LangChain Tool that returns current external context (weather, events, etc.).
+
+    Warning:
+        This tool currently returns SIMULATED DATA for demonstration purposes.
+        In production, integrate with real external APIs via n8n workflows:
+        - Weather: OpenWeatherMap, Weather.com API
+        - Events: Ticketmaster, Eventbrite APIs
+        - Fuel: GasBuddy, EIA APIs
+
+    TODO:
+        - Add mode flag (simulated/production) to toggle data source
+        - Implement n8n webhook integration for real-time data
+        - Add caching layer for external API responses
     """
 
     def get_external_context(_input: str) -> str:
-        """Get current external factors affecting pricing."""
-        # Note: In a production system, this would fetch real-time data
-        # from external APIs (weather services, event APIs, fuel price APIs).
-        # For demo purposes, we return simulated/placeholder data.
+        """Get current external factors affecting pricing.
 
-        # Simulated external context
+        WARNING: Returns SIMULATED data for demonstration purposes only.
+        """
+        # ⚠️ SIMULATED DATA - NOT REAL-TIME
+        # In production, this would fetch from external APIs via n8n workflows.
+        # See tool docstring for integration plan.
+
         return (
-            "External Context (Simulated):\n\n"
+            "⚠️ SIMULATED DATA - FOR DEMONSTRATION ONLY ⚠️\n"
+            "=" * 45 + "\n\n"
+            "External Context:\n\n"
             "Weather:\n"
             "  - Condition: Partly Cloudy\n"
             "  - Temperature: 72°F (22°C)\n"
@@ -175,9 +191,9 @@ def create_get_external_context_tool() -> Tool:
             "  - Regular: $3.45/gallon\n"
             "  - Premium: $4.15/gallon\n"
             "  - Trend: Stable (no significant change)\n\n"
+            "─" * 45 + "\n"
             "Note: In production, this data would be fetched from external APIs "
-            "(weather services, event databases, fuel price feeds) via n8n workflows. "
-            "Current values are for demonstration purposes."
+            "(weather services, event databases, fuel price feeds) via n8n workflows."
         )
 
     return Tool(
@@ -186,7 +202,7 @@ def create_get_external_context_tool() -> Tool:
             "Get current external factors that might affect pricing, including weather, "
             "events, and fuel prices. Use this when the user asks about external factors, "
             "weather impact, events in the area, or fuel prices. "
-            "Note: Returns simulated data for demonstration purposes."
+            "⚠️ IMPORTANT: Currently returns SIMULATED data for demonstration only."
         ),
         func=get_external_context,
     )
