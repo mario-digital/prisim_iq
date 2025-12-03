@@ -8,6 +8,8 @@ from __future__ import annotations
 from langchain_core.tools import Tool
 from loguru import logger
 
+from src.agent.utils import sanitize_error_message
+
 
 def create_get_evidence_tool() -> Tool:
     """Create the get_evidence tool for model and methodology documentation.
@@ -59,11 +61,11 @@ def create_get_evidence_tool() -> Tool:
                 f"Generated: {evidence.generated_at.isoformat()}"
             )
 
-        except FileNotFoundError as e:
-            return f"Error: Evidence documentation not found: {str(e)}"
+        except FileNotFoundError:
+            return "Error: Evidence documentation not found. Please ensure model cards are generated."
         except Exception as e:
             logger.error(f"get_evidence tool error: {e}")
-            return f"Error loading evidence documentation: {str(e)}"
+            return f"Error loading evidence documentation: {sanitize_error_message(e)}"
 
     return Tool(
         name="get_evidence",
@@ -108,11 +110,11 @@ def create_get_honeywell_mapping_tool() -> Tool:
                 f"Business Context:\n{mapping.business_context}"
             )
 
-        except FileNotFoundError as e:
-            return f"Error: Honeywell mapping not found: {str(e)}"
+        except FileNotFoundError:
+            return "Error: Honeywell mapping not found. Please ensure mapping file exists."
         except Exception as e:
             logger.error(f"get_honeywell_mapping tool error: {e}")
-            return f"Error loading Honeywell mapping: {str(e)}"
+            return f"Error loading Honeywell mapping: {sanitize_error_message(e)}"
 
     return Tool(
         name="get_honeywell_mapping",
