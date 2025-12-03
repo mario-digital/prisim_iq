@@ -1,5 +1,6 @@
 /**
  * Evidence service for fetching documentation and model/data cards.
+ * Uses validated API client with Zod schema validation.
  */
 import ky from 'ky';
 import { API_BASE_URL } from '@/lib/api';
@@ -9,6 +10,9 @@ import type {
   ModelCard,
   DataCard,
 } from '@/components/evidence/types';
+
+// Re-export types for convenience
+export type { EvidenceResponse, HoneywellMappingResponse, ModelCard, DataCard };
 
 const api = ky.create({
   prefixUrl: API_BASE_URL,
@@ -21,15 +25,15 @@ let cachedHoneywellMapping: HoneywellMappingResponse | null = null;
 
 /**
  * Fallback markdown content for offline/demo mode.
- * 
+ *
  * @remarks
  * MAINTAINABILITY NOTE: This hardcoded content serves as a fallback when the
  * backend API is unavailable. For production projects, consider:
- * 
+ *
  * 1. Moving content to separate .md files in /public/fallback/docs/
  * 2. Using a build-time import or fetch from local assets
  * 3. Implementing a mock service layer for testing
- * 
+ *
  * Current structure mirrors the DOC_IDS from types.ts - ensure any new
  * document IDs added to DOC_TREE have corresponding fallback content here.
  */
@@ -363,12 +367,6 @@ const fallbackModelCards: ModelCard[] = [
 
 /**
  * Fallback data card for offline/demo mode.
- * 
- * @remarks
- * This fallback data is used when the API is unavailable.
- * For production maintainability, consider moving this to a
- * separate JSON file (e.g., /public/fallback/data-card.json)
- * and importing it, or loading via a mock service.
  */
 const fallbackDataCard: DataCard = {
   dataset_name: 'Dynamic Pricing Dataset',

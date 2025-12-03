@@ -13,6 +13,10 @@
       "types": "./src/types/index.ts",
       "default": "./src/types/index.ts"
     },
+    "./schemas": {
+      "types": "./src/schemas/index.ts",
+      "default": "./src/schemas/index.ts"
+    },
     "./constants": {
       "types": "./src/constants/index.ts",
       "default": "./src/constants/index.ts"
@@ -22,7 +26,10 @@
     "src"
   ],
   "devDependencies": {
+    "bun-types": "^1.1.0",
     "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "zod": "^4.1.13"
   }
 }
-

@@ -3,6 +3,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+/**
+ * Market context matching backend MarketContext schema (snake_case).
+ * This is the authoritative type used for API communication.
+ * 
+ * Note: Components may use camelCase internally, but API calls use this format.
+ */
 export interface MarketContext {
     number_of_riders: number;
     number_of_drivers: number;
@@ -54,8 +60,7 @@ export const useContextStore = create<ContextState>()(
             context: defaultContext,
             savedScenarios: [],
             isLoading: false,
-            updateContext: (updates) =>
-                set((s) => ({ context: { ...s.context, ...updates } })),
+            updateContext: (updates) => set((s) => ({ context: { ...s.context, ...updates } })),
             resetContext: () => set({ context: defaultContext }),
             saveScenario: (name) => {
                 const newScenario: SavedScenario = {
@@ -79,4 +84,3 @@ export const useContextStore = create<ContextState>()(
         { name: 'prismiq-context' }
     )
 );
-

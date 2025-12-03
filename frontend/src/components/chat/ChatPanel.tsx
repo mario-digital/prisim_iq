@@ -2,6 +2,7 @@
 
 import { useCallback, type FC } from 'react';
 import { useChatStore } from '@/stores/chatStore';
+import { useContextStore } from '@/stores/contextStore';
 import { sendMessage } from '@/services/chatService';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
@@ -12,6 +13,7 @@ import { WelcomeMessage } from './WelcomeMessage';
  */
 export const ChatPanel: FC = () => {
   const { messages, isLoading, addMessage, setLoading } = useChatStore();
+  const context = useContextStore((state) => state.context);
 
   const handleSendMessage = useCallback(
     async (content: string) => {
@@ -20,15 +22,13 @@ export const ChatPanel: FC = () => {
       setLoading(true);
 
       try {
-        // Call API
-        const response = await sendMessage(content);
+        // Call API with current market context
+        const response = await sendMessage(content, context);
         
         // Add AI response
         addMessage({
           role: 'assistant',
           content: response.message,
-          confidence: response.confidence,
-          pricingResult: response.pricingResult,
         });
       } catch (error) {
         // Add error message
@@ -42,7 +42,7 @@ export const ChatPanel: FC = () => {
         setLoading(false);
       }
     },
-    [addMessage, setLoading]
+    [addMessage, setLoading, context]
   );
 
   const handleExampleClick = useCallback(
