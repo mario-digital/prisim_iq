@@ -8,12 +8,14 @@ import { formatMessageTime } from './utils';
 
 interface AIMessageProps {
   message: Message;
+  isStreaming?: boolean;
 }
 
 /**
  * AI message bubble - left-aligned with markdown support.
+ * Supports streaming mode with blinking cursor indicator.
  */
-export const AIMessage: FC<AIMessageProps> = ({ message }) => {
+export const AIMessage: FC<AIMessageProps> = ({ message, isStreaming = false }) => {
   return (
     <div className="flex justify-start">
       <div className="max-w-[80%] bg-muted rounded-2xl rounded-tl-sm px-4 py-2 shadow-sm">
@@ -61,15 +63,30 @@ export const AIMessage: FC<AIMessageProps> = ({ message }) => {
           >
             {message.content}
           </ReactMarkdown>
-        </div>
-        <div className="flex items-center gap-2 mt-2 flex-wrap">
-          {message.confidence !== undefined && (
-            <ConfidenceBadge value={message.confidence} />
+          {/* Blinking cursor during streaming */}
+          {isStreaming && (
+            <span
+              className="inline-block w-2 h-4 bg-primary/80 ml-0.5 rounded-sm streaming-cursor"
+              aria-label="Streaming in progress"
+            />
           )}
-          <span className="text-xs text-muted-foreground">
-            {formatMessageTime(message.timestamp)}
-          </span>
         </div>
+        {/* Footer: only show when not streaming */}
+        {!isStreaming && (
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
+            {message.confidence !== undefined && (
+              <ConfidenceBadge value={message.confidence} />
+            )}
+            {message.toolsUsed && message.toolsUsed.length > 0 && (
+              <span className="text-xs text-muted-foreground">
+                Used: {message.toolsUsed.join(', ')}
+              </span>
+            )}
+            <span className="text-xs text-muted-foreground">
+              {formatMessageTime(message.timestamp)}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

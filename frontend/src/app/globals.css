@@ -181,3 +181,57 @@
   }
 }
 
+/* Streaming cursor animation */
+@keyframes streaming-cursor {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.streaming-cursor {
+  animation: streaming-cursor 0.8s ease-in-out infinite;
+}
+
+/* Smooth token append animation */
+@keyframes token-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Tool call spinner */
+@keyframes tool-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tool-spinner {
+  animation: tool-spin 1s linear infinite;
+}
+
+/* Message slide-in */
+@keyframes message-slide {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-enter {
+  animation: message-slide 0.2s ease-out;
+}
+
