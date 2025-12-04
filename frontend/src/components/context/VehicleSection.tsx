@@ -1,7 +1,7 @@
 'use client';
 
-import type { FC } from 'react';
-import { Car, Clock, DollarSign } from 'lucide-react';
+import type { FC, ReactNode } from 'react';
+import { Car, CarFront, Clock, DollarSign, Sparkles } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -12,10 +12,31 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useContextStore, type MarketContext } from '@/stores/contextStore';
+import { cn } from '@/lib/utils';
 
-const VEHICLE_OPTIONS: { value: MarketContext['vehicle_type']; label: string; icon: string }[] = [
-  { value: 'Economy', label: 'Economy', icon: '🚗' },
-  { value: 'Premium', label: 'Premium', icon: '🚙' },
+interface VehicleOption {
+  value: MarketContext['vehicle_type'];
+  label: string;
+  description: string;
+  icon: ReactNode;
+  badgeColor: string;
+}
+
+const VEHICLE_OPTIONS: VehicleOption[] = [
+  {
+    value: 'Economy',
+    label: 'Economy',
+    description: 'Standard ride',
+    icon: <Car className="h-4 w-4" />,
+    badgeColor: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+  },
+  {
+    value: 'Premium',
+    label: 'Premium',
+    description: 'Luxury experience',
+    icon: <CarFront className="h-4 w-4" />,
+    badgeColor: 'bg-amber-500/10 text-amber-600 border-amber-500/20',
+  },
 ];
 
 export const VehicleSection: FC = () => {
@@ -40,15 +61,33 @@ export const VehicleSection: FC = () => {
           }
         >
           <SelectTrigger id="vehicle-type" className="h-9">
-            <SelectValue />
+            <SelectValue>
+              {(() => {
+                const selected = VEHICLE_OPTIONS.find(o => o.value === context.vehicle_type);
+                if (!selected) return null;
+                return (
+                  <span className="flex items-center gap-2">
+                    <span className={cn('flex items-center justify-center h-5 w-5 rounded border', selected.badgeColor)}>
+                      {selected.icon}
+                    </span>
+                    <span>{selected.label}</span>
+                  </span>
+                );
+              })()}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {VEHICLE_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                <span className="flex items-center gap-2">
-                  <span>{option.icon}</span>
-                  <span>{option.label}</span>
-                </span>
+              <SelectItem key={option.value} value={option.value} className="py-2">
+                <div className="flex items-center gap-3">
+                  <span className={cn('flex items-center justify-center h-7 w-7 rounded-md border', option.badgeColor)}>
+                    {option.icon}
+                  </span>
+                  <div className="flex flex-col">
+                    <span className="font-medium text-sm">{option.label}</span>
+                    <span className="text-xs text-muted-foreground">{option.description}</span>
+                  </div>
+                </div>
               </SelectItem>
             ))}
           </SelectContent>

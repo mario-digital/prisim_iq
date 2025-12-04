@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 import { ProfitUpliftHero } from './ProfitUpliftHero';
 import { KeyInsight } from './KeyInsight';
-import { SegmentPerformanceChart } from './SegmentPerformanceChart';
+import { SegmentPerformanceChart } from '@/components/visualizations';
 import { useLayoutStore } from '@/stores/layoutStore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { fetchExecutiveData, type ExecutiveData } from './mockData';

@@ -19,14 +19,16 @@ export const MasterLayout: FC<MasterLayoutProps> = ({
   rightContent,
 }) => {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-      <div className="flex-1 flex overflow-hidden">
-        <LeftPanel>{leftContent}</LeftPanel>
-        <CenterPanel>{centerContent}</CenterPanel>
-        <RightPanel>{rightContent}</RightPanel>
+    <div className="h-screen w-full bg-muted/30 overflow-hidden flex justify-center">
+      <div className="h-full w-full max-w-[1920px] flex flex-col bg-background shadow-xl">
+        <Header />
+        <div className="flex-1 flex min-h-0">
+          <LeftPanel>{leftContent}</LeftPanel>
+          <CenterPanel>{centerContent}</CenterPanel>
+          <RightPanel>{rightContent}</RightPanel>
+        </div>
+        <Footer />
       </div>
-      <Footer />
     </div>
   );
 };

@@ -10,7 +10,7 @@ from __future__ import annotations
 import time
 import uuid
 from collections.abc import Callable
-from datetime import datetime
+from datetime import UTC, datetime
 from functools import wraps
 from pathlib import Path
 from typing import Any, Literal, TypeVar
@@ -120,7 +120,7 @@ class DecisionTracer:
     def __init__(self) -> None:
         """Initialize a new decision tracer."""
         self.trace_id = str(uuid.uuid4())
-        self.request_timestamp = datetime.utcnow()
+        self.request_timestamp = datetime.now(UTC)
         self._start_time = time.perf_counter()
         self.steps: list[TraceStep] = []
         self.model_agreement: ModelAgreement | None = None
@@ -144,7 +144,7 @@ class DecisionTracer:
             @wraps(func)
             def wrapper(*args: Any, **kwargs: Any) -> Any:
                 step_start = time.perf_counter()
-                timestamp = datetime.utcnow()
+                timestamp = datetime.now(UTC)
 
                 # Capture inputs (exclude self for methods)
                 input_args = args[1:] if args and hasattr(args[0], "__dict__") else args
@@ -210,7 +210,7 @@ class DecisionTracer:
         self.steps.append(
             TraceStep(
                 step_name=step_name,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(UTC),
                 duration_ms=round(duration_ms, 3),
                 inputs={k: _safe_serialize(v) for k, v in inputs.items()},
                 outputs={k: _safe_serialize(v) for k, v in outputs.items()},

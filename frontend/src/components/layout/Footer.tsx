@@ -5,6 +5,16 @@ import { Database, Clock, Cpu } from 'lucide-react';
 import { useStatusStore } from '@/stores/statusStore';
 
 /**
+ * Format segment name for display by replacing underscores with spaces
+ * and converting to title case.
+ * e.g., "Urban_Standard_Economy" -> "Urban Standard Economy"
+ */
+function formatSegmentName(segment: string | null): string {
+  if (!segment) return 'None';
+  return segment.replace(/_/g, ' ');
+}
+
+/**
  * Footer component displaying current session stats.
  * Shows: Current Segment, Model Status, Last Response Time.
  * Updates after each recommendation via statusStore.
@@ -19,7 +29,7 @@ export const Footer: FC = () => {
         <Database className="h-3.5 w-3.5" />
         <span>Segment:</span>
         <span className="font-medium text-foreground">
-          {currentSegment || 'None'}
+          {formatSegmentName(currentSegment)}
         </span>
       </div>
 

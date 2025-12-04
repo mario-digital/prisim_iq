@@ -3,7 +3,7 @@
  * Supports both request/response and SSE streaming modes.
  */
 import type { MarketContext } from '@/stores/contextStore';
-import { ChatResponseSchema } from '@prismiq/shared/schemas';
+import { ChatResponseSchema, MarketContextSchema } from '@prismiq/shared/schemas';
 import { postValidated } from '@/lib/api-client';
 import { API_BASE_URL } from '@/lib/api';
 
@@ -73,6 +73,15 @@ export async function sendMessage(
   context: MarketContext,
   sessionId?: string | null
 ): Promise<ChatResponse> {
+  // Validate context using shared Zod schema before API call
+  const validation = MarketContextSchema.safeParse(context);
+  if (!validation.success) {
+    const errorMessages = validation.error.issues
+      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+      .join('; ');
+    throw new Error(`Validation failed: ${errorMessages}`);
+  }
+
   const request: ChatRequest = {
     message,
     context,
@@ -102,6 +111,15 @@ export async function* streamMessage(
   context: MarketContext,
   opts: StreamOptions = {}
 ): AsyncGenerator<ChatStreamEvent> {
+  // Validate context using shared Zod schema before API call
+  const validation = MarketContextSchema.safeParse(context);
+  if (!validation.success) {
+    const errorMessages = validation.error.issues
+      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+      .join('; ');
+    throw new Error(`Validation failed: ${errorMessages}`);
+  }
+
   // Build query parameters
   const params = new URLSearchParams({ stream: 'true' });
   if (opts.plan) params.set('plan', 'true');

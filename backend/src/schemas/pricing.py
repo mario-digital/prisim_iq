@@ -1,6 +1,6 @@
 """Pricing result schemas for price optimization API responses."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -85,8 +85,8 @@ class PricingResult(BaseModel):
         description="Total processing time in milliseconds",
     )
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow,
-        description="Timestamp of the optimization",
+        default_factory=lambda: datetime.now(UTC),
+        description="Timestamp of the optimization (ISO 8601 UTC)",
     )
 
     model_config = ConfigDict(

@@ -1,23 +1,10 @@
 'use client';
 
 import { useState, type FC } from 'react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-} from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import {
-  chartColors,
-  chartConfig,
-  tooltipStyle,
-  animationProps,
-} from '@/lib/chartTheme';
+import { chartColors } from '@/lib/chartTheme';
+import { SensitivityBandChart } from './SensitivityBandChart';
 import type { SensitivityResult } from './types';
 
 interface SensitivitySectionProps {
@@ -138,90 +125,21 @@ export const SensitivitySection: FC<SensitivitySectionProps> = ({
               </div>
             </div>
 
-            {/* Confidence band chart */}
+            {/* Confidence band chart using SensitivityBandChart */}
             {sensitivity.pricePoints.length > 0 && (
               <div>
                 <div className="text-xs text-muted-foreground mb-2">
                   Confidence Band Visualization
                 </div>
-                <ResponsiveContainer width="100%" height={150}>
-                  <AreaChart
-                    data={sensitivity.pricePoints}
-                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-                  >
-                    <defs>
-                      <linearGradient
-                        id="sensitivityGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor={chartColors.indigo}
-                          stopOpacity={0.3}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor={chartColors.indigo}
-                          stopOpacity={0.05}
-                        />
-                      </linearGradient>
-                    </defs>
-
-                    <XAxis
-                      dataKey="price"
-                      tickFormatter={(v) => `$${v}`}
-                      fontSize={chartConfig.fontSizeSmall}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tickFormatter={(v) => v.toFixed(0)}
-                      fontSize={chartConfig.fontSizeSmall}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <Tooltip
-                      formatter={(value: number) => [
-                        value.toFixed(2),
-                        'Expected Value',
-                      ]}
-                      labelFormatter={(label) => `Price: $${label}`}
-                      contentStyle={tooltipStyle}
-                    />
-
-                    {/* Lower bound reference */}
-                    <ReferenceLine
-                      x={sensitivity.lowerBound}
-                      stroke={chartColors.muted}
-                      strokeDasharray="4 4"
-                    />
-
-                    {/* Upper bound reference */}
-                    <ReferenceLine
-                      x={sensitivity.upperBound}
-                      stroke={chartColors.muted}
-                      strokeDasharray="4 4"
-                    />
-
-                    {/* Base price reference */}
-                    <ReferenceLine
-                      x={sensitivity.basePrice}
-                      stroke={chartColors.primary}
-                      strokeWidth={2}
-                    />
-
-                    <Area
-                      type="monotone"
-                      dataKey="value"
-                      stroke={chartColors.indigo}
-                      strokeWidth={2}
-                      fill="url(#sensitivityGradient)"
-                      {...animationProps}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <SensitivityBandChart
+                  curveData={sensitivity.pricePoints}
+                  basePrice={sensitivity.basePrice}
+                  lowerBound={sensitivity.lowerBound}
+                  upperBound={sensitivity.upperBound}
+                  robustnessScore={sensitivity.robustnessScore}
+                  embedded
+                  height={150}
+                />
               </div>
             )}
 

@@ -7,7 +7,7 @@ every step of the pricing pipeline for audit and explainability.
 from __future__ import annotations
 
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from loguru import logger
@@ -356,7 +356,7 @@ class TracedPricingService:
             price_before_rules=price_before_rules,
             price_demand_curve=optimization.price_demand_curve,
             processing_time_ms=round(processing_time_ms, 2),
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
         )
 
         # Finalize trace

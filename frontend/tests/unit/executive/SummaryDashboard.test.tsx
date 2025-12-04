@@ -261,10 +261,17 @@ describe('Centralized Executive Mock Data', () => {
         expect(mockExecutiveData.riskAlerts).toBe(0);
     });
 
-    test('should have segment performance sorted by uplift descending', () => {
-        const uplifts = mockExecutiveData.segmentPerformance.map((s) => s.uplift);
-        const sortedUplifts = [...uplifts].sort((a, b) => b - a);
-        expect(uplifts).toEqual(sortedUplifts);
+    test('should have segment performance sorted by improvement descending', () => {
+        const improvements = mockExecutiveData.segmentPerformance.map((s) => s.improvement ?? 0);
+        const sortedImprovements = [...improvements].sort((a, b) => b - a);
+        expect(improvements).toEqual(sortedImprovements);
+    });
+
+    test('should have baseline and optimized values for each segment', () => {
+        mockExecutiveData.segmentPerformance.forEach((segment) => {
+            expect(segment.baseline).toBeGreaterThan(0);
+            expect(segment.optimized).toBeGreaterThan(segment.baseline);
+        });
     });
 
     test('should have valid baseline price', () => {

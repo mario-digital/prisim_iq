@@ -84,7 +84,7 @@ export const RecommendationCard: FC<RecommendationCardProps> = ({
           <div className="flex flex-col gap-1">
             <span className="text-xs text-muted-foreground">Expected Demand</span>
             <span className="text-lg font-semibold">
-              {result.expectedDemand.toFixed(0)} units
+              {result.expectedDemand.toFixed(2)} units
             </span>
           </div>
         </div>

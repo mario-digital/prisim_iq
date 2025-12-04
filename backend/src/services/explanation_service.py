@@ -11,7 +11,7 @@ This module orchestrates the full explanation pipeline:
 from __future__ import annotations
 
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -231,7 +231,7 @@ class ExplanationService:
             natural_language_summary=natural_language_summary,
             key_factors=key_factors,
             explanation_time_ms=round(explanation_time_ms, 2),
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
         )
 
     def _calculate_importance(

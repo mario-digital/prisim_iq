@@ -3,7 +3,8 @@
 import { useEffect, type FC } from 'react';
 import { cn } from '@/lib/utils';
 import { useStatusStore, type HealthStatus } from '@/stores/statusStore';
-import { apiUrl } from '@/lib/api';
+import { fetchValidated } from '@/lib/api-client';
+import { HealthResponseSchema, ModelsStatusResponseSchema } from '@prismiq/shared/schemas';
 
 interface StatusConfig {
   label: string;
@@ -37,11 +38,11 @@ const HEALTH_POLL_INTERVAL = 30000; // 30 seconds
 
 /**
  * System status indicator showing API health.
- * Polls the /health endpoint periodically.
+ * Polls the /health and /models/status endpoints periodically.
  * Displays: [READY] 🟢, [DEGRADED] 🟡, or [ERROR] 🔴
  */
 export const SystemStatus: FC = () => {
-  const { health, setHealthCheck } = useStatusStore();
+  const { health, setHealthCheck, setModelsReady } = useStatusStore();
   const config = STATUS_CONFIG[health];
 
   useEffect(() => {
@@ -49,18 +50,10 @@ export const SystemStatus: FC = () => {
 
     const checkHealth = async () => {
       try {
-        const response = await fetch(apiUrl('/health'), {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-        });
-
-        if (!mounted) return;
-
-        if (response.ok) {
-          const data = await response.json();
-          setHealthCheck(data.status as HealthStatus);
-        } else {
-          setHealthCheck('degraded');
+        // Use validated fetch with shared schema
+        const data = await fetchValidated('health', HealthResponseSchema);
+        if (mounted) {
+          setHealthCheck(data.status);
         }
       } catch {
         if (mounted) {
@@ -69,17 +62,33 @@ export const SystemStatus: FC = () => {
       }
     };
 
-    // Initial check
+    const checkModelsStatus = async () => {
+      try {
+        // Fetch models status from backend
+        const data = await fetchValidated('models/status', ModelsStatusResponseSchema);
+        if (mounted) {
+          setModelsReady(data.ready, data.total);
+        }
+      } catch {
+        // Silent fail - models status is nice-to-have, not critical
+        console.warn('[SystemStatus] Failed to fetch models status');
+      }
+    };
+
+    // Initial checks
     checkHealth();
+    checkModelsStatus();
 
     // Set up polling
-    const interval = setInterval(checkHealth, HEALTH_POLL_INTERVAL);
+    const healthInterval = setInterval(checkHealth, HEALTH_POLL_INTERVAL);
+    const modelsInterval = setInterval(checkModelsStatus, HEALTH_POLL_INTERVAL);
 
     return () => {
       mounted = false;
-      clearInterval(interval);
+      clearInterval(healthInterval);
+      clearInterval(modelsInterval);
     };
-  }, [setHealthCheck]);
+  }, [setHealthCheck, setModelsReady]);
 
   return (
     <div
