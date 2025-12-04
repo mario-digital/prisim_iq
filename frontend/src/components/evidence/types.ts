@@ -180,7 +180,14 @@ export interface EvidenceResponse {
   markdown_content: Record<string, string>;
 }
 
+export interface HoneywellMappingItem {
+  ride_sharing_concept: string;
+  honeywell_equivalent: string;
+  rationale: string;
+}
+
 export interface HoneywellMappingResponse {
-  mapping: Record<string, string>;
+  title: string;
+  mappings: HoneywellMappingItem[];
   compliance_notes: string[];
 }

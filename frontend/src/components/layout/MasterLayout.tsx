@@ -6,6 +6,7 @@ import { Footer } from './Footer';
 import { LeftPanel } from './LeftPanel';
 import { CenterPanel } from './CenterPanel';
 import { RightPanel } from './RightPanel';
+import { HoneywellOverlay } from '@/components/honeywell';
 
 interface MasterLayoutProps {
   leftContent?: ReactNode;
@@ -27,6 +28,8 @@ export const MasterLayout: FC<MasterLayoutProps> = ({
         <RightPanel>{rightContent}</RightPanel>
       </div>
       <Footer />
+      {/* Honeywell mapping overlay - accessible from any tab */}
+      <HoneywellOverlay />
     </div>
   );
 };

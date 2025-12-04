@@ -7,12 +7,13 @@ import { API_BASE_URL } from '@/lib/api';
 import type {
   EvidenceResponse,
   HoneywellMappingResponse,
+  HoneywellMappingItem,
   ModelCard,
   DataCard,
 } from '@/components/evidence/types';
 
 // Re-export types for convenience
-export type { EvidenceResponse, HoneywellMappingResponse, ModelCard, DataCard };
+export type { EvidenceResponse, HoneywellMappingResponse, HoneywellMappingItem, ModelCard, DataCard };
 
 const api = ky.create({
   prefixUrl: API_BASE_URL,
@@ -505,8 +506,53 @@ export async function getHoneywellMapping(): Promise<HoneywellMappingResponse> {
   } catch (error) {
     console.warn('Failed to fetch Honeywell mapping, using fallback:', error);
     cachedHoneywellMapping = {
-      mapping: {},
-      compliance_notes: ['Fallback data - API unavailable'],
+      title: 'Ride-Sharing to Honeywell Enterprise Mapping',
+      mappings: [
+        {
+          ride_sharing_concept: 'Number of Riders (Demand)',
+          honeywell_equivalent: 'Product Demand Forecast',
+          rationale: 'Both represent customer demand signals that drive pricing decisions',
+        },
+        {
+          ride_sharing_concept: 'Number of Drivers (Supply)',
+          honeywell_equivalent: 'Inventory/Capacity Levels',
+          rationale: 'Available supply constrains pricing flexibility',
+        },
+        {
+          ride_sharing_concept: 'Surge Pricing',
+          honeywell_equivalent: 'Dynamic Pricing / Premium Pricing',
+          rationale: 'Price adjustment based on supply-demand imbalance',
+        },
+        {
+          ride_sharing_concept: 'Customer Loyalty Tier',
+          honeywell_equivalent: 'Customer Segmentation',
+          rationale: 'Different segments have different price sensitivity',
+        },
+        {
+          ride_sharing_concept: 'Location Category',
+          honeywell_equivalent: 'Market/Region Segmentation',
+          rationale: 'Geographic factors affect pricing strategies',
+        },
+        {
+          ride_sharing_concept: 'Vehicle Type',
+          honeywell_equivalent: 'Product Tier / SKU',
+          rationale: 'Different product tiers command different prices',
+        },
+        {
+          ride_sharing_concept: 'Time of Booking',
+          honeywell_equivalent: 'Seasonal/Cyclical Demand',
+          rationale: 'Temporal patterns drive demand fluctuations',
+        },
+        {
+          ride_sharing_concept: 'Expected Ride Duration',
+          honeywell_equivalent: 'Service Complexity / Lead Time',
+          rationale: 'Longer engagements justify different pricing structures',
+        },
+      ],
+      compliance_notes: [
+        'This mapping demonstrates transferability of dynamic pricing concepts',
+        'All ML models and explainability tools are domain-agnostic',
+      ],
     };
     return cachedHoneywellMapping;
   }
