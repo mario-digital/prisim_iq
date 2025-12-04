@@ -6,16 +6,41 @@ import type { Message } from '@/stores/chatStore';
 import { ConfidenceBadge } from './ConfidenceBadge';
 import { formatMessageTime } from './utils';
 
+/** Message type restricted to assistant role only */
+type AssistantMessage = Message & { role: 'assistant' };
+
+/**
+ * Props for AIMessage component.
+ * 
+ * @property message - The assistant message to render (must have role='assistant')
+ * @property isStreaming - Controls streaming-phase UI behavior:
+ *   - When true: Shows blinking cursor, hides footer (confidence, tools, timestamp)
+ *   - When false: Shows complete message with footer metadata
+ * 
+ * @note If adding more streaming-phase-only UI in the future, ensure the
+ * interface between chatStore streaming state and this component is validated
+ * with types and tests. See MessageList.tsx for streaming state management.
+ */
 interface AIMessageProps {
-  message: Message;
+  message: AssistantMessage;
   isStreaming?: boolean;
 }
 
 /**
  * AI message bubble - left-aligned with markdown support.
  * Supports streaming mode with blinking cursor indicator.
+ * 
+ * @note Only renders messages with role='assistant'. Returns null for other roles.
  */
 export const AIMessage: FC<AIMessageProps> = ({ message, isStreaming = false }) => {
+  // Runtime guard: only render assistant messages
+  if (message.role !== 'assistant') {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('[AIMessage] Received non-assistant message, skipping render:', message.role);
+    }
+    return null;
+  }
+
   return (
     <div className="flex justify-start">
       <div className="max-w-[80%] bg-muted rounded-2xl rounded-tl-sm px-4 py-2 shadow-sm">

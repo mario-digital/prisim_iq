@@ -3,12 +3,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+/**
+ * Chat message structure.
+ * 
+ * @note Field naming convention: Frontend uses camelCase (`toolsUsed`),
+ * backend API uses snake_case (`tools_used`). Conversion happens in
+ * ChatPanel.tsx when processing API responses.
+ */
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
   confidence?: number;
+  /** Tools used by the AI (converted from backend's `tools_used`) */
   toolsUsed?: string[];
   pricingResult?: unknown;
 }
@@ -51,12 +59,20 @@ export const useChatStore = create<ChatState>()(
             ...s.messages,
             {
               ...msg,
+              // NOTE: crypto.randomUUID() is browser-only. This store is marked 'use client'
+              // so it's safe. If SSR/server components ever need message IDs, use a polyfill
+              // or uuid package. Currently safe as this runs only in browser context.
               id: crypto.randomUUID(),
               timestamp: new Date().toISOString(),
             },
           ],
         })),
 
+      /**
+       * Set loading state.
+       * @note Only sets isLoading flag. Does NOT clear streamError.
+       * Use startStreaming() to reset all streaming state, or setStreamError(null) explicitly.
+       */
       setLoading: (isLoading) => set({ isLoading }),
 
       clearChat: () =>
