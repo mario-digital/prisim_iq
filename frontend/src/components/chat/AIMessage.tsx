@@ -49,8 +49,8 @@ export const AIMessage: FC<AIMessageProps> = ({ message, isStreaming = false }) 
   }
 
   return (
-    <div className="flex justify-start">
-      <div className="max-w-[80%] bg-muted rounded-2xl rounded-tl-sm px-4 py-2 shadow-sm">
+    <div className="flex justify-start message-enter">
+      <div className="max-w-[80%] bg-card border border-border/30 rounded-2xl rounded-tl-sm px-4 py-2 shadow-lg shadow-black/10">
         <div className="prose prose-sm dark:prose-invert max-w-none">
           <ReactMarkdown
             components={{
@@ -98,7 +98,7 @@ export const AIMessage: FC<AIMessageProps> = ({ message, isStreaming = false }) 
           {/* Blinking cursor during streaming */}
           {isStreaming && (
             <span
-              className="inline-block w-2 h-4 bg-primary/80 ml-0.5 rounded-sm streaming-cursor"
+              className="inline-block w-2 h-4 bg-cyan-400 ml-0.5 rounded-sm streaming-cursor"
               aria-label="Streaming in progress"
             />
           )}

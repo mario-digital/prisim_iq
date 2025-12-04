@@ -21,17 +21,17 @@ export const ProfitUpliftHero: FC<ProfitUpliftHeroProps> = ({
   const optimizedPrice = baseline * (1 + value / 100);
 
   return (
-    <Card className="border-0 bg-gradient-to-br from-card to-muted/20">
+    <Card className="border border-border/30 bg-gradient-to-br from-card via-card to-emerald-950/20 shadow-lg shadow-black/10">
       <CardContent className="p-6">
         <div className="flex items-center justify-between gap-6">
           {/* Main uplift metric */}
           <div className="flex items-center gap-4">
             <div
               className={cn(
-                'flex items-center justify-center h-14 w-14 rounded-xl',
+                'flex items-center justify-center h-14 w-14 rounded-xl shadow-lg',
                 isPositive
-                  ? 'bg-green-500/10 text-green-500'
-                  : 'bg-red-500/10 text-red-500'
+                  ? 'bg-emerald-500/20 text-emerald-400 shadow-emerald-500/20'
+                  : 'bg-rose-500/20 text-rose-400 shadow-rose-500/20'
               )}
             >
               <TrendIcon className="h-7 w-7" />
@@ -43,7 +43,7 @@ export const ProfitUpliftHero: FC<ProfitUpliftHeroProps> = ({
               <p
                 className={cn(
                   'text-3xl font-bold tabular-nums',
-                  isPositive ? 'text-green-500' : 'text-red-500'
+                  isPositive ? 'text-emerald-400' : 'text-rose-400'
                 )}
               >
                 {isPositive ? '+' : ''}
@@ -53,32 +53,32 @@ export const ProfitUpliftHero: FC<ProfitUpliftHeroProps> = ({
           </div>
 
           {/* Divider */}
-          <div className="h-12 w-px bg-border" />
+          <div className="h-12 w-px bg-border/30" />
 
           {/* Baseline */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-muted text-muted-foreground">
+            <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-slate-500/20 text-slate-400">
               <DollarSign className="h-5 w-5" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Baseline</p>
-              <p className="text-lg font-semibold tabular-nums">
+              <p className="text-lg font-semibold tabular-nums text-slate-300">
                 ${baseline.toFixed(2)}
               </p>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="h-12 w-px bg-border" />
+          <div className="h-12 w-px bg-border/30" />
 
           {/* Optimized */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-primary/10 text-primary">
+            <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-cyan-500/20 text-cyan-400">
               <Target className="h-5 w-5" />
             </div>
             <div>
               <p className="text-xs text-muted-foreground">Optimized Avg</p>
-              <p className="text-lg font-semibold tabular-nums text-primary">
+              <p className="text-lg font-semibold tabular-nums text-cyan-400">
                 ${optimizedPrice.toFixed(2)}
               </p>
             </div>

@@ -20,12 +20,16 @@ interface WelcomeMessageProps {
 export const WelcomeMessage: FC<WelcomeMessageProps> = ({ onExampleClick }) => {
   return (
     <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-      <div className="mb-4 p-3 rounded-full bg-primary/10">
-        <Sparkles className="w-8 h-8 text-primary" />
+      {/* Animated icon with glow */}
+      <div className="relative mb-4">
+        <div className="absolute inset-0 bg-cyan-400/20 blur-xl rounded-full animate-pulse" />
+        <div className="relative p-4 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/20">
+          <Sparkles className="w-8 h-8 text-cyan-400" />
+        </div>
       </div>
       
-      <h2 className="text-xl font-semibold mb-2">
-        👋 Welcome to PrismIQ!
+      <h2 className="text-xl font-semibold mb-2 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+        Welcome to PrismIQ!
       </h2>
       
       <p className="text-muted-foreground mb-6 max-w-md">
@@ -42,9 +46,11 @@ export const WelcomeMessage: FC<WelcomeMessageProps> = ({ onExampleClick }) => {
             <button
               key={question}
               onClick={() => onExampleClick(question)}
-              className="text-left px-4 py-2 rounded-lg border border-border bg-card hover:bg-accent transition-colors text-sm"
+              className="text-left px-4 py-3 rounded-xl border border-border/50 bg-card/50 hover:bg-accent hover:border-cyan-500/30 transition-all duration-200 text-sm group"
             >
-              {question}
+              <span className="text-muted-foreground group-hover:text-foreground transition-colors">
+                {question}
+              </span>
             </button>
           ))}
         </div>

@@ -28,7 +28,7 @@ export const Panel: FC<PanelProps> = ({
   return (
     <aside
       className={cn(
-        'relative flex flex-col border-border bg-card transition-all duration-300 ease-in-out',
+        'relative flex flex-col border-border/40 bg-card/50 backdrop-blur-sm transition-all duration-300 ease-in-out',
         isLeft ? 'border-r' : 'border-l',
         collapsed ? 'w-12' : 'w-1/4 min-w-[280px]',
         className
@@ -40,7 +40,7 @@ export const Panel: FC<PanelProps> = ({
         size="icon"
         onClick={onToggle}
         className={cn(
-          'absolute top-3 z-10 h-6 w-6 rounded-full border bg-background shadow-sm hover:bg-muted',
+          'absolute top-3 z-10 h-6 w-6 rounded-full border border-border/50 bg-card shadow-lg shadow-black/20 hover:bg-accent hover:border-cyan-500/30 transition-all duration-200',
           isLeft ? '-right-3' : '-left-3'
         )}
         aria-label={collapsed ? 'Expand panel' : 'Collapse panel'}
@@ -66,7 +66,7 @@ export const Panel: FC<PanelProps> = ({
         )}
       >
         {title && !collapsed && (
-          <div className="flex-shrink-0 border-b border-border px-4 py-3">
+          <div className="flex-shrink-0 border-b border-border/30 px-4 py-3 bg-gradient-to-r from-transparent via-cyan-500/5 to-transparent">
             <h2 className="text-sm font-semibold text-foreground">{title}</h2>
           </div>
         )}

@@ -38,7 +38,7 @@ export const ChatInput: FC<ChatInputProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t border-border">
+    <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t border-border/30 bg-gradient-to-t from-background to-transparent">
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
@@ -46,13 +46,14 @@ export const ChatInput: FC<ChatInputProps> = ({
         disabled={disabled}
         placeholder={placeholder}
         rows={1}
-        className="flex-1 min-h-[44px] max-h-32 px-4 py-2 rounded-lg border border-input bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex-1 min-h-[44px] max-h-32 px-4 py-2 rounded-xl border border-border/50 bg-card/50 text-sm resize-none placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
       />
       <Button
         type="submit"
         size="icon"
         disabled={disabled || !input.trim()}
         aria-label="Send message"
+        className="rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white shadow-lg shadow-cyan-500/25 disabled:opacity-30 disabled:shadow-none transition-all duration-200"
       >
         <Send className="w-4 h-4" />
       </Button>

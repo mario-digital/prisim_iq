@@ -8,29 +8,29 @@ import { HealthResponseSchema, ModelsStatusResponseSchema } from '@prismiq/share
 
 interface StatusConfig {
   label: string;
-  emoji: string;
-  bgClass: string;
+  dotClass: string;
   textClass: string;
+  glowClass: string;
 }
 
 const STATUS_CONFIG: Record<HealthStatus, StatusConfig> = {
   healthy: {
-    label: 'READY',
-    emoji: '🟢',
-    bgClass: 'bg-green-100',
-    textClass: 'text-green-700',
+    label: 'Online',
+    dotClass: 'bg-emerald-400',
+    textClass: 'text-emerald-400',
+    glowClass: 'shadow-emerald-400/50',
   },
   degraded: {
-    label: 'DEGRADED',
-    emoji: '🟡',
-    bgClass: 'bg-yellow-100',
-    textClass: 'text-yellow-700',
+    label: 'Degraded',
+    dotClass: 'bg-amber-400',
+    textClass: 'text-amber-400',
+    glowClass: 'shadow-amber-400/50',
   },
   unhealthy: {
-    label: 'ERROR',
-    emoji: '🔴',
-    bgClass: 'bg-red-100',
-    textClass: 'text-red-700',
+    label: 'Offline',
+    dotClass: 'bg-rose-400',
+    textClass: 'text-rose-400',
+    glowClass: 'shadow-rose-400/50',
   },
 };
 
@@ -39,7 +39,7 @@ const HEALTH_POLL_INTERVAL = 30000; // 30 seconds
 /**
  * System status indicator showing API health.
  * Polls the /health and /models/status endpoints periodically.
- * Displays: [READY] 🟢, [DEGRADED] 🟡, or [ERROR] 🔴
+ * Modern, minimal design with animated status dot.
  */
 export const SystemStatus: FC = () => {
   const { health, setHealthCheck, setModelsReady } = useStatusStore();
@@ -92,17 +92,28 @@ export const SystemStatus: FC = () => {
 
   return (
     <div
-      className={cn(
-        'flex items-center gap-1.5 px-2.5 py-1 rounded text-sm font-medium transition-colors',
-        config.bgClass,
-        config.textClass
-      )}
+      className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card/50 border border-border/30"
       title={`System status: ${config.label}`}
     >
-      <span aria-hidden="true">{config.emoji}</span>
-      <span className="font-semibold">[{config.label}]</span>
+      {/* Animated status dot */}
+      <span className="relative flex h-2 w-2">
+        <span
+          className={cn(
+            'absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping',
+            config.dotClass
+          )}
+        />
+        <span
+          className={cn(
+            'relative inline-flex h-2 w-2 rounded-full shadow-sm',
+            config.dotClass,
+            config.glowClass
+          )}
+        />
+      </span>
+      <span className={cn('text-xs font-medium', config.textClass)}>
+        {config.label}
+      </span>
     </div>
   );
 };
-
-

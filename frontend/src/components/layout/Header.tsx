@@ -64,7 +64,7 @@ export const Header: FC = () => {
   }, [activeTab, setActiveTab]);
 
   return (
-    <header className="border-b border-border bg-card">
+    <header className="border-b border-border bg-card/80 backdrop-blur-sm">
       {/* Top row: Brand, Pipeline Status, System Status */}
       <div className="h-14 px-4 flex items-center justify-between">
         {/* Left: Brand */}
@@ -80,7 +80,7 @@ export const Header: FC = () => {
       </div>
 
       {/* Bottom row: Tab Navigation + Honeywell Toggle */}
-      <div className="h-12 px-4 flex items-center justify-between border-t border-border/50">
+      <div className="h-12 px-4 flex items-center justify-between border-t border-border/30">
         {/* Tabs */}
         <nav className="flex items-center gap-1">
           {tabs.map((tab) => {
@@ -92,10 +92,10 @@ export const Header: FC = () => {
                 key={tab.id}
                 href={tab.href}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors',
+                  'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200',
                   isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    ? 'bg-gradient-to-r from-cyan-500/15 to-blue-500/10 text-cyan-400 shadow-sm shadow-cyan-500/10'
+                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                 )}
               >
                 <Icon className="h-4 w-4" />
