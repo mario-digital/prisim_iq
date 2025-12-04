@@ -127,37 +127,59 @@ export const usePricingStore = create<PricingState>((set) => ({
 /**
  * Transform backend PriceExplanation response to frontend format.
  * Maps snake_case API response to camelCase frontend types.
+ *
+ * BACKEND CONTRACT: This transformer assumes the backend /api/v1/explain_decision
+ * response follows the PriceExplanation schema from src/schemas/explanation.py.
+ * All field access uses defensive defaults (|| '', || 0, || []) to handle:
+ * - Missing optional fields
+ * - Null values from backend
+ * - Schema evolution where new fields may be absent in older responses
+ *
+ * If backend schema changes significantly, update this transformer accordingly.
  */
 function transformApiResponse(data: Record<string, unknown>): PriceExplanation {
-  const recommendation = data.recommendation as Record<string, unknown>;
-  const segment = recommendation?.segment as Record<string, unknown> | undefined;
-  const priceDemandCurve =
-    (recommendation?.price_demand_curve as Array<{
-      price: number;
-      demand: number;
-      profit: number;
-    }>) || [];
+  // Safely extract top-level objects with null checks
+  const recommendation = (data?.recommendation as Record<string, unknown>) ?? {};
+  const segment = (recommendation?.segment as Record<string, unknown>) ?? {};
 
-  // Derive confidence level from score
-  const confidenceScore = (recommendation?.confidence_score as number) || 0;
+  // Extract price_demand_curve with type guard for array
+  const rawCurve = recommendation?.price_demand_curve;
+  const priceDemandCurve: Array<{ price: number; demand: number; profit: number }> =
+    Array.isArray(rawCurve)
+      ? rawCurve.map((p) => ({
+          price: typeof p?.price === 'number' ? p.price : 0,
+          demand: typeof p?.demand === 'number' ? p.demand : 0,
+          profit: typeof p?.profit === 'number' ? p.profit : 0,
+        }))
+      : [];
+
+  // Derive confidence level from score with defensive number extraction
+  const rawConfidence = recommendation?.confidence_score;
+  const confidenceScore = typeof rawConfidence === 'number' ? rawConfidence : 0;
   const confidence: 'low' | 'medium' | 'high' =
     confidenceScore >= 0.8 ? 'high' : confidenceScore >= 0.5 ? 'medium' : 'low';
 
-  // Map feature importance to pricing factors
-  const featureImportance =
-    (data.feature_importance as Array<Record<string, unknown>>) || [];
+  // Map feature importance to pricing factors with defensive array handling
+  const rawFeatures = data?.feature_importance;
+  const featureImportance: Array<Record<string, unknown>> = Array.isArray(rawFeatures)
+    ? rawFeatures
+    : [];
   const factors = featureImportance.map((f) => ({
-    name: (f.display_name as string) || (f.feature_name as string) || '',
-    impact: (f.importance as number) || 0,
-    description: (f.description as string) || '',
-    weight: (f.importance as number) || 0,
+    name: String(f?.display_name ?? f?.feature_name ?? ''),
+    impact: typeof f?.importance === 'number' ? f.importance : 0,
+    description: String(f?.description ?? ''),
+    weight: typeof f?.importance === 'number' ? f.importance : 0,
   }));
 
-  const recommendedPrice = (recommendation?.recommended_price as number) || 0;
-  const expectedDemand = (recommendation?.expected_demand as number) || 0;
+  // Extract numeric values with type guards
+  const rawPrice = recommendation?.recommended_price;
+  const recommendedPrice = typeof rawPrice === 'number' ? rawPrice : 0;
+  const rawDemand = recommendation?.expected_demand;
+  const expectedDemand = typeof rawDemand === 'number' ? rawDemand : 0;
 
   // Map backend segment name to frontend CustomerSegment type
-  const segmentName = ((segment?.segment_name as string) || '').toLowerCase();
+  // Default to 'price_sensitive' if segment info is missing/malformed
+  const segmentName = String(segment?.segment_name ?? '').toLowerCase();
   const mappedSegment: 'price_sensitive' | 'value_seeker' | 'premium' | 'enterprise' =
     segmentName.includes('premium') || segmentName.includes('peak')
       ? 'premium'
@@ -167,16 +189,21 @@ function transformApiResponse(data: Record<string, unknown>): PriceExplanation {
           ? 'enterprise'
           : 'price_sensitive';
 
+  // Extract base price with fallback to recommended price
+  const rawBasePrice = recommendation?.price_before_rules;
+  const basePrice = typeof rawBasePrice === 'number' ? rawBasePrice : recommendedPrice;
+
+  // Calculate price adjustment percentage safely
+  const priceAdjustment =
+    recommendedPrice > 0 && basePrice > 0
+      ? ((recommendedPrice - basePrice) / basePrice) * 100
+      : 0;
+
   return {
     result: {
       recommendedPrice,
-      basePrice: (recommendation?.price_before_rules as number) || recommendedPrice,
-      priceAdjustment:
-        recommendedPrice > 0 && recommendation?.price_before_rules
-          ? ((recommendedPrice - (recommendation.price_before_rules as number)) /
-              (recommendation.price_before_rules as number)) *
-            100
-          : 0,
+      basePrice,
+      priceAdjustment,
       confidence,
       confidenceScore,
       segment: mappedSegment,
@@ -184,30 +211,44 @@ function transformApiResponse(data: Record<string, unknown>): PriceExplanation {
       expectedDemand,
       expectedRevenue: recommendedPrice * expectedDemand,
       explanation:
-        (data.natural_language_summary as string) ||
+        String(data?.natural_language_summary ?? '') ||
         `Recommended price: $${recommendedPrice.toFixed(2)}`,
-      timestamp: (recommendation?.timestamp as string) || new Date().toISOString(),
+      timestamp: String(recommendation?.timestamp ?? '') || new Date().toISOString(),
     },
-    featureContributions: featureImportance.map((f) => ({
-      name: (f.feature_name as string) || '',
-      displayName: (f.display_name as string) || (f.feature_name as string) || '',
-      importance: (f.importance as number) || 0,
-      direction: (f.direction as 'positive' | 'negative' | 'neutral') || 'neutral',
-      currentValue: (f.current_value ?? f.description ?? '') as string | number,
-    })),
-    decisionTrace: (
-      ((data.decision_trace as Record<string, unknown>)?.steps as Array<
-        Record<string, unknown>
-      >) || []
-    ).map((step) => ({
-      id: (step.step_name as string) || '',
-      name: (step.step_name as string) || '',
-      description: (step.description as string) || '',
-      durationMs: (step.duration_ms as number) || 0,
-      status: (step.status as 'success' | 'warning' | 'error') || 'success',
-      inputs: (step.inputs as Record<string, unknown>) || {},
-      outputs: (step.outputs as Record<string, unknown>) || {},
-    })),
+    featureContributions: featureImportance.map((f) => {
+      // Validate direction is one of expected values, default to 'neutral'
+      const rawDirection = f?.direction;
+      const direction: 'positive' | 'negative' | 'neutral' =
+        rawDirection === 'positive' || rawDirection === 'negative'
+          ? rawDirection
+          : 'neutral';
+      return {
+        name: String(f?.feature_name ?? ''),
+        displayName: String(f?.display_name ?? f?.feature_name ?? ''),
+        importance: typeof f?.importance === 'number' ? f.importance : 0,
+        direction,
+        currentValue: String(f?.current_value ?? f?.description ?? ''),
+      };
+    }),
+    decisionTrace: (() => {
+      const trace = data?.decision_trace as Record<string, unknown> | undefined;
+      const steps = Array.isArray(trace?.steps) ? trace.steps : [];
+      return steps.map((step: Record<string, unknown>) => {
+        // Validate status is one of expected values
+        const rawStatus = step?.status;
+        const status: 'success' | 'warning' | 'error' =
+          rawStatus === 'warning' || rawStatus === 'error' ? rawStatus : 'success';
+        return {
+          id: String(step?.step_name ?? ''),
+          name: String(step?.step_name ?? ''),
+          description: String(step?.description ?? ''),
+          durationMs: typeof step?.duration_ms === 'number' ? step.duration_ms : 0,
+          status,
+          inputs: (step?.inputs as Record<string, unknown>) ?? {},
+          outputs: (step?.outputs as Record<string, unknown>) ?? {},
+        };
+      });
+    })(),
     demandCurve: priceDemandCurve.map((p) => ({
       price: p.price,
       value: p.demand,
@@ -227,27 +268,38 @@ function transformApiResponse(data: Record<string, unknown>): PriceExplanation {
       })),
       confidenceLevel: 95,
     },
-    businessRules: (
-      (recommendation?.rules_applied as Array<Record<string, unknown>>) || []
-    ).map((rule) => ({
-      id: (rule.rule_id as string) || '',
-      name: (rule.rule_name as string) || '',
-      description: (rule.description as string) || '',
-      triggered: true,
-      priceBefore: (rule.price_before as number) || 0,
-      priceAfter: (rule.price_after as number) || 0,
-      impact: (rule.impact as number) || 0,
-      type:
-        (rule.type as
-          | 'floor'
-          | 'ceiling'
-          | 'margin'
-          | 'competitive'
-          | 'promotional') || 'margin',
-    })),
+    businessRules: (() => {
+      const rawRules = recommendation?.rules_applied;
+      const rules: Array<Record<string, unknown>> = Array.isArray(rawRules) ? rawRules : [];
+      return rules.map((rule) => {
+        // Validate rule type is one of expected values
+        const rawType = rule?.type;
+        const validTypes = ['floor', 'ceiling', 'margin', 'competitive', 'promotional'] as const;
+        const type: (typeof validTypes)[number] =
+          validTypes.includes(rawType as (typeof validTypes)[number])
+            ? (rawType as (typeof validTypes)[number])
+            : 'margin';
+        return {
+          id: String(rule?.rule_id ?? ''),
+          name: String(rule?.rule_name ?? ''),
+          description: String(rule?.description ?? ''),
+          triggered: true,
+          priceBefore: typeof rule?.price_before === 'number' ? rule.price_before : 0,
+          priceAfter: typeof rule?.price_after === 'number' ? rule.price_after : 0,
+          impact: typeof rule?.impact === 'number' ? rule.impact : 0,
+          type,
+        };
+      });
+    })(),
     optimalPrice: recommendedPrice,
-    expectedProfit: (recommendation?.expected_profit as number) || 0,
-    profitUpliftPercent: (recommendation?.profit_uplift_percent as number) || 0,
+    expectedProfit:
+      typeof recommendation?.expected_profit === 'number'
+        ? recommendation.expected_profit
+        : 0,
+    profitUpliftPercent:
+      typeof recommendation?.profit_uplift_percent === 'number'
+        ? recommendation.profit_uplift_percent
+        : 0,
   };
 }
 
