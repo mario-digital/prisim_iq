@@ -181,6 +181,18 @@
   }
 }
 
+/* ==========================================================================
+   Animation Timing Variables
+   
+   Centralizes animation durations for consistency and easy theme tuning.
+   Adjust these to speed up/slow down animations across the chat UI.
+   ========================================================================== */
+:root {
+  --animation-cursor-blink: 0.8s;
+  --animation-tool-spin: 1s;
+  --animation-message-slide: 0.2s;
+}
+
 /* Streaming cursor animation */
 @keyframes streaming-cursor {
   0%, 100% {
@@ -192,7 +204,7 @@
 }
 
 .streaming-cursor {
-  animation: streaming-cursor 0.8s ease-in-out infinite;
+  animation: streaming-cursor var(--animation-cursor-blink) ease-in-out infinite;
 }
 
 /* Smooth token append animation */
@@ -216,7 +228,7 @@
 }
 
 .tool-spinner {
-  animation: tool-spin 1s linear infinite;
+  animation: tool-spin var(--animation-tool-spin) linear infinite;
 }
 
 /* Message slide-in */
@@ -232,6 +244,6 @@
 }
 
 .message-enter {
-  animation: message-slide 0.2s ease-out;
+  animation: message-slide var(--animation-message-slide) ease-out;
 }
 
