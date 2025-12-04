@@ -7,6 +7,9 @@ import { ChatResponseSchema } from '@prismiq/shared/schemas';
 import { postValidated } from '@/lib/api-client';
 import { API_BASE_URL } from '@/lib/api';
 
+/** Debug logging flag - only enabled in development */
+const DEBUG = process.env.NODE_ENV === 'development';
+
 /**
  * Chat request matching backend ChatRequest schema.
  */
@@ -81,6 +84,13 @@ export async function sendMessage(
  * @param context - Current market context
  * @param opts - Stream options (plan, keepalive, model, signal)
  * @yields Parsed SSE events from the stream
+ * 
+ * @note Backend SSE Contract: This parser assumes each SSE event contains
+ * a SINGLE `data:` line. Per SSE spec, multiple `data:` lines per event
+ * would be concatenated with newlines, but our backend emits single-line
+ * JSON payloads only. If backend changes to emit multi-line data events,
+ * the parsing logic (line ~164) would need to be updated to concatenate
+ * all `data:` lines before JSON parsing.
  */
 export async function* streamMessage(
   message: string,
@@ -122,20 +132,20 @@ export async function* streamMessage(
   const decoder = new TextDecoder();
   let buffer = '';
 
-  console.log('[chatService] Starting to read stream...');
+  if (DEBUG) console.log('[chatService] Starting to read stream...');
 
   try {
     while (true) {
       const { done, value } = await reader.read();
-      console.log('[chatService] Read chunk:', { done, bytesReceived: value?.length });
+      if (DEBUG) console.log('[chatService] Read chunk:', { done, bytesReceived: value?.length });
       
       if (done) {
-        console.log('[chatService] Reader done, remaining buffer:', buffer);
+        if (DEBUG) console.log('[chatService] Reader done, remaining buffer:', buffer);
         break;
       }
 
       const chunk = decoder.decode(value, { stream: true });
-      console.log('[chatService] Decoded chunk:', chunk.slice(0, 200));
+      if (DEBUG) console.log('[chatService] Decoded chunk:', chunk.slice(0, 200));
       buffer += chunk;
 
       // Normalize line endings (CRLF → LF) before splitting
@@ -146,33 +156,35 @@ export async function* streamMessage(
       const events = normalizedBuffer.split('\n\n');
       buffer = events.pop() ?? '';
       
-      console.log('[chatService] Split into events:', events.length, 'remaining buffer length:', buffer.length);
+      if (DEBUG) console.log('[chatService] Split into events:', events.length, 'remaining buffer length:', buffer.length);
 
       for (const raw of events) {
-        console.log('[chatService] Processing raw event:', raw.slice(0, 100));
+        if (DEBUG) console.log('[chatService] Processing raw event:', raw.slice(0, 100));
         
         // Ignore SSE comment lines (e.g., ": keepalive")
         if (raw.startsWith(':')) {
-          console.log('[chatService] Skipping comment line');
+          if (DEBUG) console.log('[chatService] Skipping comment line');
           continue;
         }
 
         // Find the data: line in this event
+        // NOTE: Only first `data:` line is used. Backend contract specifies single-line JSON.
+        // If multi-line data events are needed, concatenate all data: lines before parsing.
         const dataLine = raw.split('\n').find((l) => l.startsWith('data: '));
         if (!dataLine) {
-          console.log('[chatService] No data: line found in event');
+          if (DEBUG) console.log('[chatService] No data: line found in event');
           continue;
         }
 
         const jsonText = dataLine.slice(6).trim();
         if (!jsonText) {
-          console.log('[chatService] Empty JSON text');
+          if (DEBUG) console.log('[chatService] Empty JSON text');
           continue;
         }
 
         // Handle [DONE] marker (some backends use this)
         if (jsonText === '[DONE]') {
-          console.log('[chatService] Received [DONE] marker');
+          if (DEBUG) console.log('[chatService] Received [DONE] marker');
           return;
         }
 
@@ -181,26 +193,26 @@ export async function* streamMessage(
 
           // Ignore empty keepalive payloads `{}`
           if (Object.keys(evt).length === 0) {
-            console.log('[chatService] Skipping empty keepalive');
+            if (DEBUG) console.log('[chatService] Skipping empty keepalive');
             continue;
           }
 
-          console.log('[chatService] Yielding event:', evt);
+          if (DEBUG) console.log('[chatService] Yielding event:', evt);
           yield evt;
 
           // If done flag is true, we're finished
           if ('done' in evt && evt.done === true) {
-            console.log('[chatService] Stream complete (done=true)');
+            if (DEBUG) console.log('[chatService] Stream complete (done=true)');
             return;
           }
         } catch (e) {
-          // Skip malformed JSON
-          console.warn('[chatService] Failed to parse SSE event:', jsonText, e);
+          // Skip malformed JSON - warn only in development
+          if (DEBUG) console.warn('[chatService] Failed to parse SSE event:', jsonText, e);
         }
       }
     }
   } finally {
-    console.log('[chatService] Releasing reader lock');
+    if (DEBUG) console.log('[chatService] Releasing reader lock');
     reader.releaseLock();
   }
 }

@@ -8,6 +8,9 @@ import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { WelcomeMessage } from './WelcomeMessage';
 
+/** Debug logging flag - only enabled in development */
+const DEBUG = process.env.NODE_ENV === 'development';
+
 /** Max consecutive SSE failures before falling back to non-streaming */
 const MAX_STREAM_FAILURES = 3;
 
@@ -51,40 +54,37 @@ export const ChatPanel: FC = () => {
       abortControllerRef.current = controller;
 
       try {
-        console.log('[ChatPanel] Starting stream for:', content);
+        if (DEBUG) console.log('[ChatPanel] Starting stream for:', content);
         for await (const event of streamMessage(content, context, {
           keepalive: true,
           interval: 15,
           signal: controller.signal,
         })) {
-          console.log('[ChatPanel] Received event:', event);
+          if (DEBUG) console.log('[ChatPanel] Received event:', event);
           
           // Handle token events
           if ('token' in event && event.token) {
-            console.log('[ChatPanel] Appending token:', event.token);
+            if (DEBUG) console.log('[ChatPanel] Appending token:', event.token);
             appendToken(event.token);
           }
 
           // Handle tool call events
           if ('tool_call' in event && event.tool_call) {
-            console.log('[ChatPanel] Tool call:', event.tool_call);
+            if (DEBUG) console.log('[ChatPanel] Tool call:', event.tool_call);
             setToolCall(event.tool_call);
           }
 
           // Handle completion
           if ('done' in event && event.done === true) {
-            console.log('[ChatPanel] Stream complete, done event:', event);
+            if (DEBUG) console.log('[ChatPanel] Stream complete, done event:', event);
             if ('error' in event) {
-              // Error event
+              // Error event - display via StreamError UI component only
+              // (avoids double-reporting with both error block AND assistant message)
               setStreamError(event.error);
-              addMessage({
-                role: 'assistant',
-                content: `Sorry, I encountered an error: ${event.error}. Please try again.`,
-              });
               cancelStream();
             } else if ('message' in event) {
               // Success event
-              console.log('[ChatPanel] Finalizing stream with message');
+              if (DEBUG) console.log('[ChatPanel] Finalizing stream with message');
               finalizeStream({
                 role: 'assistant',
                 content: event.message,
@@ -97,7 +97,7 @@ export const ChatPanel: FC = () => {
             break;
           }
         }
-        console.log('[ChatPanel] Stream loop ended');
+        if (DEBUG) console.log('[ChatPanel] Stream loop ended');
       } catch (error) {
         // Don't report abort errors
         if (error instanceof Error && error.name === 'AbortError') {
@@ -114,20 +114,20 @@ export const ChatPanel: FC = () => {
         // If we've failed too many times, disable streaming
         if (streamFailures.current >= MAX_STREAM_FAILURES) {
           setUseStreaming(false);
-          console.warn(
-            `Streaming failed ${MAX_STREAM_FAILURES} times, falling back to non-streaming`
-          );
+          if (DEBUG) {
+            console.warn(
+              `Streaming failed ${MAX_STREAM_FAILURES} times, falling back to non-streaming`
+            );
+          }
         }
 
-        setStreamError(errorMessage);
-        addMessage({
-          role: 'assistant',
-          content: `Sorry, I encountered an error: ${errorMessage}. ${
-            streamFailures.current >= MAX_STREAM_FAILURES
-              ? 'Switching to non-streaming mode.'
-              : 'Please try again.'
-          }`,
-        });
+        // Display error via StreamError UI component only
+        // (avoids double-reporting with both error block AND assistant message)
+        setStreamError(
+          streamFailures.current >= MAX_STREAM_FAILURES
+            ? `${errorMessage}. Switching to non-streaming mode.`
+            : errorMessage
+        );
         cancelStream();
       } finally {
         abortControllerRef.current = null;
@@ -163,11 +163,9 @@ export const ChatPanel: FC = () => {
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : 'An unexpected error occurred';
+        // Display error via StreamError UI component only
+        // (avoids double-reporting with both error block AND assistant message)
         setStreamError(errorMessage);
-        addMessage({
-          role: 'assistant',
-          content: `Sorry, I encountered an error: ${errorMessage}. Please try again.`,
-        });
         cancelStream();
       }
     },

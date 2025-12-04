@@ -16,6 +16,7 @@ export const Message: FC<MessageProps> = ({ message }) => {
   if (message.role === 'user') {
     return <UserMessage message={message} />;
   }
-  return <AIMessage message={message} />;
+  // Type assertion: after ruling out 'user', message must be 'assistant'
+  return <AIMessage message={message as MessageType & { role: 'assistant' }} />;
 };
 

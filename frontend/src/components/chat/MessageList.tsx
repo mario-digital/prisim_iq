@@ -8,6 +8,9 @@ import { TypingIndicator } from './TypingIndicator';
 import { ToolCallIndicator } from './ToolCallIndicator';
 import { StreamError } from './StreamError';
 
+/** Debug logging flag - only enabled in development */
+const DEBUG = process.env.NODE_ENV === 'development';
+
 interface MessageListProps {
   messages: MessageType[];
   isLoading: boolean;
@@ -35,14 +38,16 @@ export const MessageList: FC<MessageListProps> = ({
   // Track if we're actively streaming (have content OR tool call)
   const isStreaming = streamingContent !== null && streamingContent !== undefined;
   
-  // Debug logging
-  console.log('[MessageList] Render:', { 
-    messagesCount: messages.length, 
-    isLoading, 
-    streamingContent: streamingContent?.slice(0, 50), 
-    currentToolCall, 
-    isStreaming 
-  });
+  // Debug logging - only in development
+  if (DEBUG) {
+    console.log('[MessageList] Render:', { 
+      messagesCount: messages.length, 
+      isLoading, 
+      streamingContent: streamingContent?.slice(0, 50), 
+      currentToolCall, 
+      isStreaming 
+    });
+  }
 
   // Auto-scroll to bottom when messages change, loading, or streaming content changes
   useEffect(() => {
