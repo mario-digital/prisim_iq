@@ -2,25 +2,11 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { MarketContext } from '@prismiq/shared/schemas';
 
-/**
- * Market context matching backend MarketContext schema (snake_case).
- * This is the authoritative type used for API communication.
- * 
- * Note: Components may use camelCase internally, but API calls use this format.
- */
-export interface MarketContext {
-    number_of_riders: number;
-    number_of_drivers: number;
-    location_category: 'Urban' | 'Suburban' | 'Rural';
-    customer_loyalty_status: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
-    number_of_past_rides: number;
-    average_ratings: number;
-    time_of_booking: 'Morning' | 'Afternoon' | 'Evening' | 'Night';
-    vehicle_type: 'Economy' | 'Premium';
-    expected_ride_duration: number;
-    historical_cost_of_ride: number;
-}
+// Re-export the shared MarketContext type for convenience
+// This ensures type consistency with the Zod schema validation
+export type { MarketContext };
 
 export interface SavedScenario {
     id: string;

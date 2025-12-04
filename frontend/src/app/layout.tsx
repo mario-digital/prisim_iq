@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { TabNavigation } from '@/components/layout';
 import { ToastContainer } from '@/components/ui/toast';
 import './globals.css';
 
@@ -19,7 +18,6 @@ export default function RootLayout({
     // that modify the DOM (e.g., dark mode, translation, accessibility tools)
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased" suppressHydrationWarning>
-        <TabNavigation />
         {children}
         <ToastContainer />
       </body>

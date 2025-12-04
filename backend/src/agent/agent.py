@@ -13,6 +13,7 @@ Architecture (v1 patterns):
 
 from __future__ import annotations
 
+import re
 from collections.abc import AsyncGenerator
 from contextlib import suppress
 from datetime import UTC, datetime
@@ -26,6 +27,55 @@ if TYPE_CHECKING:
     from langchain_core.tools import BaseTool
 
     from src.schemas.market import MarketContext
+
+
+def _normalize_message(text: str) -> str:
+    """Post-process agent message to fix common formatting issues.
+
+    Fixes:
+    - Collapsed spaces (e.g., "word  word" -> "word word")
+    - Missing space before numbers (e.g., "for55%" -> "for 55%")
+    - Missing space after numbers (e.g., "1.043Segment" -> "1.043 Segment")
+    - Missing space after colons (e.g., "Distance:1.0" -> "Distance: 1.0")
+    - Missing space before $ (e.g., "Baseline$35" -> "Baseline $35")
+    - Missing space before markdown headings (e.g., "text###" -> "text ###")
+    - Excessive newlines (3+ -> 2)
+    - Numbered lists with newline after number (e.g., "1.\ntext" -> "1. text")
+    - Bullet points with newline after marker (e.g., "-\ntext" -> "- text")
+
+    Args:
+        text: Raw message text from LLM.
+
+    Returns:
+        Normalized message with proper spacing.
+    """
+    if not text:
+        return text
+    # Fix numbered lists with newline after number (e.g., "1.\ntext" -> "1. text")
+    # Match: digit(s) + period + optional space + newline + optional whitespace + word char
+    text = re.sub(r"(\d+\.)\s*\n\s*(\w)", r"\1 \2", text)
+    # Also fix bullet points with newline after marker (e.g., "-\ntext" -> "- text")
+    text = re.sub(r"^([-*•])\s*\n\s*(\w)", r"\1 \2", text, flags=re.MULTILINE)
+    # Collapse repeating spaces/tabs within lines
+    text = re.sub(r"[ \t]{2,}", " ", text)
+    # Trim spaces before punctuation
+    text = re.sub(r"\s+([.,;:!?])", r"\1", text)
+    # Add space after colon if followed by letter/number without space
+    text = re.sub(r":([a-zA-Z0-9])", r": \1", text)
+    # Add space before numbers when preceded by a letter (e.g., "for55%" -> "for 55%")
+    text = re.sub(r"([a-zA-Z])(\d)", r"\1 \2", text)
+    # Add space after numbers when followed by a letter (e.g., "1.043Segment" -> "1.043 Segment")
+    text = re.sub(r"(\d)([a-zA-Z])", r"\1 \2", text)
+    # Add space before $ sign when preceded by a letter
+    text = re.sub(r"([a-zA-Z])\$", r"\1 $", text)
+    # Add space before markdown headings (e.g., "text###" -> "text ###")
+    text = re.sub(r"(\S)(#{1,6}\s)", r"\1 \2", text)
+    # Collapse 3+ newlines to maximum of 2
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    # Strip trailing spaces on lines
+    text = re.sub(r"[ \t]+\n", "\n", text)
+    # Final trim
+    return text.strip()
 
 
 class PrismIQAgent:
@@ -115,6 +165,9 @@ class PrismIQAgent:
             # Extract response and (optionally) tools used
             final_message = result["messages"][-1].content
             tools_used: list[str] = []
+
+            # Post-process final message to fix common formatting issues
+            final_message = _normalize_message(final_message)
 
             # Update history with user and assistant turns
             history = messages + [("assistant", final_message)]
@@ -355,18 +408,8 @@ class PrismIQAgent:
                 if token_buffer
                 else (last_tool_output or extracted_text or "")
             )
-            if final_message:
-                import re
-                # Collapse repeating spaces/tabs within lines
-                final_message = re.sub(r"[ \t]{2,}", " ", final_message)
-                # Trim spaces before punctuation
-                final_message = re.sub(r"\s+([.,;:!?])", r"\1", final_message)
-                # Collapse 3+ newlines to maximum of 2
-                final_message = re.sub(r"\n{3,}", "\n\n", final_message)
-                # Strip trailing spaces on lines
-                final_message = re.sub(r"[ \t]+\n", "\n", final_message)
-                # Final trim
-                final_message = final_message.strip()
+            # Post-process final message to fix common formatting issues
+            final_message = _normalize_message(final_message)
             history = messages + [("assistant", final_message)]
             self._history[session_id] = history  # type: ignore[assignment]
 

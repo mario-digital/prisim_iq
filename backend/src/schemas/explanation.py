@@ -1,6 +1,6 @@
 """Explanation schemas for explain_decision endpoint."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -130,8 +130,8 @@ class PriceExplanation(BaseModel):
         description="Time taken to generate explanation in milliseconds",
     )
     timestamp: datetime = Field(
-        default_factory=datetime.utcnow,
-        description="Timestamp when explanation was generated",
+        default_factory=lambda: datetime.now(UTC),
+        description="Timestamp when explanation was generated (ISO 8601 UTC)",
     )
 
     model_config = ConfigDict(

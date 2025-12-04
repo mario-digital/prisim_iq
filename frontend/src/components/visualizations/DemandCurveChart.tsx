@@ -70,7 +70,7 @@ export const DemandCurveChart: FC<DemandCurveChartProps> = memo(({
                 tickLine={false}
               />
               <YAxis
-                tickFormatter={(v) => v.toFixed(0)}
+                tickFormatter={(v) => v.toFixed(2)}
                 fontSize={chartConfig.fontSize}
                 tickLine={false}
                 axisLine={false}
@@ -83,7 +83,7 @@ export const DemandCurveChart: FC<DemandCurveChartProps> = memo(({
                 }}
               />
               <Tooltip
-                formatter={(value: number) => [value.toFixed(0), 'Expected Demand']}
+                formatter={(value: number) => [value.toFixed(2), 'Expected Demand']}
                 labelFormatter={(label) => `Price: $${label}`}
                 contentStyle={tooltipStyle}
               />

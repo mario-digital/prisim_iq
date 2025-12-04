@@ -24,9 +24,9 @@ export const SupplyDemandSection: FC = () => {
 
   const handleRatioSliderChange = (value: number[]) => {
     const newRatio = value[0];
-    // Keep drivers constant, adjust riders to match ratio
+    // Keep drivers constant, adjust riders to match ratio (capped at 100)
     const newRiders = Math.round(context.number_of_drivers * newRatio);
-    updateContext({ number_of_riders: Math.max(1, newRiders) });
+    updateContext({ number_of_riders: Math.min(100, Math.max(1, newRiders)) });
   };
 
   return (
@@ -45,9 +45,9 @@ export const SupplyDemandSection: FC = () => {
           id="riders"
           type="number"
           min={1}
-          max={500}
+          max={100}
           value={context.number_of_riders}
-          onChange={(e) => updateContext({ number_of_riders: Number(e.target.value) || 1 })}
+          onChange={(e) => updateContext({ number_of_riders: Math.min(100, Math.max(1, Number(e.target.value) || 1)) })}
           className="h-9"
         />
       </div>
@@ -61,9 +61,9 @@ export const SupplyDemandSection: FC = () => {
           id="drivers"
           type="number"
           min={1}
-          max={200}
+          max={100}
           value={context.number_of_drivers}
-          onChange={(e) => updateContext({ number_of_drivers: Number(e.target.value) || 1 })}
+          onChange={(e) => updateContext({ number_of_drivers: Math.min(100, Math.max(1, Number(e.target.value) || 1)) })}
           className="h-9"
         />
       </div>

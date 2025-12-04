@@ -161,8 +161,12 @@ export {
 export {
   HealthStatus,
   HealthResponseSchema,
+  ModelInfoSchema,
+  ModelsStatusResponseSchema,
   type HealthResponse,
   type HealthStatusType,
+  type ModelInfo,
+  type ModelsStatusResponse,
 } from './health';
 
 // Data schemas

@@ -8,7 +8,7 @@ Defines data structures for:
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -23,7 +23,7 @@ class FuelData(BaseModel):
     )
     source: str = Field(default="n8n", description="Data source identifier")
     fetched_at: datetime = Field(
-        default_factory=datetime.utcnow, description="When data was fetched"
+        default_factory=lambda: datetime.now(UTC), description="When data was fetched"
     )
 
 
@@ -42,7 +42,7 @@ class WeatherData(BaseModel):
     )
     source: str = Field(default="n8n", description="Data source identifier")
     fetched_at: datetime = Field(
-        default_factory=datetime.utcnow, description="When data was fetched"
+        default_factory=lambda: datetime.now(UTC), description="When data was fetched"
     )
 
 
@@ -71,7 +71,7 @@ class ExternalContext(BaseModel):
     weather: WeatherData | None = Field(default=None, description="Current weather conditions")
     events: list[EventData] = Field(default_factory=list, description="Active local events")
     last_updated: datetime = Field(
-        default_factory=datetime.utcnow, description="When context was last refreshed"
+        default_factory=lambda: datetime.now(UTC), description="When context was last refreshed"
     )
 
     def get_combined_event_modifier(self) -> float:

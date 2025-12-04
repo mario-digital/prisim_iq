@@ -1,9 +1,18 @@
 'use client';
 
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { BusinessRule } from './types';
+import {
+  TrendingUp,
+  TrendingDown,
+  BarChart3,
+  Target,
+  Tag,
+  ClipboardList,
+  ChevronRight,
+} from 'lucide-react';
 
 interface BusinessRulesListProps {
   rules: BusinessRule[];
@@ -34,20 +43,21 @@ export const BusinessRulesList: FC<BusinessRulesListProps> = ({ rules }) => {
     }
   };
 
-  const getRuleTypeIcon = (type: BusinessRule['type']) => {
+  const getRuleTypeIcon = (type: BusinessRule['type']): ReactNode => {
+    const iconClass = 'h-3 w-3';
     switch (type) {
       case 'floor':
-        return '⬆';
+        return <TrendingUp className={iconClass} />;
       case 'ceiling':
-        return '⬇';
+        return <TrendingDown className={iconClass} />;
       case 'margin':
-        return '📊';
+        return <BarChart3 className={iconClass} />;
       case 'competitive':
-        return '🎯';
+        return <Target className={iconClass} />;
       case 'promotional':
-        return '🏷';
+        return <Tag className={iconClass} />;
       default:
-        return '📋';
+        return <ClipboardList className={iconClass} />;
     }
   };
 
@@ -84,7 +94,7 @@ export const BusinessRulesList: FC<BusinessRulesListProps> = ({ rules }) => {
             {skippedRules.length > 0 && (
               <details className="group">
                 <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors list-none flex items-center gap-1">
-                  <span className="group-open:rotate-90 transition-transform">▶</span>
+                  <ChevronRight className="h-3 w-3 group-open:rotate-90 transition-transform" />
                   {skippedRules.length} rules not triggered
                 </summary>
                 <div className="mt-2 space-y-2 pl-4 border-l-2 border-muted">
@@ -110,7 +120,7 @@ export const BusinessRulesList: FC<BusinessRulesListProps> = ({ rules }) => {
 interface RuleItemProps {
   rule: BusinessRule;
   getRuleTypeColor: (type: BusinessRule['type']) => string;
-  getRuleTypeIcon: (type: BusinessRule['type']) => string;
+  getRuleTypeIcon: (type: BusinessRule['type']) => ReactNode;
 }
 
 const RuleItem: FC<RuleItemProps> = ({ rule, getRuleTypeColor, getRuleTypeIcon }) => {

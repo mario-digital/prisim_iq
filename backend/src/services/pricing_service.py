@@ -7,7 +7,7 @@ and RulesEngine to produce complete pricing recommendations.
 from __future__ import annotations
 
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from functools import lru_cache
 from typing import Literal
 
@@ -197,7 +197,7 @@ class PricingService:
             price_before_rules=price_before_rules,
             price_demand_curve=optimization.price_demand_curve,
             processing_time_ms=round(processing_time_ms, 2),
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(UTC),
         )
 
         logger.info(

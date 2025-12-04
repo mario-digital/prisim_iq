@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type FC } from 'react';
 import { useChatStore } from '@/stores/chatStore';
 import { useContextStore } from '@/stores/contextStore';
+import { usePricingStore } from '@/stores/pricingStore';
 import { streamMessage, sendMessage } from '@/services/chatService';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
@@ -13,6 +14,9 @@ const DEBUG = process.env.NODE_ENV === 'development';
 
 /** Max consecutive SSE failures before falling back to non-streaming */
 const MAX_STREAM_FAILURES = 3;
+
+/** Tools that indicate pricing analysis was performed */
+const PRICING_TOOLS = ['optimize_price', 'explain_decision', 'sensitivity_analysis'];
 
 /**
  * Main chat panel component with SSE streaming support.
@@ -33,6 +37,7 @@ export const ChatPanel: FC = () => {
     cancelStream,
   } = useChatStore();
   const context = useContextStore((state) => state.context);
+  const fetchPricing = usePricingStore((state) => state.fetchPricing);
 
   // Track streaming failures for fallback logic
   const streamFailures = useRef(0);
@@ -105,6 +110,17 @@ export const ChatPanel: FC = () => {
               });
               // Reset failure counter on success
               streamFailures.current = 0;
+              
+              // If pricing tools were used, fetch the full explanation for the right panel
+              const toolsUsed = event.tools_used || [];
+              const usedPricingTool = toolsUsed.some(tool => PRICING_TOOLS.includes(tool));
+              if (usedPricingTool) {
+                if (DEBUG) console.log('[ChatPanel] Pricing tool used, fetching explanation');
+                // Fetch pricing explanation in background (don't await)
+                fetchPricing(context).catch(err => {
+                  if (DEBUG) console.warn('[ChatPanel] Failed to fetch pricing explanation:', err);
+                });
+              }
             }
             break;
           }
@@ -154,6 +170,7 @@ export const ChatPanel: FC = () => {
       setStreamError,
       cancelStream,
       context,
+      fetchPricing,
     ]
   );
 
@@ -172,6 +189,16 @@ export const ChatPanel: FC = () => {
           content: response.message,
           toolsUsed: response.tools_used,
         });
+        
+        // If pricing tools were used, fetch the full explanation for the right panel
+        const toolsUsed = response.tools_used || [];
+        const usedPricingTool = toolsUsed.some(tool => PRICING_TOOLS.includes(tool));
+        if (usedPricingTool) {
+          if (DEBUG) console.log('[ChatPanel] Pricing tool used, fetching explanation');
+          fetchPricing(context).catch(err => {
+            if (DEBUG) console.warn('[ChatPanel] Failed to fetch pricing explanation:', err);
+          });
+        }
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : 'An unexpected error occurred';
@@ -181,7 +208,7 @@ export const ChatPanel: FC = () => {
         cancelStream();
       }
     },
-    [addMessage, startStreaming, finalizeStream, setStreamError, cancelStream, context]
+    [addMessage, startStreaming, finalizeStream, setStreamError, cancelStream, context, fetchPricing]
   );
 
   /**

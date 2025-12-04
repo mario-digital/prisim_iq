@@ -1,19 +1,18 @@
 'use client';
 
 import type { FC } from 'react';
-import { Zap } from 'lucide-react';
 
 /**
  * Brand component displaying PrismIQ logo and tagline.
- * Used in the Header for brand identity.
+ * Per PRD: "🔷 PrismIQ" + "Dynamic Pricing Copilot" tagline.
  */
 export const Brand: FC = () => {
   return (
-    <div className="flex items-center gap-3">
-      {/* Logo */}
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-prism-500 to-prism-700 shadow-sm">
-        <Zap className="h-5 w-5 text-white" />
-      </div>
+    <div className="flex items-center gap-2">
+      {/* Diamond emoji as logo per PRD */}
+      <span className="text-2xl" role="img" aria-label="PrismIQ logo">
+        🔷
+      </span>
       
       {/* Text */}
       <div className="flex flex-col">

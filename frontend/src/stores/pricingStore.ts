@@ -6,6 +6,8 @@ import { create } from 'zustand';
 import type { PriceExplanation } from '@/components/visualizations/types';
 import type { MarketContext } from '@/stores/contextStore';
 import { apiUrl } from '@/lib/api';
+import { MarketContextSchema, PriceExplanationSchema } from '@prismiq/shared/schemas';
+import { useStatusStore } from '@/stores/statusStore';
 
 interface PricingState {
   /** Current price explanation with all visualization data */
@@ -62,8 +64,22 @@ export const usePricingStore = create<PricingState>((set) => ({
 
   fetchPricing: async (context: MarketContext) => {
     set({ isLoading: true, error: null });
+    const startTime = performance.now();
+
+    // Get statusStore actions for updating footer stats
+    const { setSegment, completeProcessing, startProcessing } = useStatusStore.getState();
+    startProcessing();
 
     try {
+      // Validate context using shared Zod schema before API call
+      const validation = MarketContextSchema.safeParse(context);
+      if (!validation.success) {
+        const errorMessages = validation.error.issues
+          .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+          .join('; ');
+        throw new Error(`Validation failed: ${errorMessages}`);
+      }
+
       const response = await fetch(apiUrl('/api/v1/explain_decision'), {
         method: 'POST',
         headers: {
@@ -78,21 +94,65 @@ export const usePricingStore = create<PricingState>((set) => ({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.detail || `Request failed with status ${response.status}`
-        );
+        // Handle various error formats from FastAPI
+        let errorMessage = `Request failed with status ${response.status}`;
+        if (errorData.detail) {
+          if (typeof errorData.detail === 'string') {
+            errorMessage = errorData.detail;
+          } else if (Array.isArray(errorData.detail)) {
+            // FastAPI validation errors return an array of error objects
+            errorMessage = errorData.detail
+              .map((e: { msg?: string; loc?: string[] }) => 
+                e.msg || (e.loc ? `Error in ${e.loc.join('.')}` : 'Unknown error')
+              )
+              .join('; ');
+          } else if (typeof errorData.detail === 'object') {
+            // Single error object
+            errorMessage = errorData.detail.msg || JSON.stringify(errorData.detail);
+          }
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
 
+      // Validate response against shared schema (logs warning but doesn't block)
+      // This helps detect API drift early in development
+      const responseValidation = PriceExplanationSchema.safeParse(data);
+      if (!responseValidation.success) {
+        console.warn('[pricingStore] API response doesn\'t match expected schema:', 
+          responseValidation.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ')
+        );
+        // Continue anyway - transformApiResponse has defensive defaults
+      }
+
       // Transform backend response to frontend PriceExplanation format
       const explanation: PriceExplanation = transformApiResponse(data);
+
+      // Calculate response time and update status store
+      const responseTimeSeconds = (performance.now() - startTime) / 1000;
+      
+      // Extract segment name from response for footer display
+      const recommendation = (data?.recommendation as Record<string, unknown>) ?? {};
+      const segment = (recommendation?.segment as Record<string, unknown>) ?? {};
+      const segmentName = String(segment?.segment_name ?? 'Unknown');
+      
+      // Update footer stats
+      setSegment(segmentName);
+      completeProcessing(responseTimeSeconds);
 
       set({ explanation, isLoading: false, error: null });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to fetch pricing';
       set({ error: errorMessage, isLoading: false });
+      
+      // Still update response time on error
+      const responseTimeSeconds = (performance.now() - startTime) / 1000;
+      completeProcessing(responseTimeSeconds);
+      
       throw err;
     }
   },
