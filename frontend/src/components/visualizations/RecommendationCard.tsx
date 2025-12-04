@@ -26,15 +26,15 @@ export const RecommendationCard: FC<RecommendationCardProps> = ({
     : 0;
 
   return (
-    <Card>
+    <Card className="bg-gradient-to-br from-card to-card/80 border-border/50 shadow-lg shadow-black/10">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           Recommended Price
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Main price display */}
-        <div className="text-4xl font-bold text-primary tracking-tight">
+        {/* Main price display with gradient */}
+        <div className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent tracking-tight">
           ${result.recommendedPrice.toFixed(2)}
         </div>
 
@@ -46,7 +46,7 @@ export const RecommendationCard: FC<RecommendationCardProps> = ({
           <span
             className={cn(
               'text-sm font-medium',
-              priceChange > 0 ? 'text-emerald-600' : priceChange < 0 ? 'text-red-600' : 'text-muted-foreground'
+              priceChange > 0 ? 'text-emerald-400' : priceChange < 0 ? 'text-rose-400' : 'text-muted-foreground'
             )}
           >
             ({priceChange > 0 ? '+' : ''}
@@ -69,9 +69,9 @@ export const RecommendationCard: FC<RecommendationCardProps> = ({
               className={cn(
                 'text-lg font-semibold',
                 profitUpliftPercent > 0
-                  ? 'text-emerald-600 dark:text-emerald-400'
+                  ? 'text-emerald-400'
                   : profitUpliftPercent < 0
-                  ? 'text-red-600 dark:text-red-400'
+                  ? 'text-rose-400'
                   : 'text-muted-foreground'
               )}
             >
@@ -83,16 +83,16 @@ export const RecommendationCard: FC<RecommendationCardProps> = ({
           {/* Expected Demand */}
           <div className="flex flex-col gap-1">
             <span className="text-xs text-muted-foreground">Expected Demand</span>
-            <span className="text-lg font-semibold">
+            <span className="text-lg font-semibold text-amber-400">
               {result.expectedDemand.toFixed(2)} units
             </span>
           </div>
         </div>
 
         {/* Segment badge */}
-        <div className="mt-4 pt-4 border-t">
+        <div className="mt-4 pt-4 border-t border-border/30">
           <span className="text-xs text-muted-foreground">Segment: </span>
-          <span className="text-xs font-medium capitalize">
+          <span className="text-xs font-medium capitalize text-cyan-400/80">
             {result.segment.replace('_', ' ')}
           </span>
         </div>

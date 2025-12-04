@@ -17,9 +17,21 @@ export const SupplyDemandSection: FC = () => {
   }, [context.number_of_riders, context.number_of_drivers]);
 
   const ratioInfo = useMemo(() => {
-    if (ratio > 2) return { label: 'High Demand', color: 'text-red-500', bg: 'bg-red-500/10' };
-    if (ratio > 1) return { label: 'Balanced', color: 'text-yellow-500', bg: 'bg-yellow-500/10' };
-    return { label: 'Low Demand', color: 'text-green-500', bg: 'bg-green-500/10' };
+    if (ratio > 2) return { 
+      label: 'High Demand', 
+      color: 'text-orange-300', 
+      bg: 'bg-gradient-to-r from-orange-500/10 to-amber-500/5 border border-orange-500/20' 
+    };
+    if (ratio > 1) return { 
+      label: 'Balanced', 
+      color: 'text-cyan-300', 
+      bg: 'bg-gradient-to-r from-cyan-500/10 to-blue-500/5 border border-cyan-500/20' 
+    };
+    return { 
+      label: 'Low Demand', 
+      color: 'text-emerald-300', 
+      bg: 'bg-gradient-to-r from-emerald-500/10 to-teal-500/5 border border-emerald-500/20' 
+    };
   }, [ratio]);
 
   const handleRatioSliderChange = (value: number[]) => {
@@ -69,14 +81,14 @@ export const SupplyDemandSection: FC = () => {
       </div>
 
       {/* Ratio Display */}
-      <div className={`rounded-md p-2 ${ratioInfo.bg}`}>
+      <div className={`rounded-lg p-3 ${ratioInfo.bg} transition-colors duration-200`}>
         <div className="flex items-center justify-between">
           <span className="text-xs text-muted-foreground">Supply/Demand Ratio</span>
-          <span className={`text-sm font-semibold ${ratioInfo.color}`}>
+          <span className={`text-lg font-bold tabular-nums ${ratioInfo.color}`}>
             {ratio.toFixed(2)}x
           </span>
         </div>
-        <div className={`text-xs font-medium ${ratioInfo.color}`}>
+        <div className={`text-xs font-medium mt-1 ${ratioInfo.color}`}>
           {ratioInfo.label}
         </div>
       </div>

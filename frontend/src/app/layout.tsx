@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     // suppressHydrationWarning on html: prevents mismatch warnings from browser extensions
     // that modify the DOM (e.g., dark mode, translation, accessibility tools)
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html lang="en" dir="ltr" className="dark" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased" suppressHydrationWarning>
         {children}
         <ToastContainer />

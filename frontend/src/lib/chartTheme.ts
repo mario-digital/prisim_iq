@@ -4,52 +4,53 @@
  */
 
 /**
- * Chart color palette matching the application theme.
- * Uses Tailwind color values for consistency.
+ * Chart color palette matching the PrismIQ dark theme.
+ * Vibrant colors optimized for dark backgrounds.
  */
 export const chartColors = {
-  /** Primary blue - main data series */
-  primary: '#3b82f6',
-  /** Secondary green - positive/success indicators */
-  secondary: '#10b981',
+  /** Primary cyan - main data series, matches brand */
+  primary: '#22d3ee',
+  /** Secondary emerald - positive/success indicators */
+  secondary: '#34d399',
   /** Accent amber - highlights and attention */
-  accent: '#f59e0b',
+  accent: '#fbbf24',
   /** Muted slate - reference lines, secondary info */
-  muted: '#94a3b8',
-  /** Positive green - upward trends, benefits */
-  positive: '#22c55e',
-  /** Negative red - downward trends, costs */
-  negative: '#ef4444',
+  muted: '#64748b',
+  /** Positive emerald - upward trends, benefits */
+  positive: '#34d399',
+  /** Negative rose - downward trends, costs */
+  negative: '#f43f5e',
   /** Indigo - alternative marker color */
-  indigo: '#6366f1',
+  indigo: '#818cf8',
   /** Purple - tertiary data series */
-  purple: '#8b5cf6',
-  /** Gradient colors for area fills */
+  purple: '#a78bfa',
+  /** Gradient colors for area fills - optimized for dark mode */
   gradient: {
     primary: {
-      start: 'rgba(59, 130, 246, 0.4)',
-      end: 'rgba(59, 130, 246, 0.05)',
+      start: 'rgba(34, 211, 238, 0.35)',
+      end: 'rgba(34, 211, 238, 0.02)',
     },
     secondary: {
-      start: 'rgba(16, 185, 129, 0.4)',
-      end: 'rgba(16, 185, 129, 0.05)',
+      start: 'rgba(52, 211, 153, 0.35)',
+      end: 'rgba(52, 211, 153, 0.02)',
     },
     indigo: {
-      start: 'rgba(99, 102, 241, 0.3)',
-      end: 'rgba(99, 102, 241, 0.05)',
+      start: 'rgba(129, 140, 248, 0.3)',
+      end: 'rgba(129, 140, 248, 0.02)',
     },
   },
 } as const;
 
 /**
  * Segment-specific colors for grouped comparisons.
+ * Vibrant colors optimized for dark backgrounds.
  */
 export const segmentColors: Record<string, string> = {
-  premium: '#8b5cf6',
-  standard: '#3b82f6',
-  budget: '#10b981',
-  enterprise: '#f59e0b',
-  default: '#94a3b8',
+  premium: '#a78bfa',    // Soft purple
+  standard: '#22d3ee',   // Cyan
+  budget: '#34d399',     // Emerald
+  enterprise: '#fbbf24', // Amber
+  default: '#94a3b8',    // Slate
 };
 
 /**
@@ -73,14 +74,15 @@ export const chartConfig = {
 } as const;
 
 /**
- * Tooltip styling that matches the app's card design.
+ * Tooltip styling that matches the app's dark card design.
  */
 export const tooltipStyle = {
   backgroundColor: 'hsl(var(--card))',
   border: '1px solid hsl(var(--border))',
   borderRadius: '8px',
   fontSize: '12px',
-  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+  boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.4), 0 4px 8px -2px rgba(0, 0, 0, 0.2)',
+  color: 'hsl(var(--foreground))',
 } as const;
 
 /**
