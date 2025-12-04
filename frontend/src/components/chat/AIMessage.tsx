@@ -34,10 +34,17 @@ interface AIMessageProps {
  */
 export const AIMessage: FC<AIMessageProps> = ({ message, isStreaming = false }) => {
   // Runtime guard: only render assistant messages
+  // This should never happen if types are used correctly - the AssistantMessage type
+  // ensures only assistant messages are passed. This guard catches runtime misuse.
   if (message.role !== 'assistant') {
     if (process.env.NODE_ENV === 'development') {
-      console.warn('[AIMessage] Received non-assistant message, skipping render:', message.role);
+      // Throw in development to catch misuse early - silent failures hide bugs
+      throw new Error(
+        `[AIMessage] Component received non-assistant message with role="${message.role}". ` +
+        `This component only renders assistant messages. Check your message filtering logic.`
+      );
     }
+    // In production, fail gracefully to avoid crashing the UI
     return null;
   }
 

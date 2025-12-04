@@ -7,7 +7,14 @@ import { ChatResponseSchema } from '@prismiq/shared/schemas';
 import { postValidated } from '@/lib/api-client';
 import { API_BASE_URL } from '@/lib/api';
 
-/** Debug logging flag - only enabled in development */
+/**
+ * Debug logging flag - only enabled in development.
+ * 
+ * SECURITY NOTE: Debug logs may include message content. Next.js dead-code
+ * elimination removes this entire branch in production builds when
+ * process.env.NODE_ENV !== 'development'. Verify with `next build` output
+ * that no DEBUG references appear in production bundles.
+ */
 const DEBUG = process.env.NODE_ENV === 'development';
 
 /**
@@ -85,12 +92,10 @@ export async function sendMessage(
  * @param opts - Stream options (plan, keepalive, model, signal)
  * @yields Parsed SSE events from the stream
  * 
- * @note Backend SSE Contract: This parser assumes each SSE event contains
- * a SINGLE `data:` line. Per SSE spec, multiple `data:` lines per event
- * would be concatenated with newlines, but our backend emits single-line
- * JSON payloads only. If backend changes to emit multi-line data events,
- * the parsing logic (line ~164) would need to be updated to concatenate
- * all `data:` lines before JSON parsing.
+ * @note SSE Parsing: Per SSE spec, multiple `data:` lines in a single event
+ * are concatenated with newlines. This parser correctly handles both:
+ * - Single-line JSON (current backend behavior)
+ * - Multi-line data events (future-proof per SSE spec)
  */
 export async function* streamMessage(
   message: string,
@@ -167,16 +172,21 @@ export async function* streamMessage(
           continue;
         }
 
-        // Find the data: line in this event
-        // NOTE: Only first `data:` line is used. Backend contract specifies single-line JSON.
-        // If multi-line data events are needed, concatenate all data: lines before parsing.
-        const dataLine = raw.split('\n').find((l) => l.startsWith('data: '));
-        if (!dataLine) {
+        // Extract ALL data: lines and concatenate with newlines per SSE spec
+        // SSE spec: multiple "data:" lines in one event are joined with \n
+        // Backend currently sends single-line JSON, but this handles multi-line too
+        const lines = raw.split('\n');
+        const dataLines = lines
+          .filter((l) => l.startsWith('data:'))
+          .map((l) => l.slice(5).trim()); // Remove "data:" prefix (5 chars)
+        
+        if (dataLines.length === 0) {
           if (DEBUG) console.log('[chatService] No data: line found in event');
           continue;
         }
 
-        const jsonText = dataLine.slice(6).trim();
+        // Per SSE spec, concatenate multiple data lines with newline
+        const jsonText = dataLines.join('\n').trim();
         if (!jsonText) {
           if (DEBUG) console.log('[chatService] Empty JSON text');
           continue;
