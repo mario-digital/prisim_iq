@@ -59,9 +59,9 @@ export const useChatStore = create<ChatState>()(
             ...s.messages,
             {
               ...msg,
-              // NOTE: crypto.randomUUID() is browser-only. This store is marked 'use client'
-              // so it's safe. If SSR/server components ever need message IDs, use a polyfill
-              // or uuid package. Currently safe as this runs only in browser context.
+              // NOTE: crypto.randomUUID() is browser-only (Web Crypto API).
+              // Safe here because: 1) Store is 'use client', 2) Zustand persist hydrates client-side.
+              // TODO(SSR): If future hydration mismatches occur, replace with `uuid` package.
               id: crypto.randomUUID(),
               timestamp: new Date().toISOString(),
             },

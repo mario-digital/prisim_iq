@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useRef, useState, type FC } from 'react';
+import { useCallback, useEffect, useRef, useState, type FC } from 'react';
 import { useChatStore } from '@/stores/chatStore';
 import { useContextStore } from '@/stores/contextStore';
 import { streamMessage, sendMessage } from '@/services/chatService';
@@ -40,6 +40,18 @@ export const ChatPanel: FC = () => {
 
   // Abort controller for cancellation
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Cleanup: abort any active stream on unmount to prevent memory leaks
+  // and unresolved fetch promises when user navigates away mid-stream
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        if (DEBUG) console.log('[ChatPanel] Unmounting, aborting active stream');
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
 
   /**
    * Handle sending message with streaming.
