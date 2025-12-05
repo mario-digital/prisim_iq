@@ -74,15 +74,18 @@ export const chartConfig = {
 } as const;
 
 /**
- * Tooltip styling that matches the app's dark card design.
+ * Tooltip styling that matches the app's card design.
+ * Uses solid, opaque background for readability over charts.
  */
 export const tooltipStyle = {
-  backgroundColor: 'hsl(var(--card))',
+  backgroundColor: 'var(--tooltip-bg, hsl(var(--card)))',
   border: '1px solid hsl(var(--border))',
   borderRadius: '8px',
   fontSize: '12px',
-  boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.4), 0 4px 8px -2px rgba(0, 0, 0, 0.2)',
+  boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 4px 10px -2px rgba(0, 0, 0, 0.3)',
   color: 'hsl(var(--foreground))',
+  opacity: 1,
+  backdropFilter: 'none',
 } as const;
 
 /**

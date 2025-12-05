@@ -120,6 +120,9 @@
   /* Focus ring - matches primary */
   --ring: oklch(0.50 0.16 195);
   
+  /* Chart tooltip - solid opaque background */
+  --tooltip-bg: #f8fafc;
+  
   /* Chart colors - vibrant but not overwhelming */
   --chart-1: oklch(0.50 0.16 195);  /* Teal - primary */
   --chart-2: oklch(0.55 0.14 145);  /* Emerald */
@@ -184,6 +187,9 @@
   
   /* Focus ring - matches primary */
   --ring: oklch(0.75 0.18 195);
+  
+  /* Chart tooltip - solid opaque background */
+  --tooltip-bg: #1e293b;
   
   /* Chart colors - vibrant and distinct */
   --chart-1: oklch(0.75 0.18 195);  /* Cyan - primary */
