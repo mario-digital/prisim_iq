@@ -267,7 +267,7 @@ const TooltipCell: FC<{
             {tooltip ? (
               <>
                 <p className="font-semibold text-xs mb-1">{tooltip.term}</p>
-                <p className="text-xs text-muted-foreground">{tooltip.description}</p>
+                <p className="text-xs opacity-80">{tooltip.description}</p>
               </>
             ) : (
               <p className="text-xs">{interpretation}</p>

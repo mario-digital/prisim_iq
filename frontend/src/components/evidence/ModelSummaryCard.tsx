@@ -56,7 +56,7 @@ const MetricRow: FC<MetricRowProps> = ({
           </TooltipTrigger>
           <TooltipContent side="left" className="max-w-[250px]">
             <p className="font-semibold text-xs mb-1">{tooltip?.metric || label}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs opacity-80">
               {tooltip?.description || 'No description available'}
             </p>
           </TooltipContent>
@@ -140,7 +140,7 @@ export const ModelSummaryCard: FC<ModelSummaryCardProps> = ({ card }) => {
                     <p className="font-semibold text-xs mb-1">
                       {modelMetricTooltips.architecture.metric}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs opacity-80">
                       {modelMetricTooltips.architecture.description}
                     </p>
                   </TooltipContent>
@@ -151,7 +151,7 @@ export const ModelSummaryCard: FC<ModelSummaryCardProps> = ({ card }) => {
         </TooltipTrigger>
         <TooltipContent side="left" className="max-w-[280px]">
           <p className="font-semibold text-xs mb-1">{cardTooltip?.title}</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs opacity-80">
             {cardTooltip?.description}
           </p>
         </TooltipContent>
