@@ -216,9 +216,21 @@ class ExternalDataService:
         """Get mock events data for fallback.
 
         Returns:
-            Empty list (no surge).
+            List of local events affecting pricing.
         """
-        return []
+        from datetime import datetime
+        
+        # Demo event for hackathon
+        return [
+            EventData(
+                name="Shane Gillis Live (Stand-up Comedy)",
+                type="concert",
+                venue="Mortgage Matchup Center (formerly Footprint Center / PHX Arena)",
+                start_time=datetime(2025, 12, 5, 20, 0),  # 8:00 PM
+                surge_modifier=1.20,  # 20% surge for comedy show
+                radius_miles=5.0,
+            )
+        ]
 
     # -------------------------------------------------------------------------
     # Webhook Handlers (receive data from n8n)
