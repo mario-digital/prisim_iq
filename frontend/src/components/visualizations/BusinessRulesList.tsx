@@ -104,7 +104,7 @@ export const BusinessRulesList: FC<BusinessRulesListProps> = ({ rules }) => {
                       className="flex items-center gap-2 text-xs text-muted-foreground"
                     >
                       <span>{getRuleTypeIcon(rule.type)}</span>
-                      <span>{rule.name}</span>
+                      <span>{rule.name.replace(/_/g, ' ')}</span>
                     </div>
                   ))}
                 </div>
@@ -138,9 +138,9 @@ const RuleItem: FC<RuleItemProps> = ({ rule, getRuleTypeColor, getRuleTypeIcon }
                 getRuleTypeColor(rule.type)
               )}
             >
-              {getRuleTypeIcon(rule.type)} {rule.type}
+              {getRuleTypeIcon(rule.type)} {rule.type.replace(/_/g, ' ')}
             </span>
-            <span className="text-sm font-medium truncate">{rule.name}</span>
+            <span className="text-sm font-medium truncate">{rule.name.replace(/_/g, ' ')}</span>
           </div>
           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
             {rule.description}

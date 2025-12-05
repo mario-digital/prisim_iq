@@ -82,8 +82,8 @@ const MetricRow: FC<MetricRowProps> = ({
 export const ModelSummaryCard: FC<ModelSummaryCardProps> = ({ card }) => {
   const { model_name, model_version, metrics, model_details } = card;
 
-  // Get display name without "Model Card" suffix
-  const displayName = model_name.replace(' Demand Predictor', '');
+  // Get display name without "Model Card" suffix and remove underscores
+  const displayName = model_name.replace(' Demand Predictor', '').replace(/_/g, ' ');
 
   // Determine which card tooltip to use based on model name
   const getCardTooltipKey = () => {
@@ -133,7 +133,7 @@ export const ModelSummaryCard: FC<ModelSummaryCardProps> = ({ card }) => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="text-xs text-muted-foreground pt-1 border-t border-border/50 cursor-help hover:text-foreground transition-colors">
-                      {model_details.architecture}
+                      {model_details.architecture.replace(/_/g, ' ')}
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-[250px]">

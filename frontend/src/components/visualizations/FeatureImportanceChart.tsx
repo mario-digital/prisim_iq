@@ -95,12 +95,14 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
                 tickLine={false}
                 axisLine={false}
                 tick={{ fill: 'var(--chart-axis-text)' }}
+                tickFormatter={(value) => String(value).replace(/_/g, ' ')}
               />
               <Tooltip
                 formatter={(value: number) => [`${value.toFixed(1)}%`, 'Importance']}
                 labelFormatter={(label) => {
                   const item = chartData.find((d) => d.name === label);
-                  return `${label}: ${item?.currentValue ?? 'N/A'}`;
+                  const formattedLabel = String(label).replace(/_/g, ' ');
+                  return `${formattedLabel}: ${item?.currentValue ?? 'N/A'}`;
                 }}
                 contentStyle={tooltipStyle}
                 wrapperStyle={tooltipWrapperStyle}

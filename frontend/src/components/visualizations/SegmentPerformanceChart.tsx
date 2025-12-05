@@ -84,6 +84,7 @@ export const SegmentPerformanceChart: FC<SegmentPerformanceChartProps> = memo(
                   tickLine={false}
                   axisLine={false}
                   tick={{ fill: 'var(--chart-axis-text)' }}
+                  tickFormatter={(value) => String(value).replace(/_/g, ' ')}
                 />
                 <YAxis
                   tickFormatter={formatValue}
@@ -97,7 +98,7 @@ export const SegmentPerformanceChart: FC<SegmentPerformanceChartProps> = memo(
                     formatValue(value),
                     name.charAt(0).toUpperCase() + name.slice(1),
                   ]}
-                  labelFormatter={(label) => `Segment: ${label}`}
+                  labelFormatter={(label) => `Segment: ${String(label).replace(/_/g, ' ')}`}
                   contentStyle={tooltipStyle}
                   wrapperStyle={tooltipWrapperStyle}
                   labelStyle={tooltipLabelStyle}
@@ -140,7 +141,7 @@ export const SegmentPerformanceChart: FC<SegmentPerformanceChartProps> = memo(
                     key={d.segment}
                     className="flex items-center gap-1.5"
                   >
-                    <span className="text-muted-foreground">{d.segment}:</span>
+                    <span className="text-muted-foreground">{d.segment.replace(/_/g, ' ')}:</span>
                     <span
                       className={
                         (d.improvement ?? 0) >= 0

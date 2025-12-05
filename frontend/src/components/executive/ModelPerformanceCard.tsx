@@ -51,7 +51,7 @@ export const ModelPerformanceCard: FC<ModelPerformanceCardProps> = ({
                 ) : (
                   <AlertCircle className="h-3 w-3 text-amber-400" />
                 )}
-                <span className="text-muted-foreground">{model.name}</span>
+                <span className="text-muted-foreground">{model.name.replace(/_/g, ' ')}</span>
               </div>
               <span className="font-medium text-foreground">{model.accuracy}%</span>
             </div>

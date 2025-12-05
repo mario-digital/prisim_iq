@@ -93,7 +93,7 @@ export const RecommendationCard: FC<RecommendationCardProps> = ({
         <div className="mt-4 pt-4 border-t border-border/30">
           <span className="text-xs text-muted-foreground">Segment: </span>
           <span className="text-xs font-medium capitalize text-cyan-400/80">
-            {result.segment.replace('_', ' ')}
+            {result.segment.replace(/_/g, ' ')}
           </span>
         </div>
       </CardContent>
