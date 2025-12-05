@@ -16,6 +16,7 @@ import {
   chartColors,
   chartConfig,
   tooltipStyle,
+  tooltipWrapperStyle,
   tooltipLabelStyle,
   tooltipItemStyle,
   cursorStyle,
@@ -57,7 +58,7 @@ export const ProfitCurveChart: FC<ProfitCurveChartProps> = memo(({
   const minProfit = data.length > 0 ? Math.min(...data.map((d) => d.value)) : 0;
 
   return (
-    <Card>
+    <Card className="overflow-visible">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium">Profit Curve</CardTitle>
@@ -68,13 +69,13 @@ export const ProfitCurveChart: FC<ProfitCurveChartProps> = memo(({
           )}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-visible">
         {data.length === 0 ? (
           <div className="flex items-center justify-center h-[200px] text-sm text-muted-foreground">
             No profit data available
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={200} className="overflow-visible">
             <AreaChart
               data={data}
               margin={chartConfig.margin}
@@ -112,9 +113,11 @@ export const ProfitCurveChart: FC<ProfitCurveChartProps> = memo(({
                 formatter={(value: number) => [`$${value.toFixed(2)}`, 'Expected Profit']}
                 labelFormatter={(label) => `Price: $${label}`}
                 contentStyle={tooltipStyle}
+                wrapperStyle={tooltipWrapperStyle}
                 labelStyle={tooltipLabelStyle}
                 itemStyle={tooltipItemStyle}
                 cursor={cursorStyle}
+                allowEscapeViewBox={{ x: true, y: true }}
               />
 
               {/* Baseline reference */}

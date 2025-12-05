@@ -16,6 +16,7 @@ import {
   chartColors,
   chartConfig,
   tooltipStyle,
+  tooltipWrapperStyle,
   tooltipLabelStyle,
   tooltipItemStyle,
   cursorStyle,
@@ -51,17 +52,17 @@ export const DemandCurveChart: FC<DemandCurveChartProps> = memo(({
   const currentPoint = data.length > 0 ? findClosestPoint(currentPrice) : null;
 
   return (
-    <Card>
+    <Card className="overflow-visible">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium">Demand Curve</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-visible">
         {data.length === 0 ? (
           <div className="flex items-center justify-center h-[200px] text-sm text-muted-foreground">
             No demand data available
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={200} className="overflow-visible">
             <LineChart
               data={data}
               margin={chartConfig.marginWithLabel}
@@ -89,9 +90,11 @@ export const DemandCurveChart: FC<DemandCurveChartProps> = memo(({
                 formatter={(value: number) => [value.toFixed(2), 'Expected Demand']}
                 labelFormatter={(label) => `Price: $${label}`}
                 contentStyle={tooltipStyle}
+                wrapperStyle={tooltipWrapperStyle}
                 labelStyle={tooltipLabelStyle}
                 itemStyle={tooltipItemStyle}
                 cursor={cursorStyle}
+                allowEscapeViewBox={{ x: true, y: true }}
               />
 
               {/* Main demand curve */}
