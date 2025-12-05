@@ -19,7 +19,7 @@ export const MasterLayout: FC<MasterLayoutProps> = ({
   rightContent,
 }) => {
   return (
-    <div className="h-screen w-full overflow-hidden flex justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-200 via-slate-100 to-slate-50 dark:from-slate-800 dark:via-slate-900 dark:to-slate-950">
+    <div className="h-screen w-full overflow-hidden flex justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-300 via-slate-200 to-slate-100 dark:from-slate-800 dark:via-slate-900 dark:to-slate-950">
       <div className="h-full w-full max-w-[1920px] flex flex-col bg-background shadow-2xl shadow-black/10 dark:shadow-black/40 border-x border-border/30">
         <Header />
         <div className="flex-1 flex min-h-0">
