@@ -1,25 +1,192 @@
 'use client';
 
 import type { FC, ReactNode } from 'react';
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   FileText,
   Hash,
   Code2,
   Quote,
-  CheckCircle2,
-  Circle,
   ArrowRight,
   Sparkles,
+  HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getMetricTooltip, getValueTooltip } from './tooltipDefinitions';
 
 interface DocViewerProps {
   content: string;
   isLoading: boolean;
 }
+
+/**
+ * Documentation tooltips for common terms found in model/data cards
+ */
+const docTermTooltips: Record<string, { term: string; description: string }> = {
+  // Model metrics
+  'r² score': {
+    term: 'R² Score',
+    description:
+      'Coefficient of determination. Measures how well the model explains variance. 1.0 is perfect, 0.98 means 98% of variance explained.',
+  },
+  'mae': {
+    term: 'Mean Absolute Error',
+    description:
+      'Average prediction error in the same units as demand. Lower is better.',
+  },
+  'rmse': {
+    term: 'Root Mean Square Error',
+    description:
+      'Prediction accuracy metric that penalizes larger errors more. Lower is better.',
+  },
+  'mse': {
+    term: 'Mean Squared Error',
+    description:
+      'Average of squared prediction errors. Related to RMSE (RMSE = √MSE).',
+  },
+  // Model types
+  'xgboost': {
+    term: 'XGBoost',
+    description:
+      'Extreme Gradient Boosting - an ensemble learning algorithm that builds decision trees sequentially, with each tree correcting errors from the previous ones.',
+  },
+  'random forest': {
+    term: 'Random Forest',
+    description:
+      'An ensemble method that creates many decision trees and combines their predictions. Robust against overfitting.',
+  },
+  'linear regression': {
+    term: 'Linear Regression',
+    description:
+      'A simple statistical model that assumes a linear relationship between inputs and output. Highly interpretable.',
+  },
+  'gradient boosting': {
+    term: 'Gradient Boosting',
+    description:
+      'Machine learning technique that builds models sequentially, with each new model correcting errors from previous ones.',
+  },
+  // Data terms
+  'training data': {
+    term: 'Training Data',
+    description:
+      'Historical data used to teach the model patterns. More data generally leads to better predictions.',
+  },
+  'test data': {
+    term: 'Test Data',
+    description:
+      'Data held back from training to evaluate model performance on unseen examples.',
+  },
+  'feature': {
+    term: 'Feature',
+    description:
+      'An input variable used by the model for predictions (e.g., price, location, time).',
+  },
+  'target': {
+    term: 'Target Variable',
+    description:
+      'The value the model is trying to predict (in our case, demand).',
+  },
+  // Pricing terms
+  'demand elasticity': {
+    term: 'Demand Elasticity',
+    description:
+      'How sensitive demand is to price changes. Higher elasticity means demand changes more with price.',
+  },
+  'surge pricing': {
+    term: 'Surge Pricing',
+    description:
+      'Dynamic pricing that increases prices during high-demand periods to balance supply and demand.',
+  },
+  'baseline price': {
+    term: 'Baseline Price',
+    description:
+      'The starting reference price before any optimizations or adjustments are applied.',
+  },
+  // Business rules
+  'surge cap': {
+    term: 'Surge Cap',
+    description:
+      'Maximum allowed price multiplier during high-demand periods. Protects customers from extreme pricing.',
+  },
+  'loyalty discount': {
+    term: 'Loyalty Discount',
+    description:
+      'Price reduction for returning customers based on their loyalty tier (Bronze, Silver, Gold).',
+  },
+};
+
+/**
+ * Get tooltip for a table cell based on its text content
+ */
+const getCellTooltip = (text: string): { term: string; description: string } | null => {
+  const lowerText = text.toLowerCase().trim();
+
+  // Check for exact matches first
+  if (docTermTooltips[lowerText]) {
+    return docTermTooltips[lowerText];
+  }
+
+  // Check for partial matches
+  for (const [key, tooltip] of Object.entries(docTermTooltips)) {
+    if (lowerText.includes(key) || key.includes(lowerText)) {
+      return tooltip;
+    }
+  }
+
+  // Check metric tooltips
+  const metricTooltip = getMetricTooltip(lowerText.replace(/[^a-z0-9_]/g, '_'));
+  if (metricTooltip) {
+    return { term: metricTooltip.metric, description: metricTooltip.description };
+  }
+
+  return null;
+};
+
+/**
+ * Check if a value looks like a metric value (number, percentage, etc.)
+ */
+const isMetricValue = (text: string): boolean => {
+  const trimmed = text.trim();
+  // Check for numbers, percentages, decimals
+  return /^[\d.,]+%?$/.test(trimmed) || /^\d+\.\d+$/.test(trimmed);
+};
+
+/**
+ * Get interpretation for a metric value based on context
+ */
+const getValueInterpretation = (text: string, rowContext: string): string => {
+  const numValue = parseFloat(text.replace(/[%,]/g, ''));
+
+  if (rowContext.toLowerCase().includes('r²') || rowContext.toLowerCase().includes('r2')) {
+    if (numValue >= 0.95) return 'Excellent - captures nearly all variance';
+    if (numValue >= 0.85) return 'Good - highly predictive model';
+    if (numValue >= 0.7) return 'Moderate - acceptable performance';
+    return 'Lower - may need improvement';
+  }
+
+  if (rowContext.toLowerCase().includes('mae') || rowContext.toLowerCase().includes('error')) {
+    if (numValue <= 0.02) return 'Very accurate predictions';
+    if (numValue <= 0.05) return 'Good accuracy';
+    return 'Higher error - consider carefully';
+  }
+
+  if (rowContext.toLowerCase().includes('rmse')) {
+    if (numValue <= 0.03) return 'Excellent consistency';
+    if (numValue <= 0.08) return 'Good consistency';
+    return 'Higher variance in predictions';
+  }
+
+  return `Value: ${text}`;
+};
 
 /**
  * Skeleton loader that mimics typical markdown document layout.
@@ -71,7 +238,53 @@ function DocumentSkeleton() {
   );
 }
 
+/**
+ * Table cell with optional tooltip
+ */
+const TooltipCell: FC<{
+  children: ReactNode;
+  isHeader?: boolean;
+  rowContext?: string;
+}> = ({ children, isHeader = false, rowContext = '' }) => {
+  const text = String(children);
+  const tooltip = getCellTooltip(text);
+  const isValue = isMetricValue(text);
+
+  // If we have a tooltip or it's a recognizable value, wrap in tooltip
+  if (tooltip || (isValue && rowContext)) {
+    const interpretation = isValue ? getValueInterpretation(text, rowContext) : '';
+
+    return (
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="cursor-help hover:text-primary transition-colors inline-flex items-center gap-1">
+              {children}
+              <HelpCircle className="h-3 w-3 opacity-40 hover:opacity-70" />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-[280px]">
+            {tooltip ? (
+              <>
+                <p className="font-semibold text-xs mb-1">{tooltip.term}</p>
+                <p className="text-xs text-muted-foreground">{tooltip.description}</p>
+              </>
+            ) : (
+              <p className="text-xs">{interpretation}</p>
+            )}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return <>{children}</>;
+};
+
 export const DocViewer: FC<DocViewerProps> = ({ content, isLoading }) => {
+  // Track current row context for value interpretation
+  const [currentRowMetric, setCurrentRowMetric] = useState('');
+
   if (isLoading) {
     return <DocumentSkeleton />;
   }
@@ -146,10 +359,7 @@ export const DocViewer: FC<DocViewerProps> = ({ content, isLoading }) => {
           // Strong/bold text
           strong({ children, ...props }) {
             return (
-              <strong
-                className="font-semibold text-foreground"
-                {...props}
-              >
+              <strong className="font-semibold text-foreground" {...props}>
                 {children}
               </strong>
             );
@@ -157,10 +367,7 @@ export const DocViewer: FC<DocViewerProps> = ({ content, isLoading }) => {
           // Unordered lists
           ul({ children, ...props }) {
             return (
-              <ul
-                className="not-prose space-y-2 my-4"
-                {...props}
-              >
+              <ul className="not-prose space-y-2 my-4" {...props}>
                 {children}
               </ul>
             );
@@ -177,22 +384,13 @@ export const DocViewer: FC<DocViewerProps> = ({ content, isLoading }) => {
             );
           },
           // List items with custom bullets
-          li({ children, ordered, ...props }) {
+          li({ children, ...props }) {
             return (
               <li
-                className={cn(
-                  'flex items-start gap-3 text-sm text-muted-foreground',
-                  ordered && 'counter-increment-item'
-                )}
+                className="flex items-start gap-3 text-sm text-muted-foreground"
                 {...props}
               >
-                {ordered ? (
-                  <span className="flex-shrink-0 h-5 w-5 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center justify-center mt-0.5">
-                    {/* Counter handled by CSS */}
-                  </span>
-                ) : (
-                  <ArrowRight className="h-4 w-4 text-primary/60 flex-shrink-0 mt-0.5" />
-                )}
+                <ArrowRight className="h-4 w-4 text-primary/60 flex-shrink-0 mt-0.5" />
                 <span className="flex-1">{children}</span>
               </li>
             );
@@ -229,16 +427,13 @@ export const DocViewer: FC<DocViewerProps> = ({ content, isLoading }) => {
                     Code
                   </span>
                 </div>
-                <pre
-                  className="p-4 overflow-x-auto bg-muted/30"
-                  {...props}
-                >
+                <pre className="p-4 overflow-x-auto bg-muted/30" {...props}>
                   {children}
                 </pre>
               </div>
             );
           },
-          // Tables - modern card design
+          // Tables - modern card design with tooltips
           table({ children, ...props }) {
             return (
               <div className="not-prose overflow-x-auto my-6 rounded-xl border border-border bg-card shadow-sm">
@@ -264,7 +459,7 @@ export const DocViewer: FC<DocViewerProps> = ({ content, isLoading }) => {
                 className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                 {...props}
               >
-                {children}
+                <TooltipCell isHeader>{children}</TooltipCell>
               </th>
             );
           },
@@ -276,9 +471,22 @@ export const DocViewer: FC<DocViewerProps> = ({ content, isLoading }) => {
             );
           },
           tr({ children, ...props }) {
+            // Extract first cell text for context
+            let rowMetric = '';
+            if (Array.isArray(children)) {
+              const firstChild = children[0];
+              if (firstChild && typeof firstChild === 'object' && 'props' in firstChild) {
+                const cellChildren = firstChild.props?.children;
+                if (typeof cellChildren === 'string') {
+                  rowMetric = cellChildren;
+                }
+              }
+            }
+
             return (
               <tr
                 className="hover:bg-primary/5 transition-colors duration-150"
+                data-row-metric={rowMetric}
                 {...props}
               >
                 {children}
@@ -286,9 +494,13 @@ export const DocViewer: FC<DocViewerProps> = ({ content, isLoading }) => {
             );
           },
           td({ children, ...props }) {
+            // Get row context from parent tr if available
+            const rowContext =
+              (props as Record<string, unknown>)?.['data-row-metric'] || '';
+
             return (
               <td className="px-4 py-3.5 text-foreground" {...props}>
-                {children}
+                <TooltipCell rowContext={String(rowContext)}>{children}</TooltipCell>
               </td>
             );
           },
@@ -309,7 +521,10 @@ export const DocViewer: FC<DocViewerProps> = ({ content, isLoading }) => {
           // Horizontal rules - decorative divider
           hr(props) {
             return (
-              <div className="not-prose my-8 flex items-center gap-4" {...props}>
+              <div
+                className="not-prose my-8 flex items-center gap-4"
+                {...props}
+              >
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
                 <div className="flex gap-1">
                   <div className="h-1.5 w-1.5 rounded-full bg-primary/40" />
