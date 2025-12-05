@@ -34,8 +34,11 @@ interface FuelData {
 
 interface EventData {
   name: string;
-  event_type: string;
+  type: string;
+  venue: string;
+  start_time: string;
   surge_modifier: number;
+  radius_miles: number;
 }
 
 interface ExternalContext {
@@ -225,13 +228,27 @@ export const ExternalFactorsSection: FC = () => {
           />
         </div>
         {events.length > 0 ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {events.map((event, i) => (
-              <div key={i} className="flex items-center justify-between">
-                <span className="text-xs truncate max-w-[120px]">{event.name}</span>
-                <span className="text-xs font-medium text-orange-400">
-                  {event.surge_modifier.toFixed(2)}x surge
-                </span>
+              <div key={i} className="space-y-1">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-xs font-medium leading-tight">{event.name}</span>
+                  <span className="text-[10px] font-medium text-orange-400 whitespace-nowrap">
+                    +{((event.surge_modifier - 1) * 100).toFixed(0)}% surge
+                  </span>
+                </div>
+                <div className="text-[10px] text-muted-foreground space-y-0.5">
+                  <div className="truncate">{event.venue}</div>
+                  {event.start_time && (
+                    <div>
+                      {new Date(event.start_time).toLocaleTimeString([], { 
+                        hour: 'numeric', 
+                        minute: '2-digit',
+                        hour12: true 
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
