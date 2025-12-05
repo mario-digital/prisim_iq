@@ -15,6 +15,8 @@ import {
   chartColors,
   chartConfig,
   tooltipStyle,
+  tooltipLabelStyle,
+  tooltipItemStyle,
   cursorStyle,
   animationProps,
 } from '@/lib/chartTheme';
@@ -94,6 +96,8 @@ export const SegmentPerformanceChart: FC<SegmentPerformanceChartProps> = memo(
                   ]}
                   labelFormatter={(label) => `Segment: ${label}`}
                   contentStyle={tooltipStyle}
+                  labelStyle={tooltipLabelStyle}
+                  itemStyle={tooltipItemStyle}
                   cursor={cursorStyle}
                 />
                 <Legend

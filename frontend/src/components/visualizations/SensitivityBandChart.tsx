@@ -15,6 +15,8 @@ import {
   chartColors,
   chartConfig,
   tooltipStyle,
+  tooltipLabelStyle,
+  tooltipItemStyle,
   cursorStyle,
   animationProps,
 } from '@/lib/chartTheme';
@@ -154,6 +156,8 @@ export const SensitivityBandChart: FC<SensitivityBandChartProps> = memo(
                   isCurveMode ? `Price: $${label}` : `Scenario: ${label}`
                 }
                 contentStyle={tooltipStyle}
+                labelStyle={tooltipLabelStyle}
+                itemStyle={tooltipItemStyle}
                 cursor={cursorStyle}
               />
 

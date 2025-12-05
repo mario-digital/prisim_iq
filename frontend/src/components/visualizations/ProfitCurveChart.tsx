@@ -16,6 +16,8 @@ import {
   chartColors,
   chartConfig,
   tooltipStyle,
+  tooltipLabelStyle,
+  tooltipItemStyle,
   cursorStyle,
   animationProps,
 } from '@/lib/chartTheme';
@@ -110,6 +112,8 @@ export const ProfitCurveChart: FC<ProfitCurveChartProps> = memo(({
                 formatter={(value: number) => [`$${value.toFixed(2)}`, 'Expected Profit']}
                 labelFormatter={(label) => `Price: $${label}`}
                 contentStyle={tooltipStyle}
+                labelStyle={tooltipLabelStyle}
+                itemStyle={tooltipItemStyle}
                 cursor={cursorStyle}
               />
 
