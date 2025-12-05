@@ -83,12 +83,14 @@ export const SegmentPerformanceChart: FC<SegmentPerformanceChartProps> = memo(
                   fontSize={chartConfig.fontSize}
                   tickLine={false}
                   axisLine={false}
+                  tick={{ fill: 'var(--chart-axis-text)' }}
                 />
                 <YAxis
                   tickFormatter={formatValue}
                   fontSize={chartConfig.fontSize}
                   tickLine={false}
                   axisLine={false}
+                  tick={{ fill: 'var(--chart-axis-text)' }}
                 />
                 <Tooltip
                   formatter={(value: number, name: string) => [

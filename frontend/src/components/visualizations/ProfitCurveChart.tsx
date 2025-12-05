@@ -101,6 +101,7 @@ export const ProfitCurveChart: FC<ProfitCurveChartProps> = memo(({
                 tickFormatter={(v) => `$${v}`}
                 fontSize={chartConfig.fontSize}
                 tickLine={false}
+                tick={{ fill: 'var(--chart-axis-text)' }}
               />
               <YAxis
                 tickFormatter={(v) => `$${v}`}
@@ -108,6 +109,7 @@ export const ProfitCurveChart: FC<ProfitCurveChartProps> = memo(({
                 tickLine={false}
                 axisLine={false}
                 domain={[minProfit * 0.9, 'auto']}
+                tick={{ fill: 'var(--chart-axis-text)' }}
               />
               <Tooltip
                 formatter={(value: number) => [`$${value.toFixed(2)}`, 'Expected Profit']}

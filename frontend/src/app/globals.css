@@ -124,6 +124,9 @@
   --tooltip-bg: #f8fafc;
   --tooltip-text: #1e293b;
   
+  /* Chart axis labels - dark text for light theme */
+  --chart-axis-text: #334155;
+  
   /* Chart cursor/hover highlight - subtle for light theme */
   --chart-cursor: rgba(100, 116, 139, 0.12);
   
@@ -195,6 +198,9 @@
   /* Chart tooltip - solid opaque background */
   --tooltip-bg: #1e293b;
   --tooltip-text: #f1f5f9;
+  
+  /* Chart axis labels - bright text for dark theme */
+  --chart-axis-text: #e2e8f0;
   
   /* Chart cursor/hover highlight - subtle for dark theme */
   --chart-cursor: rgba(148, 163, 184, 0.12);
