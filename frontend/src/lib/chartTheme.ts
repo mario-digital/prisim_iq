@@ -89,6 +89,16 @@ export const tooltipStyle = {
 } as const;
 
 /**
+ * Cursor/highlight styling for chart hover states.
+ * Subtle, semi-transparent to not overwhelm the chart data.
+ */
+export const cursorStyle = {
+  fill: 'var(--chart-cursor, rgba(100, 116, 139, 0.15))',
+  stroke: 'none',
+  radius: 4,
+} as const;
+
+/**
  * Default animation props for chart elements.
  */
 export const animationProps = {

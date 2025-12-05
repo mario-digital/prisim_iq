@@ -123,6 +123,9 @@
   /* Chart tooltip - solid opaque background */
   --tooltip-bg: #f8fafc;
   
+  /* Chart cursor/hover highlight - subtle for light theme */
+  --chart-cursor: rgba(100, 116, 139, 0.12);
+  
   /* Chart colors - vibrant but not overwhelming */
   --chart-1: oklch(0.50 0.16 195);  /* Teal - primary */
   --chart-2: oklch(0.55 0.14 145);  /* Emerald */
@@ -190,6 +193,9 @@
   
   /* Chart tooltip - solid opaque background */
   --tooltip-bg: #1e293b;
+  
+  /* Chart cursor/hover highlight - subtle for dark theme */
+  --chart-cursor: rgba(148, 163, 184, 0.12);
   
   /* Chart colors - vibrant and distinct */
   --chart-1: oklch(0.75 0.18 195);  /* Cyan - primary */

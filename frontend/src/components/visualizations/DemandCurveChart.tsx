@@ -16,6 +16,7 @@ import {
   chartColors,
   chartConfig,
   tooltipStyle,
+  cursorStyle,
   animationProps,
 } from '@/lib/chartTheme';
 import type { CurvePoint } from './types';
@@ -86,6 +87,7 @@ export const DemandCurveChart: FC<DemandCurveChartProps> = memo(({
                 formatter={(value: number) => [value.toFixed(2), 'Expected Demand']}
                 labelFormatter={(label) => `Price: $${label}`}
                 contentStyle={tooltipStyle}
+                cursor={cursorStyle}
               />
 
               {/* Main demand curve */}
