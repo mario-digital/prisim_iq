@@ -16,6 +16,7 @@ import {
   chartColors,
   chartConfig,
   tooltipStyle,
+  tooltipWrapperStyle,
   tooltipLabelStyle,
   tooltipItemStyle,
   cursorStyle,
@@ -62,17 +63,17 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
     getDirectionColor(direction as 'positive' | 'negative' | 'neutral');
 
   return (
-    <Card>
+    <Card className="overflow-visible">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium">Feature Importance</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-visible">
         {chartData.length === 0 ? (
           <div className="flex items-center justify-center h-[220px] text-sm text-muted-foreground">
             No feature data available
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={220}>
+          <ResponsiveContainer width="100%" height={220} className="overflow-visible">
             <BarChart
               data={chartData}
               layout="vertical"
@@ -100,9 +101,11 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
                   return `${label}: ${item?.currentValue ?? 'N/A'}`;
                 }}
                 contentStyle={tooltipStyle}
+                wrapperStyle={tooltipWrapperStyle}
                 labelStyle={tooltipLabelStyle}
                 itemStyle={tooltipItemStyle}
                 cursor={cursorStyle}
+                allowEscapeViewBox={{ x: true, y: true }}
               />
               <Bar
                 dataKey="value"

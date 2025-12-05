@@ -88,6 +88,18 @@ export const tooltipStyle: CSSProperties = {
   color: 'var(--tooltip-text, hsl(var(--foreground)))',
   opacity: 1,
   backdropFilter: 'none',
+  maxWidth: '280px',
+  whiteSpace: 'normal' as const,
+  wordWrap: 'break-word' as const,
+};
+
+/**
+ * Tooltip wrapper styling to ensure it doesn't get clipped.
+ */
+export const tooltipWrapperStyle: CSSProperties = {
+  zIndex: 1000,
+  pointerEvents: 'none' as const,
+  overflow: 'visible',
 };
 
 /**

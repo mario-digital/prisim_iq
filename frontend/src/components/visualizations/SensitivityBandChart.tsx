@@ -15,6 +15,7 @@ import {
   chartColors,
   chartConfig,
   tooltipStyle,
+  tooltipWrapperStyle,
   tooltipLabelStyle,
   tooltipItemStyle,
   cursorStyle,
@@ -105,7 +106,7 @@ export const SensitivityBandChart: FC<SensitivityBandChartProps> = memo(
             No sensitivity data available
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={height}>
+          <ResponsiveContainer width="100%" height={height} className="overflow-visible">
             <AreaChart data={chartData} margin={chartConfig.margin}>
               <defs>
                 <linearGradient
@@ -156,9 +157,11 @@ export const SensitivityBandChart: FC<SensitivityBandChartProps> = memo(
                   isCurveMode ? `Price: $${label}` : `Scenario: ${label}`
                 }
                 contentStyle={tooltipStyle}
+                wrapperStyle={tooltipWrapperStyle}
                 labelStyle={tooltipLabelStyle}
                 itemStyle={tooltipItemStyle}
                 cursor={cursorStyle}
+                allowEscapeViewBox={{ x: true, y: true }}
               />
 
               {/* Confidence band area */}
@@ -255,7 +258,7 @@ export const SensitivityBandChart: FC<SensitivityBandChartProps> = memo(
     }
 
     return (
-      <Card>
+      <Card className="overflow-visible">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm font-medium">
@@ -268,7 +271,7 @@ export const SensitivityBandChart: FC<SensitivityBandChartProps> = memo(
             )}
           </div>
         </CardHeader>
-        <CardContent>{chartContent}</CardContent>
+        <CardContent className="overflow-visible">{chartContent}</CardContent>
       </Card>
     );
   }

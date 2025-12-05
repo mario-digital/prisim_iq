@@ -15,6 +15,7 @@ import {
   chartColors,
   chartConfig,
   tooltipStyle,
+  tooltipWrapperStyle,
   tooltipLabelStyle,
   tooltipItemStyle,
   cursorStyle,
@@ -60,19 +61,19 @@ export const SegmentPerformanceChart: FC<SegmentPerformanceChartProps> = memo(
     );
 
     return (
-      <Card>
+      <Card className="overflow-visible">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium">
             Segment Performance Comparison
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-visible">
           {data.length === 0 ? (
             <div className="flex items-center justify-center h-[200px] text-sm text-muted-foreground">
               No segment data available
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={220} className="overflow-visible">
               <BarChart
                 data={data}
                 margin={{ top: 10, right: 30, left: 10, bottom: 5 }}
@@ -96,9 +97,11 @@ export const SegmentPerformanceChart: FC<SegmentPerformanceChartProps> = memo(
                   ]}
                   labelFormatter={(label) => `Segment: ${label}`}
                   contentStyle={tooltipStyle}
+                  wrapperStyle={tooltipWrapperStyle}
                   labelStyle={tooltipLabelStyle}
                   itemStyle={tooltipItemStyle}
                   cursor={cursorStyle}
+                  allowEscapeViewBox={{ x: true, y: true }}
                 />
                 <Legend
                   formatter={legendFormatter}
