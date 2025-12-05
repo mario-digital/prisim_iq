@@ -56,7 +56,7 @@ const MetricRow: FC<MetricRowProps> = ({
           </TooltipTrigger>
           <TooltipContent side="left" className="max-w-[250px]">
             <p className="font-semibold text-xs mb-1">{tooltip?.metric || label}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs opacity-80">
               {tooltip?.description || 'No description available'}
             </p>
           </TooltipContent>
@@ -145,7 +145,7 @@ export const DataSummaryCard: FC<DataSummaryCardProps> = ({ card }) => {
                       <p className="font-semibold text-xs mb-1">
                         {datasetMetricTooltips.numeric_features.metric}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs opacity-80">
                         {datasetMetricTooltips.numeric_features.description}
                       </p>
                     </TooltipContent>
@@ -165,7 +165,7 @@ export const DataSummaryCard: FC<DataSummaryCardProps> = ({ card }) => {
                       <p className="font-semibold text-xs mb-1">
                         {datasetMetricTooltips.categorical_features.metric}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs opacity-80">
                         {datasetMetricTooltips.categorical_features.description}
                       </p>
                     </TooltipContent>
@@ -177,7 +177,7 @@ export const DataSummaryCard: FC<DataSummaryCardProps> = ({ card }) => {
         </TooltipTrigger>
         <TooltipContent side="left" className="max-w-[280px]">
           <p className="font-semibold text-xs mb-1">{dataCardTooltip.title}</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs opacity-80">
             {dataCardTooltip.description}
           </p>
         </TooltipContent>
