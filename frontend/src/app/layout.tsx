@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ToastContainer } from '@/components/ui/toast';
 import { ThemeProvider } from '@/components/layout';
+import { HoneywellOverlay } from '@/components/honeywell';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-background font-sans antialiased" suppressHydrationWarning>
         <ThemeProvider>
           {children}
+          <HoneywellOverlay />
           <ToastContainer />
         </ThemeProvider>
       </body>
