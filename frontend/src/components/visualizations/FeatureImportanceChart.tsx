@@ -85,6 +85,7 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
                 tickFormatter={(v) => `${v}%`}
                 fontSize={chartConfig.fontSize}
                 tickLine={false}
+                tick={{ fill: 'var(--chart-axis-text)' }}
               />
               <YAxis
                 type="category"
@@ -93,6 +94,7 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
                 fontSize={chartConfig.fontSize}
                 tickLine={false}
                 axisLine={false}
+                tick={{ fill: 'var(--chart-axis-text)' }}
               />
               <Tooltip
                 formatter={(value: number) => [`${value.toFixed(1)}%`, 'Importance']}

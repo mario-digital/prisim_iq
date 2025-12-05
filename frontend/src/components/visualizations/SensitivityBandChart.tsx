@@ -134,12 +134,14 @@ export const SensitivityBandChart: FC<SensitivityBandChartProps> = memo(
                 tickFormatter={isCurveMode ? (v) => `$${v}` : undefined}
                 fontSize={chartConfig.fontSizeSmall}
                 tickLine={false}
+                tick={{ fill: 'var(--chart-axis-text)' }}
               />
               <YAxis
                 tickFormatter={(v) => (isCurveMode ? v.toFixed(2) : `$${v}`)}
                 fontSize={chartConfig.fontSizeSmall}
                 tickLine={false}
                 axisLine={false}
+                tick={{ fill: 'var(--chart-axis-text)' }}
               />
               <Tooltip
                 formatter={(value: number, name: string) => {

@@ -72,18 +72,20 @@ export const DemandCurveChart: FC<DemandCurveChartProps> = memo(({
                 tickFormatter={(v) => `$${v}`}
                 fontSize={chartConfig.fontSize}
                 tickLine={false}
+                tick={{ fill: 'var(--chart-axis-text)' }}
               />
               <YAxis
                 tickFormatter={(v) => v.toFixed(2)}
                 fontSize={chartConfig.fontSize}
                 tickLine={false}
                 axisLine={false}
+                tick={{ fill: 'var(--chart-axis-text)' }}
                 label={{
                   value: 'Demand',
                   angle: -90,
                   position: 'insideLeft',
                   fontSize: chartConfig.fontSizeSmall,
-                  fill: chartColors.muted,
+                  fill: 'var(--chart-axis-text)',
                 }}
               />
               <Tooltip
