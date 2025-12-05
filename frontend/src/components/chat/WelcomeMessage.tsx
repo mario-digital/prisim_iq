@@ -16,19 +16,20 @@ interface WelcomeMessageProps {
 
 /**
  * Welcome message shown when chat is empty.
+ * Styled to work in both light and dark modes.
  */
 export const WelcomeMessage: FC<WelcomeMessageProps> = ({ onExampleClick }) => {
   return (
     <div className="flex flex-col items-center justify-center h-full p-6 text-center">
       {/* Animated icon with glow */}
       <div className="relative mb-4">
-        <div className="absolute inset-0 bg-cyan-400/20 blur-xl rounded-full animate-pulse" />
-        <div className="relative p-4 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/20">
-          <Sparkles className="w-8 h-8 text-cyan-400" />
+        <div className="absolute inset-0 bg-cyan-500/20 dark:bg-cyan-400/20 blur-xl rounded-full animate-pulse" />
+        <div className="relative p-4 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 dark:border-cyan-500/20">
+          <Sparkles className="w-8 h-8 text-cyan-500 dark:text-cyan-400" />
         </div>
       </div>
       
-      <h2 className="text-xl font-semibold mb-2 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">
+      <h2 className="text-xl font-semibold mb-2 bg-gradient-to-r from-slate-800 to-slate-600 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
         Welcome to PrismIQ!
       </h2>
       
@@ -46,7 +47,7 @@ export const WelcomeMessage: FC<WelcomeMessageProps> = ({ onExampleClick }) => {
             <button
               key={question}
               onClick={() => onExampleClick(question)}
-              className="text-left px-4 py-3 rounded-xl border border-border/50 bg-card/50 hover:bg-accent hover:border-cyan-500/30 transition-all duration-200 text-sm group"
+              className="text-left px-4 py-3 rounded-xl border border-border bg-card/50 hover:bg-accent hover:border-cyan-500/40 dark:hover:border-cyan-500/30 transition-all duration-200 text-sm group"
             >
               <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                 {question}

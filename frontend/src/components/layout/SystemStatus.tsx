@@ -16,21 +16,21 @@ interface StatusConfig {
 const STATUS_CONFIG: Record<HealthStatus, StatusConfig> = {
   healthy: {
     label: 'Online',
-    dotClass: 'bg-emerald-400',
-    textClass: 'text-emerald-400',
-    glowClass: 'shadow-emerald-400/50',
+    dotClass: 'bg-emerald-500 dark:bg-emerald-400',
+    textClass: 'text-emerald-600 dark:text-emerald-400',
+    glowClass: 'shadow-emerald-500/50 dark:shadow-emerald-400/50',
   },
   degraded: {
     label: 'Degraded',
-    dotClass: 'bg-amber-400',
-    textClass: 'text-amber-400',
-    glowClass: 'shadow-amber-400/50',
+    dotClass: 'bg-amber-500 dark:bg-amber-400',
+    textClass: 'text-amber-600 dark:text-amber-400',
+    glowClass: 'shadow-amber-500/50 dark:shadow-amber-400/50',
   },
   unhealthy: {
     label: 'Offline',
-    dotClass: 'bg-rose-400',
-    textClass: 'text-rose-400',
-    glowClass: 'shadow-rose-400/50',
+    dotClass: 'bg-rose-500 dark:bg-rose-400',
+    textClass: 'text-rose-600 dark:text-rose-400',
+    glowClass: 'shadow-rose-500/50 dark:shadow-rose-400/50',
   },
 };
 
