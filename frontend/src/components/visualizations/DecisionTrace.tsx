@@ -118,7 +118,7 @@ export const DecisionTrace: FC<DecisionTraceProps> = ({ steps }) => {
                   {/* Step name and description */}
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">
-                      {step.name}
+                      {step.name.replace(/_/g, ' ')}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">
                       {step.description}
@@ -154,7 +154,7 @@ export const DecisionTrace: FC<DecisionTraceProps> = ({ steps }) => {
                           {Object.entries(step.inputs).map(([key, value]) => (
                             <div key={key} className="text-xs">
                               <span className="text-muted-foreground">
-                                {key}:
+                                {key.replace(/_/g, ' ')}:
                               </span>{' '}
                               <span className="font-mono">
                                 {formatValue(value)}
@@ -173,7 +173,7 @@ export const DecisionTrace: FC<DecisionTraceProps> = ({ steps }) => {
                           {Object.entries(step.outputs).map(([key, value]) => (
                             <div key={key} className="text-xs">
                               <span className="text-muted-foreground">
-                                {key}:
+                                {key.replace(/_/g, ' ')}:
                               </span>{' '}
                               <span className="font-mono">
                                 {formatValue(value)}
@@ -208,7 +208,8 @@ function formatValue(value: unknown): string {
     return value ? 'true' : 'false';
   }
   if (typeof value === 'string') {
-    return value.length > 30 ? `${value.slice(0, 30)}...` : value;
+    const formatted = value.replace(/_/g, ' ');
+    return formatted.length > 30 ? `${formatted.slice(0, 30)}...` : formatted;
   }
   if (Array.isArray(value)) {
     return `[${value.length} items]`;

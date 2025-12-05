@@ -232,7 +232,7 @@ export const ExternalFactorsSection: FC = () => {
             {events.map((event, i) => (
               <div key={i} className="space-y-1">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-xs font-medium leading-tight">{event.name}</span>
+                  <span className="text-xs font-medium leading-tight">{event.name.replace(/_/g, ' ')}</span>
                   <span className="text-[10px] font-medium text-orange-400 whitespace-nowrap">
                     +{((event.surge_modifier - 1) * 100).toFixed(0)}% surge
                   </span>
@@ -262,7 +262,7 @@ export const ExternalFactorsSection: FC = () => {
         <div className="text-[10px] text-muted-foreground/60 text-center">
           {Object.entries(data.cache_status).map(([key, status]) => (
             <span key={key} className="mr-2">
-              {key}: {status.is_fresh ? '✓' : '○'}
+              {key.replace(/_/g, ' ')}: {status.is_fresh ? '✓' : '○'}
             </span>
           ))}
         </div>

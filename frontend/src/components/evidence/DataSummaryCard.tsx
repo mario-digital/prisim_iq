@@ -107,7 +107,7 @@ export const DataSummaryCard: FC<DataSummaryCardProps> = ({ card }) => {
             <CardHeader className="pb-2 pt-3 px-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Database className="h-4 w-4 text-primary" />
-                {dataset_name}
+                {dataset_name.replace(/_/g, ' ')}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-3 pb-3 space-y-2">

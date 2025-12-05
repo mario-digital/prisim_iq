@@ -198,7 +198,7 @@ export async function generateExecutivePDF(data: ExecutiveData): Promise<void> {
     }
     
     doc.setTextColor(...textColor);
-    doc.text(segment.segment, margin + 3, y);
+    doc.text(segment.segment.replace(/_/g, ' '), margin + 3, y);
     doc.text(`$${segment.baseline.toLocaleString()}`, margin + 60, y);
     doc.text(`$${segment.optimized.toLocaleString()}`, margin + 95, y);
     
@@ -223,7 +223,7 @@ export async function generateExecutivePDF(data: ExecutiveData): Promise<void> {
   data.models.forEach((model) => {
     doc.setFontSize(9);
     doc.setTextColor(...mutedColor);
-    doc.text(`${model.name}: ${model.accuracy}% accuracy`, margin + 5, y);
+    doc.text(`${model.name.replace(/_/g, ' ')}: ${model.accuracy}% accuracy`, margin + 5, y);
     y += 5;
   });
   
