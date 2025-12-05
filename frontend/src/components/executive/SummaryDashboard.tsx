@@ -72,17 +72,14 @@ export const SummaryDashboard: FC<SummaryDashboardProps> = ({ onDataLoaded }) =>
         {/* Key insight narrative */}
         <KeyInsight insight={data.keyInsight} />
 
-        {/* Two-column layout for charts and insights */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Segment performance chart */}
-          <SegmentPerformanceChart data={data.segmentPerformance} />
-          
-          {/* Model Performance */}
-          <ModelPerformanceCard 
-            models={data.models} 
-            overallAgreement={data.modelAgreement} 
-          />
-        </div>
+        {/* Segment performance chart */}
+        <SegmentPerformanceChart data={data.segmentPerformance} />
+        
+        {/* Model Performance */}
+        <ModelPerformanceCard 
+          models={data.models} 
+          overallAgreement={data.modelAgreement} 
+        />
 
         {/* Top Opportunities */}
         <TopOpportunities opportunities={data.opportunities} />
