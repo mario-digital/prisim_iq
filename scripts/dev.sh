@@ -47,9 +47,13 @@ fi
 
 # Check if frontend node_modules exists
 if [ ! -d "$PROJECT_ROOT/frontend/node_modules" ]; then
-    echo -e "${RED}Frontend dependencies not installed.${NC}"
-    echo "Please run 'cd frontend && bun install' first."
-    exit 1
+    # Check if node_modules exists (monorepo: modules are at root level)
+    if [ ! -d "$PROJECT_ROOT/node_modules" ]; then
+        echo -e "${RED}Frontend dependencies not installed.${NC}"
+        echo "Please run 'cd frontend && bun install' first."
+        echo "Please run 'bun install' from the project root first."
+        exit 1
+    fi
 fi
 
 # Start backend using venv's uvicorn directly (avoids activation issues)
