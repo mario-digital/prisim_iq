@@ -1,21 +1,10 @@
 /**
  * Chat service for communicating with the AI backend.
- * Supports both request/response and SSE streaming modes.
+ * Uses validated API client with Zod schema validation.
  */
 import type { MarketContext } from '@/stores/contextStore';
 import { ChatResponseSchema } from '@prismiq/shared/schemas';
-import { postValidated } from '@/lib/api-client';
-import { API_BASE_URL } from '@/lib/api';
-
-/**
- * Debug logging flag - only enabled in development.
- * 
- * SECURITY NOTE: Debug logs may include message content. Next.js dead-code
- * elimination removes this entire branch in production builds when
- * process.env.NODE_ENV !== 'development'. Verify with `next build` output
- * that no DEBUG references appear in production bundles.
- */
-const DEBUG = process.env.NODE_ENV === 'development';
+import { postValidated, api } from '@/lib/api-client';
 
 /**
  * Chat request matching backend ChatRequest schema.
@@ -27,7 +16,7 @@ export interface ChatRequest {
 }
 
 /**
- * Chat response from the API (non-streaming).
+ * Chat response from the API.
  */
 export interface ChatResponse {
   message: string;
@@ -39,29 +28,7 @@ export interface ChatResponse {
 }
 
 /**
- * SSE stream event types from the backend.
- */
-export type ChatStreamEvent =
-  | { token: string; done: false }
-  | { tool_call: string; done: false }
-  | { message: string; tools_used?: string[]; confidence?: number; done: true }
-  | { error: string; done: true }
-  | Record<string, never>; // keepalive `{}` (ignored)
-
-/**
- * Options for streaming requests.
- */
-export interface StreamOptions {
-  plan?: boolean; // orchestrator path (multi-agent)
-  keepalive?: boolean; // enable backend heartbeats
-  interval?: number; // keepalive interval in seconds
-  model?: string; // optional reporter model hint
-  signal?: AbortSignal; // for cancellation
-  sessionId?: string | null; // conversation continuity
-}
-
-/**
- * Send a message to the AI chat endpoint (non-streaming).
+ * Send a message to the AI chat endpoint.
  *
  * @param message - User's message
  * @param context - Current market context
@@ -83,146 +50,62 @@ export async function sendMessage(
 }
 
 /**
- * Stream a message and receive SSE response.
+ * Send a message and receive streaming response.
  * Returns an AsyncGenerator that yields ChatStreamEvent objects.
- * Handles keepalive comment lines and empty `{}` payloads.
  *
  * @param message - User's message
  * @param context - Current market context
- * @param opts - Stream options (plan, keepalive, model, signal)
+ * @param sessionId - Optional session ID for conversation continuity
  * @yields Parsed SSE events from the stream
- * 
- * @note SSE Parsing: Per SSE spec, multiple `data:` lines in a single event
- * are concatenated with newlines. This parser correctly handles both:
- * - Single-line JSON (current backend behavior)
- * - Multi-line data events (future-proof per SSE spec)
  */
-export async function* streamMessage(
+export async function* sendMessageStream(
   message: string,
   context: MarketContext,
-  opts: StreamOptions = {}
-): AsyncGenerator<ChatStreamEvent> {
-  // Build query parameters
-  const params = new URLSearchParams({ stream: 'true' });
-  if (opts.plan) params.set('plan', 'true');
-  if (opts.keepalive) params.set('keepalive', 'true');
-  if (opts.interval) params.set('interval', String(opts.interval));
-  if (opts.model) params.set('model', opts.model);
-
+  sessionId?: string | null
+): AsyncGenerator<{ token?: string; tool_call?: string; message?: string; done: boolean }> {
   const request: ChatRequest = {
     message,
     context,
-    session_id: opts.sessionId,
+    session_id: sessionId,
   };
 
-  const response = await fetch(`${API_BASE_URL}/api/v1/chat?${params.toString()}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'text/event-stream',
-    },
-    body: JSON.stringify(request),
-    signal: opts.signal,
+  const response = await api.post('api/v1/chat/stream', {
+    json: request,
   });
 
-  if (!response.ok) {
-    throw new Error(`SSE response error: ${response.status} ${response.statusText}`);
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error('No response body');
   }
 
-  if (!response.body) {
-    throw new Error('No response body for SSE stream');
-  }
-
-  const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
-
-  if (DEBUG) console.log('[chatService] Starting to read stream...');
 
   try {
     while (true) {
       const { done, value } = await reader.read();
-      if (DEBUG) console.log('[chatService] Read chunk:', { done, bytesReceived: value?.length });
-      
-      if (done) {
-        if (DEBUG) console.log('[chatService] Reader done, remaining buffer:', buffer);
-        break;
-      }
+      if (done) break;
 
-      const chunk = decoder.decode(value, { stream: true });
-      if (DEBUG) console.log('[chatService] Decoded chunk:', chunk.slice(0, 200));
-      buffer += chunk;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
 
-      // Normalize line endings (CRLF → LF) before splitting
-      // SSE spec uses \n\n but some servers send \r\n\r\n
-      const normalizedBuffer = buffer.replace(/\r\n/g, '\n');
-      
-      // Split by double newline between SSE events; keep last partial in buffer
-      const events = normalizedBuffer.split('\n\n');
-      buffer = events.pop() ?? '';
-      
-      if (DEBUG) console.log('[chatService] Split into events:', events.length, 'remaining buffer length:', buffer.length);
-
-      for (const raw of events) {
-        if (DEBUG) console.log('[chatService] Processing raw event:', raw.slice(0, 100));
-        
-        // Ignore SSE comment lines (e.g., ": keepalive")
-        if (raw.startsWith(':')) {
-          if (DEBUG) console.log('[chatService] Skipping comment line');
-          continue;
-        }
-
-        // Extract ALL data: lines and concatenate with newlines per SSE spec
-        // SSE spec: multiple "data:" lines in one event are joined with \n
-        // Backend currently sends single-line JSON, but this handles multi-line too
-        const lines = raw.split('\n');
-        const dataLines = lines
-          .filter((l) => l.startsWith('data:'))
-          .map((l) => l.slice(5).trim()); // Remove "data:" prefix (5 chars)
-        
-        if (dataLines.length === 0) {
-          if (DEBUG) console.log('[chatService] No data: line found in event');
-          continue;
-        }
-
-        // Per SSE spec, concatenate multiple data lines with newline
-        const jsonText = dataLines.join('\n').trim();
-        if (!jsonText) {
-          if (DEBUG) console.log('[chatService] Empty JSON text');
-          continue;
-        }
-
-        // Handle [DONE] marker (some backends use this)
-        if (jsonText === '[DONE]') {
-          if (DEBUG) console.log('[chatService] Received [DONE] marker');
-          return;
-        }
-
-        try {
-          const evt = JSON.parse(jsonText) as ChatStreamEvent;
-
-          // Ignore empty keepalive payloads `{}`
-          if (Object.keys(evt).length === 0) {
-            if (DEBUG) console.log('[chatService] Skipping empty keepalive');
-            continue;
-          }
-
-          if (DEBUG) console.log('[chatService] Yielding event:', evt);
-          yield evt;
-
-          // If done flag is true, we're finished
-          if ('done' in evt && evt.done === true) {
-            if (DEBUG) console.log('[chatService] Stream complete (done=true)');
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6).trim();
+          if (data === '[DONE]') {
             return;
           }
-        } catch (e) {
-          // Skip malformed JSON - warn only in development
-          if (DEBUG) console.warn('[chatService] Failed to parse SSE event:', jsonText, e);
+          try {
+            const event = JSON.parse(data);
+            yield event;
+          } catch {
+            // Skip malformed JSON
+          }
         }
       }
     }
   } finally {
-    if (DEBUG) console.log('[chatService] Releasing reader lock');
     reader.releaseLock();
   }
 }

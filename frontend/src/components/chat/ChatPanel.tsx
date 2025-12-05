@@ -1,201 +1,48 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type FC } from 'react';
+import { useCallback, type FC } from 'react';
 import { useChatStore } from '@/stores/chatStore';
 import { useContextStore } from '@/stores/contextStore';
-import { streamMessage, sendMessage } from '@/services/chatService';
+import { sendMessage } from '@/services/chatService';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { WelcomeMessage } from './WelcomeMessage';
 
-/** Debug logging flag - only enabled in development */
-const DEBUG = process.env.NODE_ENV === 'development';
-
-/** Max consecutive SSE failures before falling back to non-streaming */
-const MAX_STREAM_FAILURES = 3;
-
 /**
- * Main chat panel component with SSE streaming support.
+ * Main chat panel component containing the full chat interface.
  */
 export const ChatPanel: FC = () => {
-  const {
-    messages,
-    isLoading,
-    streamingContent,
-    currentToolCall,
-    streamError,
-    addMessage,
-    startStreaming,
-    appendToken,
-    setToolCall,
-    finalizeStream,
-    setStreamError,
-    cancelStream,
-  } = useChatStore();
+  const { messages, isLoading, addMessage, setLoading } = useChatStore();
   const context = useContextStore((state) => state.context);
 
-  // Track streaming failures for fallback logic
-  const streamFailures = useRef(0);
-  const [useStreaming, setUseStreaming] = useState(true);
-
-  // Abort controller for cancellation
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  // Cleanup: abort any active stream on unmount to prevent memory leaks
-  // and unresolved fetch promises when user navigates away mid-stream
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        if (DEBUG) console.log('[ChatPanel] Unmounting, aborting active stream');
-        abortControllerRef.current.abort();
-        abortControllerRef.current = null;
-      }
-    };
-  }, []);
-
-  /**
-   * Handle sending message with streaming.
-   */
-  const handleStreamingMessage = useCallback(
-    async (content: string) => {
-      addMessage({ role: 'user', content });
-      startStreaming();
-      setToolCall(null);
-
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-
-      try {
-        if (DEBUG) console.log('[ChatPanel] Starting stream for:', content);
-        for await (const event of streamMessage(content, context, {
-          keepalive: true,
-          interval: 15,
-          signal: controller.signal,
-        })) {
-          if (DEBUG) console.log('[ChatPanel] Received event:', event);
-          
-          // Handle token events
-          if ('token' in event && event.token) {
-            if (DEBUG) console.log('[ChatPanel] Appending token:', event.token);
-            appendToken(event.token);
-          }
-
-          // Handle tool call events
-          if ('tool_call' in event && event.tool_call) {
-            if (DEBUG) console.log('[ChatPanel] Tool call:', event.tool_call);
-            setToolCall(event.tool_call);
-          }
-
-          // Handle completion
-          if ('done' in event && event.done === true) {
-            if (DEBUG) console.log('[ChatPanel] Stream complete, done event:', event);
-            if ('error' in event) {
-              // Error event - display via StreamError UI component only
-              // (avoids double-reporting with both error block AND assistant message)
-              setStreamError(event.error);
-              cancelStream();
-            } else if ('message' in event) {
-              // Success event
-              if (DEBUG) console.log('[ChatPanel] Finalizing stream with message');
-              finalizeStream({
-                role: 'assistant',
-                content: event.message,
-                confidence: event.confidence,
-                toolsUsed: event.tools_used,
-              });
-              // Reset failure counter on success
-              streamFailures.current = 0;
-            }
-            break;
-          }
-        }
-        if (DEBUG) console.log('[ChatPanel] Stream loop ended');
-      } catch (error) {
-        // Don't report abort errors
-        if (error instanceof Error && error.name === 'AbortError') {
-          cancelStream();
-          return;
-        }
-
-        // Increment failure counter
-        streamFailures.current += 1;
-
-        const errorMessage =
-          error instanceof Error ? error.message : 'Connection lost';
-
-        // If we've failed too many times, disable streaming
-        if (streamFailures.current >= MAX_STREAM_FAILURES) {
-          setUseStreaming(false);
-          if (DEBUG) {
-            console.warn(
-              `Streaming failed ${MAX_STREAM_FAILURES} times, falling back to non-streaming`
-            );
-          }
-        }
-
-        // Display error via StreamError UI component only
-        // (avoids double-reporting with both error block AND assistant message)
-        setStreamError(
-          streamFailures.current >= MAX_STREAM_FAILURES
-            ? `${errorMessage}. Switching to non-streaming mode.`
-            : errorMessage
-        );
-        cancelStream();
-      } finally {
-        abortControllerRef.current = null;
-      }
-    },
-    [
-      addMessage,
-      startStreaming,
-      appendToken,
-      setToolCall,
-      finalizeStream,
-      setStreamError,
-      cancelStream,
-      context,
-    ]
-  );
-
-  /**
-   * Handle sending message without streaming (fallback).
-   */
-  const handleNonStreamingMessage = useCallback(
-    async (content: string) => {
-      addMessage({ role: 'user', content });
-      startStreaming(); // Use loading state
-
-      try {
-        const response = await sendMessage(content, context);
-        finalizeStream({
-          role: 'assistant',
-          content: response.message,
-          toolsUsed: response.tools_used,
-        });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : 'An unexpected error occurred';
-        // Display error via StreamError UI component only
-        // (avoids double-reporting with both error block AND assistant message)
-        setStreamError(errorMessage);
-        cancelStream();
-      }
-    },
-    [addMessage, startStreaming, finalizeStream, setStreamError, cancelStream, context]
-  );
-
-  /**
-   * Main send handler - uses streaming or fallback based on state.
-   */
   const handleSendMessage = useCallback(
     async (content: string) => {
-      if (useStreaming) {
-        await handleStreamingMessage(content);
-      } else {
-        await handleNonStreamingMessage(content);
+      // Add user message
+      addMessage({ role: 'user', content });
+      setLoading(true);
+
+      try {
+        // Call API with current market context
+        const response = await sendMessage(content, context);
+        
+        // Add AI response
+        addMessage({
+          role: 'assistant',
+          content: response.message,
+        });
+      } catch (error) {
+        // Add error message
+        const errorMessage =
+          error instanceof Error ? error.message : 'An unexpected error occurred';
+        addMessage({
+          role: 'assistant',
+          content: `Sorry, I encountered an error: ${errorMessage}. Please try again.`,
+        });
+      } finally {
+        setLoading(false);
       }
     },
-    [useStreaming, handleStreamingMessage, handleNonStreamingMessage]
+    [addMessage, setLoading, context]
   );
 
   const handleExampleClick = useCallback(
@@ -205,23 +52,6 @@ export const ChatPanel: FC = () => {
     [handleSendMessage]
   );
 
-  /**
-   * Retry the last failed message.
-   */
-  const handleRetry = useCallback(() => {
-    // Find the last user message
-    const lastUserMsg = messages
-      .slice()
-      .reverse()
-      .find((m) => m.role === 'user');
-    
-    if (lastUserMsg) {
-      // Clear the error and re-send
-      setStreamError(null);
-      handleSendMessage(lastUserMsg.content);
-    }
-  }, [messages, setStreamError, handleSendMessage]);
-
   const showWelcome = messages.length === 0 && !isLoading;
 
   return (
@@ -229,14 +59,7 @@ export const ChatPanel: FC = () => {
       {showWelcome ? (
         <WelcomeMessage onExampleClick={handleExampleClick} />
       ) : (
-        <MessageList
-          messages={messages}
-          isLoading={isLoading}
-          streamingContent={streamingContent}
-          currentToolCall={currentToolCall}
-          streamError={streamError}
-          onRetry={handleRetry}
-        />
+        <MessageList messages={messages} isLoading={isLoading} />
       )}
       <ChatInput onSend={handleSendMessage} disabled={isLoading} />
     </div>
