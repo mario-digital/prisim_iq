@@ -4,6 +4,9 @@
 export { SummaryDashboard } from './SummaryDashboard';
 export { ProfitUpliftHero } from './ProfitUpliftHero';
 export { KeyInsight } from './KeyInsight';
+export { MetricCards } from './MetricCards';
+export { ModelPerformanceCard } from './ModelPerformanceCard';
+export { TopOpportunities } from './TopOpportunities';
 export { KPIPanel } from './KPIPanel';
 export { KPICard } from './KPICard';
 export { ExecutiveActions } from './ExecutiveActions';
