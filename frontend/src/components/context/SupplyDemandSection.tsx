@@ -108,7 +108,7 @@ export const SupplyDemandSection: FC = () => {
           <span>Low (0.5x)</span>
           <span>High (4x)</span>
         </div>
-        <p className="text-[10px] text-muted-foreground/70 italic">
+        <p className="text-[10px] text-muted-foreground italic">
           Adjusts rider count while keeping drivers fixed to simulate demand changes
         </p>
       </div>
