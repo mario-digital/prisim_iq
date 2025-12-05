@@ -23,6 +23,7 @@ from src.rules.engine import RulesEngine
 from src.schemas.market import MarketContext
 from src.schemas.pricing import PricingResult
 from src.schemas.segment import SegmentDetails, SegmentResult
+from src.services.external_service import get_external_service
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -180,19 +181,59 @@ class TracedPricingService:
             )
             raise
 
-        # Step 3: External Factors (placeholder for n8n integration)
+        # Step 3: External Factors (from n8n integration or cache/fallback)
         step_start = time.perf_counter()
-        external_factors = {
-            "weather": "normal",
-            "events": "none",
-            "fuel_price_index": 1.0,
-        }
+        try:
+            external_service = get_external_service()
+            ext_context = external_service.get_external_context()
+            
+            # Extract relevant data for pricing
+            weather_condition = ext_context.weather.condition if ext_context.weather else "normal"
+            weather_modifier = ext_context.weather.demand_modifier if ext_context.weather else 1.0
+            
+            # Check for events
+            events_count = len(ext_context.events) if ext_context.events else 0
+            event_names = [e.name for e in ext_context.events] if ext_context.events else []
+            max_event_modifier = max((e.surge_modifier for e in ext_context.events), default=1.0) if ext_context.events else 1.0
+            
+            # Fuel price index (normalized: 3.50 = baseline = 1.0)
+            fuel_baseline = 3.50
+            fuel_price = ext_context.fuel.price_per_gallon if ext_context.fuel else fuel_baseline
+            fuel_price_index = round(fuel_price / fuel_baseline, 2)
+            
+            external_factors = {
+                "weather": weather_condition,
+                "weather_modifier": weather_modifier,
+                "events": event_names if event_names else "none",
+                "events_count": events_count,
+                "event_surge_modifier": max_event_modifier,
+                "fuel_price_per_gallon": fuel_price,
+                "fuel_price_index": fuel_price_index,
+                "fuel_change_percent": ext_context.fuel.change_percent if ext_context.fuel else 0.0,
+                "data_source": ext_context.fuel.source if ext_context.fuel else "fallback",
+            }
+            ext_status = "success"
+        except Exception as e:
+            logger.warning(f"Failed to get external context, using defaults: {e}")
+            external_factors = {
+                "weather": "normal",
+                "weather_modifier": 1.0,
+                "events": "none",
+                "events_count": 0,
+                "event_surge_modifier": 1.0,
+                "fuel_price_per_gallon": 3.50,
+                "fuel_price_index": 1.0,
+                "fuel_change_percent": 0.0,
+                "data_source": "fallback",
+            }
+            ext_status = "fallback"
+        
         tracer.add_step(
             step_name="external_factors",
             inputs={"location": context.location_category},
             outputs=external_factors,
             duration_ms=(time.perf_counter() - step_start) * 1000,
-            status="success",
+            status=ext_status,
         )
 
         # Step 4: Demand Prediction (all models for agreement check)
