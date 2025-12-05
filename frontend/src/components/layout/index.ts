@@ -10,3 +10,5 @@ export { Brand } from './Brand';
 export { PipelineStatus } from './PipelineStatus';
 export { SystemStatus } from './SystemStatus';
 export { HoneywellToggle } from './HoneywellToggle';
+export { ThemeProvider } from './ThemeProvider';
+export { ThemeToggle } from './ThemeToggle';

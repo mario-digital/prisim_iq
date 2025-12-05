@@ -26,27 +26,27 @@ export const Footer: FC = () => {
     <footer className="h-10 border-t border-border/50 bg-card/50 backdrop-blur-sm px-4 flex items-center justify-between">
       {/* Left: Segment */}
       <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Database className="h-3.5 w-3.5 text-cyan-500/70" />
+        <Database className="h-3.5 w-3.5 text-cyan-600/70 dark:text-cyan-500/70" />
         <span>Segment:</span>
-        <span className="font-medium text-cyan-400">
+        <span className="font-medium text-cyan-600 dark:text-cyan-400">
           {formatSegmentName(currentSegment)}
         </span>
       </div>
 
       {/* Center: Models Status */}
       <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Cpu className="h-3.5 w-3.5 text-emerald-500/70" />
+        <Cpu className="h-3.5 w-3.5 text-emerald-600/70 dark:text-emerald-500/70" />
         <span>Models:</span>
-        <span className="font-medium text-emerald-400">
+        <span className="font-medium text-emerald-600 dark:text-emerald-400">
           {modelsReady}/{totalModels} Ready
         </span>
       </div>
 
       {/* Right: Response Time */}
       <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Clock className="h-3.5 w-3.5 text-amber-500/70" />
+        <Clock className="h-3.5 w-3.5 text-amber-600/70 dark:text-amber-500/70" />
         <span>Last Response:</span>
-        <span className="font-medium text-amber-400">
+        <span className="font-medium text-amber-600 dark:text-amber-400">
           {lastResponseTime !== null ? `${lastResponseTime.toFixed(1)}s` : '—'}
         </span>
       </div>
