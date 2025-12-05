@@ -15,6 +15,7 @@ import {
   chartColors,
   chartConfig,
   tooltipStyle,
+  cursorStyle,
   animationProps,
 } from '@/lib/chartTheme';
 import type { CurvePoint } from './types';
@@ -153,6 +154,7 @@ export const SensitivityBandChart: FC<SensitivityBandChartProps> = memo(
                   isCurveMode ? `Price: $${label}` : `Scenario: ${label}`
                 }
                 contentStyle={tooltipStyle}
+                cursor={cursorStyle}
               />
 
               {/* Confidence band area */}

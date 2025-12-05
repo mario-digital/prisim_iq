@@ -16,6 +16,7 @@ import {
   chartColors,
   chartConfig,
   tooltipStyle,
+  cursorStyle,
   animationProps,
   getDirectionColor,
 } from '@/lib/chartTheme';
@@ -97,6 +98,7 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
                   return `${label}: ${item?.currentValue ?? 'N/A'}`;
                 }}
                 contentStyle={tooltipStyle}
+                cursor={cursorStyle}
               />
               <Bar
                 dataKey="value"
