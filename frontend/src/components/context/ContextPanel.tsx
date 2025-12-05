@@ -6,7 +6,7 @@ import { TimeSection } from './TimeSection';
 import { SupplyDemandSection } from './SupplyDemandSection';
 import { CustomerSection } from './CustomerSection';
 import { VehicleSection } from './VehicleSection';
-import { ScenarioControls } from './ScenarioControls';
+import { ExternalFactorsSection } from './ExternalFactorsSection';
 import { ScenarioManager } from './ScenarioManager';
 import { ApplyChangesButton } from './ApplyChangesButton';
 import { Separator } from '@/components/ui/separator';
@@ -14,7 +14,12 @@ import { Separator } from '@/components/ui/separator';
 export const ContextPanel: FC = () => {
     return (
         <div className="flex flex-col gap-4 p-4 h-full overflow-y-auto">
-            {/* Context Sections */}
+            {/* Market Context Header */}
+            <div className="flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-foreground">Market Context</h2>
+            </div>
+
+            {/* Core Context Sections */}
             <LocationSection />
             <Separator />
             <TimeSection />
@@ -27,8 +32,8 @@ export const ContextPanel: FC = () => {
 
             <Separator className="my-2" />
 
-            {/* Scenario Controls */}
-            <ScenarioControls />
+            {/* External Factors from n8n */}
+            <ExternalFactorsSection />
 
             <Separator className="my-2" />
 
@@ -42,4 +47,3 @@ export const ContextPanel: FC = () => {
         </div>
     );
 };
-
