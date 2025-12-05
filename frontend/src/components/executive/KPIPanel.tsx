@@ -63,7 +63,7 @@ export const KPIPanel: FC<KPIPanelProps> = ({ data }) => {
       </div>
 
       <div className="pt-4 border-t">
-        <ExecutiveActions />
+        <ExecutiveActions data={kpiData} />
       </div>
     </div>
   );
