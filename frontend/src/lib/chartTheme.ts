@@ -3,6 +3,8 @@
  * Provides consistent colors, fonts, and styling across all visualizations.
  */
 
+import type { CSSProperties } from 'react';
+
 /**
  * Chart color palette matching the PrismIQ dark theme.
  * Vibrant colors optimized for dark backgrounds.
@@ -77,16 +79,33 @@ export const chartConfig = {
  * Tooltip styling that matches the app's card design.
  * Uses solid, opaque background for readability over charts.
  */
-export const tooltipStyle = {
+export const tooltipStyle: CSSProperties = {
   backgroundColor: 'var(--tooltip-bg, hsl(var(--card)))',
   border: '1px solid hsl(var(--border))',
   borderRadius: '8px',
   fontSize: '12px',
   boxShadow: '0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 4px 10px -2px rgba(0, 0, 0, 0.3)',
-  color: 'hsl(var(--foreground))',
+  color: 'var(--tooltip-text, hsl(var(--foreground)))',
   opacity: 1,
   backdropFilter: 'none',
-} as const;
+};
+
+/**
+ * Tooltip label styling (the header/title of the tooltip).
+ */
+export const tooltipLabelStyle: CSSProperties = {
+  color: 'var(--tooltip-text, hsl(var(--foreground)))',
+  fontWeight: 500,
+  marginBottom: '4px',
+};
+
+/**
+ * Tooltip item styling (individual data rows).
+ */
+export const tooltipItemStyle: CSSProperties = {
+  color: 'var(--tooltip-text, hsl(var(--foreground)))',
+  padding: '2px 0',
+};
 
 /**
  * Cursor/highlight styling for chart hover states.

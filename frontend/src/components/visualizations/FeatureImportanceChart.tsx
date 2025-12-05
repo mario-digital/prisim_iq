@@ -16,6 +16,8 @@ import {
   chartColors,
   chartConfig,
   tooltipStyle,
+  tooltipLabelStyle,
+  tooltipItemStyle,
   cursorStyle,
   animationProps,
   getDirectionColor,
@@ -98,6 +100,8 @@ export const FeatureImportanceChart: FC<FeatureImportanceChartProps> = memo(({
                   return `${label}: ${item?.currentValue ?? 'N/A'}`;
                 }}
                 contentStyle={tooltipStyle}
+                labelStyle={tooltipLabelStyle}
+                itemStyle={tooltipItemStyle}
                 cursor={cursorStyle}
               />
               <Bar
