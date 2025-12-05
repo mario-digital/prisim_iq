@@ -2,7 +2,7 @@
 
 **AI-Powered Dynamic Pricing Copilot with Explainable ML**
 
-> 🎬 **[View the Presentation](https://app.chroniclehq.com/8b606ee7-7740-4488-8399-a327cb022d48/document/113dceb9-3b93-45bd-a19b-68a868b87b9a/intro)**
+> 🎬 **[View the Presentation](https://app.chroniclehq.com/share/8b606ee7-7740-4488-8399-a327cb022d48/113dceb9-3b93-45bd-a19b-68a868b87b9a/intro)**
 
 An intelligent pricing assistant that provides explainable, evidence-backed pricing recommendations through natural conversation. Built for the Honeywell Aerospace Hackathon, PrismIQ demonstrates how ML-driven dynamic pricing concepts translate from ride-sharing to enterprise applications.
 
