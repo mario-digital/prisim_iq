@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ToastContainer } from '@/components/ui/toast';
+import { ThemeProvider } from '@/components/layout';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -16,10 +17,12 @@ export default function RootLayout({
   return (
     // suppressHydrationWarning on html: prevents mismatch warnings from browser extensions
     // that modify the DOM (e.g., dark mode, translation, accessibility tools)
-    <html lang="en" dir="ltr" className="dark" suppressHydrationWarning>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased" suppressHydrationWarning>
-        {children}
-        <ToastContainer />
+        <ThemeProvider>
+          {children}
+          <ToastContainer />
+        </ThemeProvider>
       </body>
     </html>
   );

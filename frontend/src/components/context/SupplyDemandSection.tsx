@@ -19,18 +19,18 @@ export const SupplyDemandSection: FC = () => {
   const ratioInfo = useMemo(() => {
     if (ratio > 2) return { 
       label: 'High Demand', 
-      color: 'text-orange-300', 
-      bg: 'bg-gradient-to-r from-orange-500/10 to-amber-500/5 border border-orange-500/20' 
+      color: 'text-orange-600 dark:text-orange-300', 
+      bg: 'bg-gradient-to-r from-orange-500/15 to-amber-500/10 dark:from-orange-500/10 dark:to-amber-500/5 border border-orange-500/30 dark:border-orange-500/20' 
     };
     if (ratio > 1) return { 
       label: 'Balanced', 
-      color: 'text-cyan-300', 
-      bg: 'bg-gradient-to-r from-cyan-500/10 to-blue-500/5 border border-cyan-500/20' 
+      color: 'text-cyan-600 dark:text-cyan-300', 
+      bg: 'bg-gradient-to-r from-cyan-500/15 to-blue-500/10 dark:from-cyan-500/10 dark:to-blue-500/5 border border-cyan-500/30 dark:border-cyan-500/20' 
     };
     return { 
       label: 'Low Demand', 
-      color: 'text-emerald-300', 
-      bg: 'bg-gradient-to-r from-emerald-500/10 to-teal-500/5 border border-emerald-500/20' 
+      color: 'text-emerald-600 dark:text-emerald-300', 
+      bg: 'bg-gradient-to-r from-emerald-500/15 to-teal-500/10 dark:from-emerald-500/10 dark:to-teal-500/5 border border-emerald-500/30 dark:border-emerald-500/20' 
     };
   }, [ratio]);
 

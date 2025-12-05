@@ -26,8 +26,8 @@ export const PipelineStatus: FC = () => {
             <div
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-300',
-                isActive && 'bg-cyan-500/15 text-cyan-400 ring-1 ring-cyan-500/30',
-                isCompleted && 'bg-emerald-500/15 text-emerald-400',
+                isActive && 'bg-cyan-500/20 dark:bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 ring-1 ring-cyan-500/40 dark:ring-cyan-500/30',
+                isCompleted && 'bg-emerald-500/20 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
                 isPending && !isActive && 'text-muted-foreground/50'
               )}
             >
@@ -36,8 +36,8 @@ export const PipelineStatus: FC = () => {
               )}
               {isActive && (
                 <span className="relative flex h-1.5 w-1.5">
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping" />
-                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cyan-400" />
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-500 dark:bg-cyan-400 opacity-75 animate-ping" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400" />
                 </span>
               )}
               {stage}

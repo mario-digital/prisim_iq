@@ -10,6 +10,7 @@ import { Brand } from './Brand';
 import { PipelineStatus } from './PipelineStatus';
 import { SystemStatus } from './SystemStatus';
 import { HoneywellToggle } from './HoneywellToggle';
+import { ThemeToggle } from './ThemeToggle';
 
 interface Tab {
   id: ActiveTab;
@@ -94,7 +95,7 @@ export const Header: FC = () => {
                 className={cn(
                   'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200',
                   isActive
-                    ? 'bg-gradient-to-r from-cyan-500/15 to-blue-500/10 text-cyan-400 shadow-sm shadow-cyan-500/10'
+                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/15 dark:from-cyan-500/15 dark:to-blue-500/10 text-cyan-600 dark:text-cyan-400 shadow-sm shadow-cyan-500/15 dark:shadow-cyan-500/10'
                     : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                 )}
               >
@@ -105,8 +106,11 @@ export const Header: FC = () => {
           })}
         </nav>
 
-        {/* Honeywell Toggle at end of tab row */}
-        <HoneywellToggle />
+        {/* Theme and Honeywell Toggles at end of tab row */}
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <HoneywellToggle />
+        </div>
       </div>
     </header>
   );
