@@ -8,6 +8,8 @@ import { streamMessage, sendMessage } from '@/services/chatService';
 import { MessageList } from './MessageList';
 import { ChatInput } from './ChatInput';
 import { WelcomeMessage } from './WelcomeMessage';
+import { Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 /** Debug logging flag - only enabled in development */
 const DEBUG = process.env.NODE_ENV === 'development';
@@ -35,6 +37,7 @@ export const ChatPanel: FC = () => {
     finalizeStream,
     setStreamError,
     cancelStream,
+    clearChat,
   } = useChatStore();
   const context = useContextStore((state) => state.context);
   const fetchPricing = usePricingStore((state) => state.fetchPricing);
@@ -251,8 +254,27 @@ export const ChatPanel: FC = () => {
 
   const showWelcome = messages.length === 0 && !isLoading;
 
+  const handleClearChat = useCallback(() => {
+    clearChat();
+  }, [clearChat]);
+
   return (
     <div className="flex flex-col h-full">
+      {/* Chat header with clear button */}
+      {messages.length > 0 && (
+        <div className="flex items-center justify-end px-4 py-2 border-b border-border/50">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearChat}
+            disabled={isLoading}
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+          >
+            <Trash2 className="h-3 w-3 mr-1" />
+            Clear Chat
+          </Button>
+        </div>
+      )}
       {showWelcome ? (
         <WelcomeMessage onExampleClick={handleExampleClick} />
       ) : (
